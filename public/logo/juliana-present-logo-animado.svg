@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080" role="img" aria-label="Juliana Present">
+  <defs>
+    <radialGradient id="bg" cx="72%" cy="16%" r="95%">
+      <stop offset="0%" stop-color="#24503b"></stop>
+      <stop offset="58%" stop-color="#142118"></stop>
+      <stop offset="100%" stop-color="#0e1712"></stop>
+    </radialGradient>
+  </defs>
+
+  <style>
+    .jc-draw { animation: jc-draw 1.15s cubic-bezier(.22,.61,.36,1) forwards; }
+    @keyframes jc-draw { to { stroke-dashoffset: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .jc-draw { animation: none; stroke-dashoffset: 0; }
+    }
+  </style>
+
+  <rect width="1080" height="1080" fill="url(#bg)"></rect>
+  <rect x="40" y="40" width="1000" height="1000" rx="26" fill="none" stroke="#d9a441" stroke-opacity="0.32" stroke-width="2"></rect>
+
+  <g transform="translate(408,232) scale(2.05)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path class="jc-draw" d="M14 46 C16 84 40 100 60 100 C80 100 104 84 106 46" stroke="#f4ead1" stroke-width="3" stroke-dasharray="360" stroke-dashoffset="360" style="animation-delay:.05s"></path>
+    <ellipse class="jc-draw" cx="60" cy="46" rx="46" ry="11" stroke="#f4ead1" stroke-width="3" stroke-dasharray="300" stroke-dashoffset="300" style="animation-delay:.15s"></ellipse>
+    <path class="jc-draw" d="M30 44 C38 6 82 6 90 44" stroke="#d9a441" stroke-width="3" stroke-dasharray="160" stroke-dashoffset="160" style="animation-delay:0s"></path>
+    <path class="jc-draw" d="M19 60 C34 72 86 72 101 60" stroke="#f4ead1" stroke-width="2" opacity="0.7" stroke-dasharray="160" stroke-dashoffset="160" style="animation-delay:.3s"></path>
+    <path class="jc-draw" d="M26 78 C40 88 80 88 94 78" stroke="#f4ead1" stroke-width="2" opacity="0.7" stroke-dasharray="140" stroke-dashoffset="140" style="animation-delay:.38s"></path>
+    <path class="jc-draw" d="M42 50 C41 72 45 88 51 97" stroke="#f4ead1" stroke-width="2" opacity="0.5" stroke-dasharray="90" stroke-dashoffset="90" style="animation-delay:.45s"></path>
+    <path class="jc-draw" d="M60 51 C60 74 60 88 60 100" stroke="#f4ead1" stroke-width="2" opacity="0.5" stroke-dasharray="70" stroke-dashoffset="70" style="animation-delay:.48s"></path>
+    <path class="jc-draw" d="M78 50 C79 72 75 88 69 97" stroke="#f4ead1" stroke-width="2" opacity="0.5" stroke-dasharray="90" stroke-dashoffset="90" style="animation-delay:.45s"></path>
+  </g>
+</svg>

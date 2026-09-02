@@ -13,8 +13,16 @@ export function SiteHeader() {
       <div className="mx-auto flex h-18 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="shrink-0 font-display text-2xl text-primary"
+          className="flex shrink-0 items-center gap-2.5 font-display text-2xl text-primary"
         >
+          <img
+            src="/logo/juliana-present-icon.svg"
+            alt=""
+            aria-hidden="true"
+            width={38}
+            height={34}
+            className="h-[34px] w-[38px] shrink-0"
+          />
           Juliana Present
         </Link>
 

@@ -52,3 +52,7 @@ dev.cmd
 # fotos brutas enviadas pelo WhatsApp (originais ficam so localmente;
 # as usadas de verdade sao copiadas com nome limpo pra public/images/produtos)
 Banners/
+
+# logo bruto enviado pela cliente (jpg/png/svg originais ficam so localmente;
+# a versao usada de verdade e o icone recortado em public/logo/)
+/logo/
