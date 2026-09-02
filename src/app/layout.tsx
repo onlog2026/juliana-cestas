@@ -29,6 +29,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${figtree.variable} ${youngSerif.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
+        <noscript>
+          <style>{`.jc-reveal{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
         <SiteHeader />
         <main className="flex-1 pb-16 md:pb-0">{children}</main>
         <SiteFooter />

@@ -4,7 +4,6 @@ const columns = [
   {
     title: "Ajuda",
     links: [
-      { href: "/minha-conta/pedidos", label: "Meus pedidos" },
       { href: "/atendimento", label: "Atendimento" },
       { href: "/faq", label: "Perguntas frequentes" },
     ],
@@ -13,8 +12,7 @@ const columns = [
     title: "Institucional",
     links: [
       { href: "/sobre", label: "Sobre a Juliana Present" },
-      { href: "/politica-de-privacidade", label: "Política de privacidade" },
-      { href: "/trocas-e-devolucoes", label: "Trocas e devoluções" },
+      { href: "/trocas-e-devolucoes", label: "Trocas e entregas" },
     ],
   },
 ];
@@ -40,7 +38,7 @@ export function SiteFooter() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                    className="jc-nav-hover -mx-2 -my-1 rounded-full px-2 py-1 text-sm text-muted-foreground hover:text-primary"
                   >
                     {link.label}
                   </Link>
