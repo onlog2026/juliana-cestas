@@ -8,11 +8,11 @@
 
   <g stroke-linecap="round" stroke-linejoin="round" fill="none">
     <!-- traços base, sempre visíveis -->
-    <path d="M14 46 C16 84 40 100 60 100 C80 100 104 84 106 46" stroke="#1f4d3a" stroke-width="5"></path>
-    <ellipse cx="60" cy="46" rx="46" ry="11" stroke="#1f4d3a" stroke-width="5"></ellipse>
+    <path d="M14 46 C16 84 40 100 60 100 C80 100 104 84 106 46" stroke="#556b2f" stroke-width="5"></path>
+    <ellipse cx="60" cy="46" rx="46" ry="11" stroke="#556b2f" stroke-width="5"></ellipse>
     <path d="M30 44 C38 6 82 6 90 44" stroke="#d9a441" stroke-width="5"></path>
-    <path d="M19 60 C34 72 86 72 101 60" stroke="#1f4d3a" stroke-width="3" opacity="0.55"></path>
-    <path d="M26 78 C40 88 80 88 94 78" stroke="#1f4d3a" stroke-width="3" opacity="0.55"></path>
+    <path d="M19 60 C34 72 86 72 101 60" stroke="#556b2f" stroke-width="3" opacity="0.55"></path>
+    <path d="M26 78 C40 88 80 88 94 78" stroke="#556b2f" stroke-width="3" opacity="0.55"></path>
 
     <!-- luz viajante, em loop -->
     <g filter="url(#jcg)">
