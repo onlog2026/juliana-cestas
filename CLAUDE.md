@@ -14,12 +14,22 @@
 | Recurso | Valor | Observação |
 |---|---|---|
 | Pasta | `C:\Users\user\Downloads\Juliana Cestas` | tem espaço no nome: sempre entre aspas |
-| GitHub | `contatoagentop/juliana-cestas` (privado) | credencial só no terminal do dono |
+| GitHub (ativo p/ deploy) | `onlog2026/juliana-cestas` (privado) | remote git local = `onlog`. Conta usada no navegador "Chrome Onlog" (Google `onlogjf@gmail.com`). Push feito via Personal Access Token de uso único (criado, usado, revogado na hora — não fica salvo). **Sem credencial git persistente nesta máquina para essa conta**: antes do próximo push, ver seção "Como publicar" abaixo |
+| GitHub (original, PAUSADO) | `contatoagentop/juliana-cestas` (privado) | remote git local = `origin`. Continua com o histórico completo, mas o deploy Vercel ligado a ele está bloqueado (ver linha Vercel abaixo). Não apagar — só não é o remote ativo pro deploy |
 | Supabase project ID | `oygizajevizwhiymgsly` | URL `https://oygizajevizwhiymgsly.supabase.co` · região sa-east-1 (São Paulo) · plano Free. Conferir caractere a caractere antes de `execute_sql` |
 | Supabase org | `Juliana Cestas` (Free) — org id a conferir no dashboard | conta Supabase = `contatoagentop` (Google). Outras orgs dessa conta: `agentop` (Pro, kbdghebozdwyqozoldso) e `jarvis` (Free, lnndplsyudulsigkiybv). O MCP do Supabase desta máquina está em OUTRA conta (org adrianorosa2012, só Fácilbicas): não usar o MCP para este projeto até reconectar |
-| Vercel projeto | `juliana-cestas` | conta `contatoagentop-5784` (Hobby). Primeiro deploy (import direto) OK. Deploy automático por push está BLOQUEADO: commits autenticados como `adrianorosa2012@gmail.com` (GitHub `adrianrosa1`) não são reconhecidos como colaborador no Hobby — decisão do dono: repo público, upgrade pra Pro, ou trocar o e-mail do commit pelo dono do GitHub `contatoagentop`. Até resolver, publicar via `npx vercel --prod` direto da pasta (precisa `vercel login` na conta certa) |
+| Vercel projeto (ATIVO) | `juliana-cestas` | conta `onlogjf-1751's projects` (Hobby, GitHub `onlog2026`). Importado de `onlog2026/juliana-cestas`. **Deploy automático por push funciona** (mesma conta é dona do repo e do projeto Vercel, sem bloqueio de colaborador). Primeira URL: `https://juliana-cestas-fjfaolcn7-onlogjf-1751s-projects.vercel.app` (muda a cada deploy até domínio fixo ser configurado — conferir a URL atual em Deployments antes de divulgar). 6 variáveis de ambiente configuradas (Supabase URL/anon/service_role, Asaas sandbox URL, WhatsApp placeholder); falta `NEXT_PUBLIC_SITE_URL` (tentativa de adicionar pela UI não salvou — adicionar manualmente na próxima sessão) |
+| Vercel projeto (PAUSADO) | `juliana-cestas` | conta `contatoagentop-5784` (Hobby). Deploy automático por push BLOQUEADO: commits autenticados como `adrianorosa2012@gmail.com` (GitHub `adrianrosa1`) não são reconhecidos como colaborador nesse Hobby team. Decisão do dono, ainda em aberto: deixar pausado (atual), repo público, upgrade pra Pro, ou resolver identidade do commit |
 | Domínio | `A_DEFINIR` | |
 | Asaas | sandbox (`https://api-sandbox.asaas.com`) | chave de produção só quando o dono publicar |
+
+## Como publicar (deploy automático via `onlog2026`)
+`git push onlog main` precisa de credencial da conta GitHub `onlog2026`, que **não fica salva** nesta máquina (o token usado na Fase 0 foi de uso único, criado e revogado na hora). Antes do próximo push:
+1. Pedir pro dono conectar o Chrome já logado como `onlogjf@gmail.com` (ele sabe qual é).
+2. Criar um Personal Access Token novo em `github.com/settings/personal-access-tokens/new` (exige verificação por e-mail — modo sudo — então o dono precisa clicar no link do e-mail primeiro).
+3. Escopo: só repositório `onlog2026/juliana-cestas`, permissão `Contents: Read and write`.
+4. Copiar o token pelo botão da página (nunca digitar à mão), usar uma vez em `git push https://x-access-token:TOKEN@github.com/onlog2026/juliana-cestas.git main`, depois **apagar o token na hora** em Settings → Personal access tokens.
+5. Alternativa mais rápida para sessões futuras: o dono pode gerar um token de vida mais longa (ex. 90 dias) e me passar uma vez só — aí eu guardo só localmente (nunca commitado) e não preciso repetir o passo a passo toda vez.
 
 **MCP do Supabase é GLOBAL** e já apontou para projeto errado em outro projeto. Antes de qualquer `execute_sql`/`apply_migration`: `get_project` e comparar o ID com a tabela acima.
 
