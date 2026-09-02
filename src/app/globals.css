@@ -7,9 +7,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-figtree);
+  --font-display: var(--font-young-serif);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-display);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,82 +40,114 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-jc-gold: var(--jc-gold);
+  --color-jc-whatsapp: var(--jc-whatsapp);
+  --color-jc-success: var(--jc-success);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-card: var(--jc-radius-card);
 }
 
+/* Juliana Cestas — tokens de marca (docs/DESIGN.md) */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --background: #f6f1e8;
+  --foreground: #1f2a24;
+  --card: #fffdf9;
+  --card-foreground: #1f2a24;
+  --popover: #fffdf9;
+  --popover-foreground: #1f2a24;
+  --primary: #1f4d3a;
+  --primary-foreground: #fbf6ea;
+  --secondary: #efe7d9;
+  --secondary-foreground: #1f2a24;
+  --muted: #efe7d9;
+  --muted-foreground: #5f6b63;
+  --accent: #dce8df;
+  --accent-foreground: #1f4d3a;
+  --destructive: #b23a3a;
+  --border: rgba(31, 42, 36, 0.1);
+  --input: rgba(31, 42, 36, 0.1);
+  --ring: #1f4d3a;
+  --chart-1: #1f4d3a;
+  --chart-2: #d9a441;
+  --chart-3: #5f6b63;
+  --chart-4: #b23a3a;
+  --chart-5: #2f7d5b;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --jc-radius-card: 1rem;
+  --jc-gold: #d9a441;
+  --jc-whatsapp: #25d366;
+  --jc-success: #2f7d5b;
+  --jc-shadow: 0 12px 32px rgba(31, 42, 36, 0.08);
+  --jc-paper: #fbf6ea;
+  --sidebar: #fffdf9;
+  --sidebar-foreground: #1f2a24;
+  --sidebar-primary: #1f4d3a;
+  --sidebar-primary-foreground: #fbf6ea;
+  --sidebar-accent: #dce8df;
+  --sidebar-accent-foreground: #1f4d3a;
+  --sidebar-border: rgba(31, 42, 36, 0.1);
+  --sidebar-ring: #1f4d3a;
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #15201a;
+    --foreground: #f1ece2;
+    --card: #1c2a22;
+    --card-foreground: #f1ece2;
+    --popover: #1c2a22;
+    --popover-foreground: #f1ece2;
+    --primary: #7fb79a;
+    --primary-foreground: #15201a;
+    --secondary: #24342b;
+    --secondary-foreground: #f1ece2;
+    --muted: #24342b;
+    --muted-foreground: #a9b3ac;
+    --accent: #2a3b31;
+    --accent-foreground: #7fb79a;
+    --destructive: #d97463;
+    --border: rgba(241, 236, 226, 0.12);
+    --input: rgba(241, 236, 226, 0.12);
+    --ring: #7fb79a;
+    --jc-shadow: 0 12px 32px rgba(0, 0, 0, 0.32);
+    --jc-paper: #efe6d2;
+    --sidebar: #1c2a22;
+    --sidebar-foreground: #f1ece2;
+    --sidebar-primary: #7fb79a;
+    --sidebar-primary-foreground: #15201a;
+    --sidebar-accent: #24342b;
+    --sidebar-accent-foreground: #7fb79a;
+    --sidebar-border: rgba(241, 236, 226, 0.12);
+    --sidebar-ring: #7fb79a;
+  }
+}
+
+:root[data-theme="dark"] {
+  --background: #15201a;
+  --foreground: #f1ece2;
+  --card: #1c2a22;
+  --card-foreground: #f1ece2;
+  --popover: #1c2a22;
+  --popover-foreground: #f1ece2;
+  --primary: #7fb79a;
+  --primary-foreground: #15201a;
+  --secondary: #24342b;
+  --secondary-foreground: #f1ece2;
+  --muted: #24342b;
+  --muted-foreground: #a9b3ac;
+  --accent: #2a3b31;
+  --accent-foreground: #7fb79a;
+  --destructive: #d97463;
+  --border: rgba(241, 236, 226, 0.12);
+  --input: rgba(241, 236, 226, 0.12);
+  --ring: #7fb79a;
+  --jc-shadow: 0 12px 32px rgba(0, 0, 0, 0.32);
+  --jc-paper: #efe6d2;
 }
 
 @layer base {
