@@ -5,7 +5,7 @@ export function Hero() {
   return (
     <section className="border-b border-border bg-secondary/40">
       <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 md:grid-cols-2 md:gap-12 md:py-16 lg:px-8">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-card md:order-1">
+        <div className="jc-glow-card jc-pop relative aspect-[4/5] overflow-hidden rounded-card md:order-1">
           <Image
             src="/images/produtos/cesta-cafe-completo.png"
             alt="Cesta de café da manhã Juliana Present, com pães, frutas e mel, amarrada com fita verde"
@@ -16,7 +16,7 @@ export function Hero() {
           />
         </div>
 
-        <div className="md:order-2">
+        <div className="jc-pop md:order-2" style={{ animationDelay: "0.12s" }}>
           <h1 className="font-display text-4xl leading-[1.1] text-foreground md:text-5xl">
             Um café da manhã que chega como um abraço.
           </h1>

@@ -1,9 +1,10 @@
 import { ChevronDown } from "lucide-react";
 import { faqItems } from "@/lib/mock-content";
+import { Reveal } from "./reveal";
 
 export function Faq() {
   return (
-    <section className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+    <Reveal className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       <h2 className="font-display text-2xl text-foreground">
         Perguntas frequentes
       </h2>
@@ -20,6 +21,6 @@ export function Faq() {
           </details>
         ))}
       </div>
-    </section>
+    </Reveal>
   );
 }

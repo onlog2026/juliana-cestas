@@ -6,6 +6,7 @@ import { ChevronRight, Check, MessageCircle } from "lucide-react";
 import { featuredProducts } from "@/lib/mock-content";
 import { ProductCard } from "@/components/loja/product-card";
 import { CartaozinhoSignature } from "@/components/loja/cartaozinho-signature";
+import { Reveal } from "@/components/loja/reveal";
 
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
 
@@ -62,7 +63,7 @@ export default async function ProdutoPage(
       </nav>
 
       <div className="mt-6 grid gap-10 md:grid-cols-2 md:gap-12">
-        <div className="relative aspect-square overflow-hidden rounded-card bg-secondary">
+        <div className="jc-glow-card jc-pop relative aspect-square overflow-hidden rounded-card bg-secondary">
           <Image
             src={product.image}
             alt={product.name}
@@ -78,7 +79,7 @@ export default async function ProdutoPage(
           ) : null}
         </div>
 
-        <div>
+        <div className="jc-pop" style={{ animationDelay: "0.1s" }}>
           <h1 className="font-display text-3xl text-foreground md:text-4xl">
             {product.name}
           </h1>
@@ -93,7 +94,7 @@ export default async function ProdutoPage(
             href={`https://wa.me/${WHATSAPP}?text=${whatsappMessage}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--jc-whatsapp)] px-7 text-base font-semibold text-white transition-transform active:scale-[0.98] sm:w-auto"
+            className="jc-shine-cta mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--jc-whatsapp)] px-7 text-base font-semibold text-white transition-transform active:scale-[0.98] sm:w-auto"
           >
             <MessageCircle className="size-5" />
             Encomendar pelo WhatsApp
@@ -134,7 +135,9 @@ export default async function ProdutoPage(
         </h2>
         <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4">
           {outrasCestas.map((item) => (
-            <ProductCard key={item.id} product={item} />
+            <Reveal key={item.id}>
+              <ProductCard product={item} />
+            </Reveal>
           ))}
         </div>
       </div>

@@ -3,12 +3,13 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { collectionPresentes, featuredProducts } from "@/lib/mock-content";
 import { ProductCard } from "./product-card";
+import { Reveal } from "./reveal";
 
 export function Collections() {
   const featured = featuredProducts.find((product) => product.id === "memoravel");
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <Reveal className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="rounded-card border border-border bg-card p-6 sm:p-8">
           <div className="flex items-baseline justify-between">
@@ -33,7 +34,7 @@ export function Collections() {
         {featured ? (
           <Link
             href={`/produto/${featured.slug}`}
-            className="group relative flex min-h-72 flex-col justify-end overflow-hidden rounded-card"
+            className="jc-glow-card group relative flex min-h-72 flex-col justify-end overflow-hidden rounded-card"
           >
             <Image
               src={featured.image}
@@ -53,6 +54,6 @@ export function Collections() {
           </Link>
         ) : null}
       </div>
-    </section>
+    </Reveal>
   );
 }

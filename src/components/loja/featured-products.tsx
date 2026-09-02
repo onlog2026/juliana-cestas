@@ -1,5 +1,6 @@
 import { featuredProducts } from "@/lib/mock-content";
 import { ProductCard } from "./product-card";
+import { Reveal } from "./reveal";
 
 export function FeaturedProducts() {
   return (
@@ -14,7 +15,9 @@ export function FeaturedProducts() {
       </div>
       <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-6">
         {featuredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <Reveal key={product.id}>
+            <ProductCard product={product} />
+          </Reveal>
         ))}
       </div>
     </section>

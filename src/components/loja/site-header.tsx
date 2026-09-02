@@ -42,14 +42,14 @@ export function SiteHeader() {
         <nav className="ml-auto hidden items-center gap-2 md:flex">
           <Link
             href="/minha-conta"
-            className="flex size-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-accent"
+            className="jc-nav-hover flex size-10 items-center justify-center rounded-full text-foreground"
             aria-label="Minha conta"
           >
             <User className="size-5" />
           </Link>
           <Link
             href="/carrinho"
-            className="relative flex size-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-accent"
+            className="jc-nav-hover relative flex size-10 items-center justify-center rounded-full text-foreground"
             aria-label="Carrinho"
           >
             <ShoppingBag className="size-5" />
@@ -63,7 +63,7 @@ export function SiteHeader() {
             <Link
               key={link.href}
               href={link.href}
-              className="whitespace-nowrap transition-colors hover:text-primary"
+              className="jc-nav-hover whitespace-nowrap rounded-full px-3 py-1.5 -mx-3 -my-1.5"
             >
               {link.label}
             </Link>

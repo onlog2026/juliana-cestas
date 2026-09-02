@@ -68,4 +68,9 @@ Next.js 16 (App Router, TypeScript, `src/`, Turbopack) · React 19 · Tailwind v
 - `docs/ANALISE-REFERENCIA.md` — o que foi medido no site de referência e o que NÃO copiar.
 - `docs/ARQUITETURA.md` — módulos, banco, eventos, pagamentos, fases.
 - `docs/DESIGN.md` — tokens, tipografia, regras anti-genérico, assinatura "o cartãozinho".
+- `docs/CATALOGO-REAL-CLIENTE.md` — catálogo real (5 cestas), fonte Canva da cliente.
+- `docs/EFEITOS-PREMIUM.md` — biblioteca de efeitos visuais (hover glow, brilho, scroll reveal, logo
+  animada), com prompt pronto pra reusar em outros projetos. Técnica extraída do Agentop, recolorida
+  pra Juliana Present. Classes `jc-glow-card`/`jc-shine-cta`/`jc-reveal`/`jc-pop`/`jc-nav-hover` em
+  `src/app/globals.css`; componente `<Reveal>` em `src/components/loja/reveal.tsx`.
 - `docs/OPERACAO.md` — como a Juliana opera a loja (criado na Fase 5).

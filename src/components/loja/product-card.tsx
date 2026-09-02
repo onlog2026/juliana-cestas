@@ -13,7 +13,7 @@ export function ProductCard({ product }: { product: Product }) {
       href={`/produto/${product.slug}`}
       className="group block w-full text-left"
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-card bg-secondary">
+      <div className="jc-glow-card relative aspect-[4/5] overflow-hidden rounded-card bg-secondary">
         <Image
           src={product.image}
           alt={product.name}

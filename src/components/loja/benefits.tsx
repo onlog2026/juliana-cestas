@@ -1,5 +1,6 @@
 import { Truck, ShieldCheck, PenLine, Headset, type LucideIcon } from "lucide-react";
 import { benefits } from "@/lib/mock-content";
+import { Reveal } from "./reveal";
 
 const icons: Record<string, LucideIcon> = {
   Truck,
@@ -10,7 +11,7 @@ const icons: Record<string, LucideIcon> = {
 
 export function Benefits() {
   return (
-    <section className="border-y border-border bg-secondary/40">
+    <Reveal className="border-y border-border bg-secondary/40">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-10 sm:px-6 md:grid-cols-4 lg:px-8">
         {benefits.map((benefit) => {
           const Icon = icons[benefit.icon];
@@ -31,6 +32,6 @@ export function Benefits() {
           );
         })}
       </div>
-    </section>
+    </Reveal>
   );
 }

@@ -5,6 +5,7 @@ import { featuredProducts } from "@/lib/mock-content";
 import { ProductCard } from "@/components/loja/product-card";
 import { Faq } from "@/components/loja/faq";
 import { WhatsappCta } from "@/components/loja/whatsapp-cta";
+import { Reveal } from "@/components/loja/reveal";
 
 export const metadata: Metadata = {
   title: "Cestas de café da manhã em Brasília | Juliana Present",
@@ -34,7 +35,9 @@ export default function CategoriaCafeDaManhaPage() {
 
       <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-3 xl:grid-cols-4">
         {featuredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <Reveal key={product.id}>
+            <ProductCard product={product} />
+          </Reveal>
         ))}
       </div>
 

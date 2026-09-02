@@ -52,7 +52,7 @@ export function CartaozinhoSignature() {
 
         <div className="flex justify-center md:justify-end">
           <div
-            className="w-full max-w-sm rounded-2xl border border-[color-mix(in_oklch,var(--primary),transparent_80%)] bg-[var(--jc-paper)] px-8 py-10"
+            className="jc-glow-card w-full max-w-sm rounded-2xl border border-[color-mix(in_oklch,var(--primary),transparent_80%)] bg-[var(--jc-paper)] px-8 py-10"
             style={{ boxShadow: "var(--jc-shadow)" }}
           >
             <p className="font-display text-xl leading-relaxed text-[#3a3226]">

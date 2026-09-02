@@ -161,3 +161,153 @@
     @apply font-sans;
   }
 }
+
+/* ===== Efeitos premium (mesma técnica do Agentop, recolorida pra Juliana
+   Present: verde-cerrado + ipê-amarelo em vez de azul/rosa neon). ===== */
+
+@property --jc-glow-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* Anel de luz viajante no hover — cards de produto, banners, molduras de foto */
+.jc-glow-card {
+  position: relative;
+  isolation: isolate;
+}
+.jc-glow-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.6px;
+  pointer-events: none;
+  z-index: 6;
+  opacity: 0;
+  background: conic-gradient(
+    from var(--jc-glow-angle),
+    transparent 0deg,
+    #1f4d3a 40deg,
+    #d9a441 110deg,
+    #f4ead1 150deg,
+    transparent 210deg,
+    transparent 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  transition: opacity 0.35s ease;
+}
+.jc-glow-card:hover::after {
+  opacity: 1;
+  animation: jc-glow-rotate 2.6s linear infinite;
+}
+@keyframes jc-glow-rotate {
+  to {
+    --jc-glow-angle: 360deg;
+  }
+}
+.jc-glow-card:hover {
+  box-shadow:
+    0 0 0 1px rgba(31, 77, 58, 0.16),
+    0 20px 48px -18px rgba(31, 77, 58, 0.35),
+    0 0 28px -8px rgba(217, 164, 65, 0.45);
+}
+
+/* Brilho passando pelo botão — CTAs de WhatsApp / "Encomendar" */
+.jc-shine-cta {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.jc-shine-cta::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  animation: jc-shine-sweep 3.4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+.jc-shine-cta > * {
+  position: relative;
+  z-index: 1;
+}
+@keyframes jc-shine-sweep {
+  0% {
+    transform: translateX(-140%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(240%) skewX(-18deg);
+  }
+}
+
+/* Revelação ao rolar a página — seções e cards aparecem suavemente */
+.jc-reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.jc-reveal.jc-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Entrada "estouro" — elementos do primeiro dobra ao abrir o site */
+@keyframes jc-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.015) translateY(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.jc-pop {
+  animation: jc-pop-in 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* Hover de navegação — degradê da marca em vez de cor chapada */
+.jc-nav-hover {
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.jc-nav-hover:hover {
+  background-color: var(--accent);
+  background-image: linear-gradient(
+    115deg,
+    rgba(31, 77, 58, 0.16),
+    rgba(217, 164, 65, 0.22)
+  );
+  color: var(--primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jc-glow-card:hover::after,
+  .jc-shine-cta::before {
+    animation: none;
+  }
+  .jc-reveal,
+  .jc-pop {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    animation: none;
+  }
+}

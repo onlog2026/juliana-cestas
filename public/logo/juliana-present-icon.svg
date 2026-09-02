@@ -1,17 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="4 0 112 106" role="img" aria-label="Juliana Present">
-  <style>
-    .jc-draw { animation: jc-draw 1.15s cubic-bezier(.22,.61,.36,1) forwards; }
-    @keyframes jc-draw { to { stroke-dashoffset: 0; } }
-    @media (prefers-reduced-motion: reduce) {
-      .jc-draw { animation: none; stroke-dashoffset: 0; }
-    }
-  </style>
+  <defs>
+    <filter id="jcg" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="1.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
 
   <g stroke-linecap="round" stroke-linejoin="round" fill="none">
-    <path class="jc-draw" d="M14 46 C16 84 40 100 60 100 C80 100 104 84 106 46" stroke="#1f4d3a" stroke-width="5" stroke-dasharray="360" stroke-dashoffset="360" style="animation-delay:.05s"></path>
-    <ellipse class="jc-draw" cx="60" cy="46" rx="46" ry="11" stroke="#1f4d3a" stroke-width="5" stroke-dasharray="300" stroke-dashoffset="300" style="animation-delay:.15s"></ellipse>
-    <path class="jc-draw" d="M30 44 C38 6 82 6 90 44" stroke="#d9a441" stroke-width="5" stroke-dasharray="160" stroke-dashoffset="160" style="animation-delay:0s"></path>
-    <path class="jc-draw" d="M19 60 C34 72 86 72 101 60" stroke="#1f4d3a" stroke-width="3" opacity="0.55" stroke-dasharray="160" stroke-dashoffset="160" style="animation-delay:.3s"></path>
-    <path class="jc-draw" d="M26 78 C40 88 80 88 94 78" stroke="#1f4d3a" stroke-width="3" opacity="0.55" stroke-dasharray="140" stroke-dashoffset="140" style="animation-delay:.38s"></path>
+    <!-- traços base, sempre visíveis -->
+    <path d="M14 46 C16 84 40 100 60 100 C80 100 104 84 106 46" stroke="#1f4d3a" stroke-width="5"></path>
+    <ellipse cx="60" cy="46" rx="46" ry="11" stroke="#1f4d3a" stroke-width="5"></ellipse>
+    <path d="M30 44 C38 6 82 6 90 44" stroke="#d9a441" stroke-width="5"></path>
+    <path d="M19 60 C34 72 86 72 101 60" stroke="#1f4d3a" stroke-width="3" opacity="0.55"></path>
+    <path d="M26 78 C40 88 80 88 94 78" stroke="#1f4d3a" stroke-width="3" opacity="0.55"></path>
+
+    <!-- luz viajante, em loop -->
+    <g filter="url(#jcg)">
+      <path d="M14 46 C16 84 40 100 60 100 C80 100 104 84 106 46" stroke="#f4ead1" stroke-width="3" stroke-dasharray="18 200" stroke-dashoffset="0">
+        <animate attributeName="stroke-dashoffset" values="0;-218" dur="2.6s" repeatCount="indefinite"/>
+      </path>
+      <ellipse cx="60" cy="46" rx="46" ry="11" stroke="#f4ead1" stroke-width="3" stroke-dasharray="18 192" stroke-dashoffset="60">
+        <animate attributeName="stroke-dashoffset" values="60;-150" dur="2.6s" repeatCount="indefinite"/>
+      </ellipse>
+      <path d="M30 44 C38 6 82 6 90 44" stroke="#fff6df" stroke-width="3" stroke-dasharray="14 90" stroke-dashoffset="0">
+        <animate attributeName="stroke-dashoffset" values="0;-104" dur="2.6s" repeatCount="indefinite"/>
+      </path>
+    </g>
   </g>
 </svg>

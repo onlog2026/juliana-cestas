@@ -16,7 +16,7 @@ export function WhatsappCta() {
           href={`https://wa.me/${WHATSAPP}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex h-12 shrink-0 items-center gap-2 rounded-full bg-[var(--jc-whatsapp)] px-6 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
+          className="jc-shine-cta inline-flex h-12 shrink-0 items-center gap-2 rounded-full bg-[var(--jc-whatsapp)] px-6 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
         >
           <MessageCircle className="size-5" />
           Chamar no WhatsApp

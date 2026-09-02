@@ -6,6 +6,7 @@ import { Collections } from "@/components/loja/collections";
 import { Benefits } from "@/components/loja/benefits";
 import { Faq } from "@/components/loja/faq";
 import { WhatsappCta } from "@/components/loja/whatsapp-cta";
+import { Reveal } from "@/components/loja/reveal";
 
 export default function Home() {
   return (
@@ -13,11 +14,15 @@ export default function Home() {
       <Hero />
       <CategoryTiles />
       <FeaturedProducts />
-      <CartaozinhoSignature />
+      <Reveal>
+        <CartaozinhoSignature />
+      </Reveal>
       <Collections />
       <Benefits />
       <Faq />
-      <WhatsappCta />
+      <Reveal>
+        <WhatsappCta />
+      </Reveal>
     </>
   );
 }

@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { featuredProducts } from "@/lib/mock-content";
+import { Reveal } from "./reveal";
 
 export function CategoryTiles() {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <Reveal className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <h2 className="font-display text-2xl text-foreground">
         As 5 cestas da Juliana Present
       </h2>
@@ -15,7 +16,7 @@ export function CategoryTiles() {
             href={`/produto/${product.slug}`}
             className="group w-32 shrink-0 snap-start sm:w-auto"
           >
-            <div className="relative aspect-square overflow-hidden rounded-card">
+            <div className="jc-glow-card relative aspect-square overflow-hidden rounded-card">
               <Image
                 src={product.image}
                 alt={product.name}
@@ -33,6 +34,6 @@ export function CategoryTiles() {
           </Link>
         ))}
       </div>
-    </section>
+    </Reveal>
   );
 }
