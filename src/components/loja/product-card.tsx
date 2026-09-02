@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Star } from "lucide-react";
 import type { Product } from "@/lib/mock-content";
 
 const currency = new Intl.NumberFormat("pt-BR", {
@@ -33,30 +32,10 @@ export function ProductCard({ product }: { product: Product }) {
         <p className="text-[15px] font-semibold text-foreground">
           {product.name}
         </p>
-
-        {product.rating ? (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Star className="size-3.5 fill-[var(--jc-gold)] text-[var(--jc-gold)]" />
-            <span>{product.rating.toFixed(1)}</span>
-            <span>({product.reviewCount})</span>
-          </div>
-        ) : null}
-
-        <div className="flex items-baseline gap-2 pt-0.5">
-          <span className="text-lg font-bold tabular-nums text-foreground">
-            {currency.format(product.price)}
-          </span>
-          {product.compareAtPrice ? (
-            <span className="text-sm tabular-nums text-muted-foreground line-through">
-              {currency.format(product.compareAtPrice)}
-            </span>
-          ) : null}
-        </div>
-        {product.installments ? (
-          <p className="text-xs text-muted-foreground">
-            {product.installments}
-          </p>
-        ) : null}
+        <p className="text-xs text-muted-foreground">{product.serves}</p>
+        <p className="pt-0.5 text-lg font-bold tabular-nums text-foreground">
+          {currency.format(product.price)}
+        </p>
       </div>
     </Link>
   );

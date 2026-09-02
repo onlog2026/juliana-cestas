@@ -16,7 +16,7 @@ export function CartaozinhoSignature() {
             Monte o cartãozinho da sua cesta
           </h2>
           <p className="mt-3 max-w-md text-muted-foreground">
-            Toda cesta Juliana Cestas vai com um cartão de mensagem. Escreva
+            Toda cesta Juliana Present vai com um cartão de mensagem. Escreva
             para quem vai receber e veja o cartão ganhar forma, ali na tela.
           </p>
 
@@ -62,7 +62,7 @@ export function CartaozinhoSignature() {
               Para {name || "quem você ama"}, com carinho.
             </p>
             <p className="mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">
-              Juliana Cestas
+              Juliana Present
             </p>
           </div>
         </div>

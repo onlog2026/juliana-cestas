@@ -1,14 +1,11 @@
 import Link from "next/link";
 import { Search, User, ShoppingBag } from "lucide-react";
+import { featuredProducts } from "@/lib/mock-content";
 
-const categoryLinks = [
-  { href: "/categoria/cafe-da-manha", label: "Café da manhã" },
-  { href: "/categoria/romantico", label: "Românticas" },
-  { href: "/categoria/aniversario", label: "Aniversário" },
-  { href: "/categoria/corporativo", label: "Corporativo" },
-  { href: "/categoria/infantil", label: "Infantil" },
-  { href: "/categoria/cha-da-tarde", label: "Chá da tarde" },
-];
+const categoryLinks = featuredProducts.map((product) => ({
+  href: `/produto/${product.slug}`,
+  label: product.name,
+}));
 
 export function SiteHeader() {
   return (
@@ -18,7 +15,7 @@ export function SiteHeader() {
           href="/"
           className="shrink-0 font-display text-2xl text-primary"
         >
-          Juliana Cestas
+          Juliana Present
         </Link>
 
         <label className="relative hidden flex-1 max-w-md md:block">

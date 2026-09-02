@@ -17,9 +17,9 @@ const youngSerif = Young_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Juliana Cestas | Cestas de café da manhã em Brasília",
+  title: "Juliana Present | Cestas de café da manhã em Brasília",
   description:
-    "Cestas de café da manhã, presentes e kits comemorativos com entrega em Brasília. Cada cesta vai com um cartão de mensagem personalizado.",
+    "Detalhes que encantam, sabores que emocionam, amor que se celebra. Cestas de café da manhã artesanais em Brasília, com cartão de mensagem personalizado em cada pedido.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -8,7 +8,7 @@ export function Hero() {
         <div className="relative aspect-[4/5] overflow-hidden rounded-card md:order-1">
           <Image
             src="/images/produtos/cesta-cafe-completo.png"
-            alt="Cesta de café da manhã Juliana Cestas, com pães, frutas e mel, amarrada com fita verde"
+            alt="Cesta de café da manhã Juliana Present, com pães, frutas e mel, amarrada com fita verde"
             fill
             priority
             sizes="(min-width: 768px) 45vw, 100vw"
