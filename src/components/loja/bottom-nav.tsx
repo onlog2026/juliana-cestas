@@ -1,13 +1,12 @@
 import Link from "next/link";
-import { Home, Search, ShoppingBag, User, MessageCircle } from "lucide-react";
+import { Home, ShoppingBasket, Package, MessageCircle } from "lucide-react";
 
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
 
 const items = [
   { href: "/", label: "Início", icon: Home },
-  { href: "/busca", label: "Buscar", icon: Search },
-  { href: "/carrinho", label: "Carrinho", icon: ShoppingBag },
-  { href: "/minha-conta", label: "Conta", icon: User },
+  { href: "/categoria/cafe-da-manha", label: "Cestas", icon: ShoppingBasket },
+  { href: "/pedido", label: "Meu pedido", icon: Package },
 ];
 
 export function BottomNav() {
