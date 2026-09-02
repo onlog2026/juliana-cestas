@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Search, Package } from "lucide-react";
+import { Search, User } from "lucide-react";
 import { featuredProducts } from "@/lib/mock-content";
 
 const categoryLinks = featuredProducts.map((product) => ({
@@ -41,12 +41,12 @@ export function SiteHeader() {
 
         <nav className="ml-auto hidden items-center gap-2 md:flex">
           <Link
-            href="/pedido"
+            href="/conta"
             className="jc-nav-hover flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-foreground"
-            aria-label="Meu pedido"
+            aria-label="Minha conta"
           >
-            <Package className="size-5" />
-            Meu pedido
+            <User className="size-5" />
+            Minha conta
           </Link>
         </nav>
       </div>

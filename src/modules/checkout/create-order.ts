@@ -12,6 +12,19 @@ import {
 import { generateSlots, isSlotStillAvailable } from "@/modules/delivery/slots";
 import { countWords } from "@/modules/cards/templates";
 import type { CheckoutInput } from "@/modules/checkout/schemas";
+import { sendOrderEmail } from "@/modules/notifications/send";
+import { orderConfirmedEmail } from "@/modules/notifications/templates/order-confirmed";
+import { weekdayOfDateStr } from "@/lib/time/sao-paulo";
+
+const WEEKDAY_LABELS = [
+  "domingo", "segunda-feira", "terça-feira", "quarta-feira",
+  "quinta-feira", "sexta-feira", "sábado",
+];
+
+function formatDeliveryDateLabel(dateStr: string): string {
+  const [, m, d] = dateStr.split("-");
+  return `${WEEKDAY_LABELS[weekdayOfDateStr(dateStr)]}, ${d}/${m}`;
+}
 
 export type CreateOrderResult =
   | { ok: true; orderId: string; number: number; token: string; totalCents: number }
@@ -79,10 +92,29 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
   ];
 
   const supabase = createAdminClient();
+
+  // Encontra ou cria o cliente (por telefone, único por tenant) -- é isso
+  // que depois permite religar o pedido a uma conta de login em /conta.
+  const { data: customer } = await supabase
+    .from("customers")
+    .upsert(
+      {
+        tenant_id: TENANT_ID,
+        phone: input.buyerPhone,
+        name: input.buyerName,
+        email: input.buyerEmail || null,
+        cpf: input.buyerCpf,
+      },
+      { onConflict: "tenant_id,phone" }
+    )
+    .select("id")
+    .single();
+
   const { data, error } = await supabase.rpc("create_order_tx", {
     p: {
       tenant_id: TENANT_ID,
       idempotency_key: input.idempotencyKey,
+      customer_id: customer?.id ?? null,
       buyer_name: input.buyerName,
       buyer_email: input.buyerEmail,
       buyer_phone: input.buyerPhone,
@@ -139,6 +171,26 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
   if (tokenError) {
     return { ok: false, error: "Pedido criado, mas houve falha ao gerar o link de acesso. Fale no WhatsApp." };
   }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  const { subject, html } = orderConfirmedEmail({
+    orderNumber: order.number,
+    buyerName: input.buyerName,
+    recipientName: input.recipientName,
+    deliveryDateLabel: formatDeliveryDateLabel(input.deliveryDate),
+    slotLabel: `${slot.start} e ${slot.end}`,
+    totalCents: quote.totalCents,
+    orderUrl: `${siteUrl}/pedido/${order.id}?t=${token}`,
+  });
+  // Melhor esforço: nunca falha o pedido por causa do e-mail (send.ts já
+  // engole os próprios erros e registra no outbox).
+  await sendOrderEmail({
+    orderId: order.id,
+    type: "order_confirmed",
+    toEmail: input.buyerEmail || null,
+    subject,
+    html,
+  });
 
   return { ok: true, orderId: order.id, number: order.number, token, totalCents: order.total_cents };
 }
