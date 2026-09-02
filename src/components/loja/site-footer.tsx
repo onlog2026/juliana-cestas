@@ -20,7 +20,7 @@ const columns = [
 export function SiteFooter() {
   return (
     <footer className="border-t border-border bg-secondary/60">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.2fr_1fr_1fr] lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr] lg:px-8">
         <div>
           <p className="font-display text-2xl text-primary">Juliana Cestas</p>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
@@ -47,6 +47,23 @@ export function SiteFooter() {
             </ul>
           </div>
         ))}
+        <div>
+          <p className="text-sm font-semibold text-foreground">
+            Endereço e horário
+          </p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            QNL 7 Bloco D, Edifício São Raimundo
+            <br />
+            Brasília, DF
+          </p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Retirada das 8h às 18h
+            <br />
+            Segunda a sábado
+            <br />
+            Domingo (sob agendamento)
+          </p>
+        </div>
       </div>
       <div className="border-t border-border px-4 py-5 text-center text-xs text-muted-foreground sm:px-6 lg:px-8">
         © {new Date().getFullYear()} Juliana Cestas. Brasília, DF.

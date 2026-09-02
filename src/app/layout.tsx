@@ -28,7 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="pt-BR"
       className={`${figtree.variable} ${youngSerif.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-background text-foreground">
+      <body className="flex min-h-full flex-col overflow-x-hidden bg-background text-foreground">
         <noscript>
           <style>{`.jc-reveal{opacity:1!important;transform:none!important}`}</style>
         </noscript>

@@ -268,7 +268,7 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="grid gap-8 lg:grid-cols-[1fr_360px]">
-      <div className="space-y-10">
+      <div className="min-w-0 space-y-10">
         {draftRestored ? (
           <p className="rounded-card border border-border bg-secondary/40 px-4 py-2.5 text-sm text-muted-foreground">
             Recuperamos o que você já tinha preenchido.
@@ -380,7 +380,7 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
                       type="button"
                       disabled={!hasSlot}
                       onClick={() => setSelectedDayIdx(i)}
-                      className={`shrink-0 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors ${
+                      className={`flex shrink-0 items-center rounded-full border px-3.5 py-2.5 text-sm font-medium transition-colors ${
                         i === selectedDayIdx
                           ? "border-primary bg-primary text-primary-foreground"
                           : hasSlot
@@ -394,7 +394,33 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
                 })}
               </div>
 
-              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {/* Mobile: dropdown nativo — a grade de ~48 botões vira uma parede intransponível em telas pequenas */}
+              <div className="mt-3 sm:hidden">
+                <label className="block">
+                  <span className="sr-only">Horário</span>
+                  <select
+                    value={
+                      deliveryDate === days[selectedDayIdx]?.date ? deliverySlotStart || "" : ""
+                    }
+                    onChange={(e) => {
+                      if (e.target.value) pickSlot(days[selectedDayIdx].date, e.target.value);
+                    }}
+                    className={inputClass}
+                  >
+                    <option value="" disabled>
+                      Selecione um horário
+                    </option>
+                    {days[selectedDayIdx]?.slots.map((slot) => (
+                      <option key={slot.start} value={slot.start} disabled={!slot.available}>
+                        {slot.start} – {slot.end}
+                        {!slot.available ? " (indisponível)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="mt-3 hidden gap-2 sm:grid sm:grid-cols-4">
                 {days[selectedDayIdx]?.slots.map((slot) => {
                   const isChosen = deliveryDate === days[selectedDayIdx].date && deliverySlotStart === slot.start;
                   return (
