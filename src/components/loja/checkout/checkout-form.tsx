@@ -493,7 +493,7 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
                 Para {cardRecipient || "quem você ama"}
                 {cardSender ? `, de ${cardSender}` : ""}.
               </p>
-              <p className="mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">Juliana Present</p>
+              <p className="mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">Juliana Cestas</p>
             </div>
           </div>
         </section>

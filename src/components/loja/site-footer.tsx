@@ -11,7 +11,7 @@ const columns = [
   {
     title: "Institucional",
     links: [
-      { href: "/sobre", label: "Sobre a Juliana Present" },
+      { href: "/sobre", label: "Sobre a Juliana Cestas" },
       { href: "/trocas-e-devolucoes", label: "Trocas e entregas" },
     ],
   },
@@ -22,7 +22,7 @@ export function SiteFooter() {
     <footer className="border-t border-border bg-secondary/60">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.2fr_1fr_1fr] lg:px-8">
         <div>
-          <p className="font-display text-2xl text-primary">Juliana Present</p>
+          <p className="font-display text-2xl text-primary">Juliana Cestas</p>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
             Cestas de café da manhã e presentes afetivos, feitos e entregues
             em Brasília.
@@ -49,7 +49,7 @@ export function SiteFooter() {
         ))}
       </div>
       <div className="border-t border-border px-4 py-5 text-center text-xs text-muted-foreground sm:px-6 lg:px-8">
-        © {new Date().getFullYear()} Juliana Present. Brasília, DF.
+        © {new Date().getFullYear()} Juliana Cestas. Brasília, DF.
       </div>
     </footer>
   );

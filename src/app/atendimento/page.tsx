@@ -5,8 +5,8 @@ import { ChevronRight, MessageCircle } from "lucide-react";
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
 
 export const metadata: Metadata = {
-  title: "Atendimento | Juliana Present",
-  description: "Fale com a Juliana Present pelo WhatsApp para pedidos, dúvidas e acompanhamento.",
+  title: "Atendimento | Juliana Cestas",
+  description: "Fale com a Juliana Cestas pelo WhatsApp para pedidos, dúvidas e acompanhamento.",
 };
 
 export default function AtendimentoPage() {
@@ -27,7 +27,7 @@ export default function AtendimentoPage() {
         Atendimento
       </h1>
       <p className="mt-4 text-muted-foreground">
-        Todo o atendimento da Juliana Present — pedido novo, dúvida sobre uma
+        Todo o atendimento da Juliana Cestas — pedido novo, dúvida sobre uma
         cesta, acompanhamento de entrega — é feito diretamente pelo WhatsApp.
       </p>
 

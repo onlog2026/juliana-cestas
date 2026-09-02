@@ -5,8 +5,8 @@ import { ChevronRight, MessageCircle } from "lucide-react";
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
 
 export const metadata: Metadata = {
-  title: "Meu pedido | Juliana Present",
-  description: "Como acompanhar o seu pedido na Juliana Present.",
+  title: "Meu pedido | Juliana Cestas",
+  description: "Como acompanhar o seu pedido na Juliana Cestas.",
 };
 
 export default function PedidoPage() {
@@ -28,7 +28,7 @@ export default function PedidoPage() {
       </h1>
       <p className="mt-4 text-muted-foreground">
         Hoje os pedidos são combinados diretamente pelo WhatsApp — assim que
-        você encomenda, a Juliana Present confirma tudo por lá: cesta,
+        você encomenda, a Juliana Cestas confirma tudo por lá: cesta,
         cartão, entrega e pagamento. É por essa mesma conversa que você
         acompanha o andamento do seu pedido.
       </p>

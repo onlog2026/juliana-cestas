@@ -6,7 +6,7 @@ import { getOrderByToken } from "@/modules/orders/service";
 import { getCardTemplate } from "@/modules/cards/templates";
 import { formatCents } from "@/lib/money";
 
-export const metadata: Metadata = { title: "Seu pedido | Juliana Present" };
+export const metadata: Metadata = { title: "Seu pedido | Juliana Cestas" };
 
 const weekdayNames = [
   "domingo",
@@ -105,7 +105,7 @@ export default async function PedidoPage(
           Para {order.card_recipient}
           {order.card_sender ? `, de ${order.card_sender}` : ""}.
         </p>
-        <p className="mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">Juliana Present</p>
+        <p className="mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">Juliana Cestas</p>
       </div>
 
       <div className="mt-6 rounded-card border border-primary/30 bg-accent p-5">

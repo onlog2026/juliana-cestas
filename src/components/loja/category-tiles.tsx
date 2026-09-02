@@ -7,7 +7,7 @@ export function CategoryTiles() {
   return (
     <Reveal className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <h2 className="font-display text-2xl text-foreground">
-        As 5 cestas da Juliana Present
+        As 5 cestas da Juliana Cestas
       </h2>
       <div className="mt-5 flex snap-x gap-4 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible lg:grid-cols-5">
         {featuredProducts.map((product) => (

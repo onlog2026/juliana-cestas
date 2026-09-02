@@ -31,7 +31,7 @@ export async function generateMetadata(
   if (!product) return {};
 
   return {
-    title: `${product.name} | Juliana Present`,
+    title: `${product.name} | Juliana Cestas`,
     description: `${product.name} — ${product.serves}, ${currency.format(product.price)}. ${product.packaging}`,
   };
 }

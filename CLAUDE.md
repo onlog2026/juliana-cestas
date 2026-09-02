@@ -6,7 +6,7 @@
 > O bloco `@AGENTS.md` acima é gerado pelo Next 16: as APIs mudaram em relação ao Next 15. Antes de escrever código, ler o guia em `node_modules/next/dist/docs/`.
 
 ## Identidade
-- **Nome REAL da marca: "Juliana Present"** (não "Juliana Cestas" — isso era só o nome provisório da pasta na Fase 0). Confirmado em 2026-09-02 pelo material real da cliente (Canva + fotos WhatsApp). Nome da pasta do projeto continua `Juliana Cestas` só por histórico, sem trocar (mexe em caminho/URLs do repo).
+- **Nome REAL da marca: "Juliana Cestas"** (não "Juliana Present" — essa troca foi um erro de uma sessão anterior, que presumiu incorretamente que "Present" era o nome confirmado; revertido em 2026-09-02 por correção explícita do dono do projeto). Nome da pasta do projeto (`Juliana Cestas`) sempre esteve certo — não é provisório, é a marca real.
 - **Slogan real:** "Detalhes que encantam, sabores que emocionam, amor que se celebra!"
 - **WhatsApp real da loja:** (61) 99889-4889 → `5561998894889` (já configurado em `NEXT_PUBLIC_WHATSAPP`).
 - **Catálogo real (5 cestas, confirmado, não é mais exemplo):** Enquanto R$179,90 (1 pessoa) · Afeto R$189,90 (1 pessoa) · Essência R$289,90 (1 pessoa) · Aconchego R$359,90 (2 pessoas) · Memorável R$489,90 (2-3 pessoas, + R$49,90 vinho opcional). Itens de cada uma em `src/lib/mock-content.ts`. Fonte: catálogo Canva que a cliente enviou (`docs/CATALOGO-REAL-CLIENTE.md` guarda o link e o resumo).
@@ -73,6 +73,6 @@ Next.js 16 (App Router, TypeScript, `src/`, Turbopack) · React 19 · Tailwind v
 - `docs/CATALOGO-REAL-CLIENTE.md` — catálogo real (5 cestas), fonte Canva da cliente.
 - `docs/EFEITOS-PREMIUM.md` — biblioteca de efeitos visuais (hover glow, brilho, scroll reveal, logo
   animada), com prompt pronto pra reusar em outros projetos. Técnica extraída do Agentop, recolorida
-  pra Juliana Present. Classes `jc-glow-card`/`jc-shine-cta`/`jc-reveal`/`jc-pop`/`jc-nav-hover` em
+  pra Juliana Cestas. Classes `jc-glow-card`/`jc-shine-cta`/`jc-reveal`/`jc-pop`/`jc-nav-hover` em
   `src/app/globals.css`; componente `<Reveal>` em `src/components/loja/reveal.tsx`.
 - `docs/OPERACAO.md` — como a Juliana opera a loja (criado na Fase 5).

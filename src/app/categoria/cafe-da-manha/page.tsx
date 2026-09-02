@@ -8,9 +8,9 @@ import { WhatsappCta } from "@/components/loja/whatsapp-cta";
 import { Reveal } from "@/components/loja/reveal";
 
 export const metadata: Metadata = {
-  title: "Cestas de café da manhã em Brasília | Juliana Present",
+  title: "Cestas de café da manhã em Brasília | Juliana Cestas",
   description:
-    "As 5 cestas de café da manhã da Juliana Present: Enquanto, Afeto, Essência, Aconchego e Memorável. Feitas à mão, com cartão de mensagem personalizado.",
+    "As 5 cestas de café da manhã da Juliana Cestas: Enquanto, Afeto, Essência, Aconchego e Memorável. Feitas à mão, com cartão de mensagem personalizado.",
 };
 
 export default function CategoriaCafeDaManhaPage() {
@@ -28,7 +28,7 @@ export default function CategoriaCafeDaManhaPage() {
         Cestas de café da manhã
       </h1>
       <p className="mt-2 max-w-2xl text-muted-foreground">
-        As 5 cestas da Juliana Present, montadas à mão em Brasília. Cada uma
+        As 5 cestas da Juliana Cestas, montadas à mão em Brasília. Cada uma
         acompanha cartão de mensagem personalizado, do jeitinho que a pessoa
         que vai receber merece.
       </p>

@@ -23,7 +23,7 @@ export function SiteHeader() {
             height={34}
             className="h-[34px] w-[38px] shrink-0"
           />
-          Juliana Present
+          Juliana Cestas
         </Link>
 
         <label className="relative hidden flex-1 max-w-md md:block">

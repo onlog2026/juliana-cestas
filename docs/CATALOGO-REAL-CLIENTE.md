@@ -1,11 +1,11 @@
-# Catálogo real da Juliana Present
+# Catálogo real da Juliana Cestas
 
 Fonte: material enviado pela cliente em 2026-09-02 (Canva "Dia das mães cesta presente story do instagram", 7 páginas) + fotos por WhatsApp.
 
 Link do Canva (visualização): https://www.canva.com/design/DAHHq5R0iaM/Py1q5-QtBVdHFnu-GgXpQg/view
 
 ## Marca
-- Nome: **Juliana Present**
+- Nome: **Juliana Cestas**
 - Slogan: "Detalhes que encantam, sabores que emocionam, amor que se celebra!"
 - WhatsApp: (61) 99889-4889
 

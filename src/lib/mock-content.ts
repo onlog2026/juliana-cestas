@@ -1,5 +1,5 @@
-// Catálogo real da Juliana Present, extraído do material que ela enviou
-// (Canva "Cestas de Café da Manhã — Juliana Present", 2026-09-02).
+// Catálogo real da Juliana Cestas, extraído do material que ela enviou
+// (Canva "Cestas de Café da Manhã — Juliana Cestas", 2026-09-02).
 // Preços e descrições são REAIS. Fotos em public/images/produtos/ também são
 // reais (WhatsApp da cliente); o vínculo foto->produto é uma escolha nossa
 // (a melhor combinação visual disponível), não veio confirmado item a item.
@@ -182,7 +182,7 @@ export const benefits = [
   },
   {
     title: "Atendimento no WhatsApp",
-    description: "Fale direto com a Juliana Present.",
+    description: "Fale direto com a Juliana Cestas.",
     icon: "Headset" as const,
   },
 ];

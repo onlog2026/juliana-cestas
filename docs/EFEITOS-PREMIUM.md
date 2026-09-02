@@ -1,7 +1,7 @@
 # Biblioteca de efeitos premium — prompts prontos para reusar em outro projeto
 
 Estes efeitos foram extraídos do código real do Agentop (`apd-clinical-saas/src/index.css`) e adaptados
-para a paleta da Juliana Present (verde-cerrado `#1f4d3a` + ipê-amarelo `#d9a441`). Estão implementados
+para a paleta da Juliana Cestas (verde-cerrado `#1f4d3a` + ipê-amarelo `#d9a441`). Estão implementados
 neste projeto em `src/app/globals.css` (classes `jc-*`) e em `src/components/loja/reveal.tsx`.
 
 Para usar em **outro projeto**: copie o bloco "Prompt para colar no Claude Code" de cada efeito abaixo,
@@ -263,7 +263,7 @@ legenda/CTA fica numa faixa própria abaixo da foto — nunca escrita em cima da
 
 ---
 
-## Onde cada efeito está aplicado neste projeto (Juliana Present)
+## Onde cada efeito está aplicado neste projeto (Juliana Cestas)
 
 | Efeito | Classe | Onde |
 |---|---|---|
@@ -275,4 +275,4 @@ legenda/CTA fica numa faixa própria abaixo da foto — nunca escrita em cima da
 | Logo com luz viajante | — | `public/logo/juliana-present-icon.svg` |
 
 Origem técnica: `apd-clinical-saas/src/index.css` (Agentop), auditado em 2026-09-02. Cores trocadas de
-azul/rosa neon pra verde-cerrado/ipê-amarelo — a técnica é a mesma, a paleta é da Juliana Present.
+azul/rosa neon pra verde-cerrado/ipê-amarelo — a técnica é a mesma, a paleta é da Juliana Cestas.
