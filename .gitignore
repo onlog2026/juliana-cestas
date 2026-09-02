@@ -45,3 +45,6 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# script local de dev (gerado, caminho absoluto desta maquina)
+dev.cmd

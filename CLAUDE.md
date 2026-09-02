@@ -15,9 +15,9 @@
 |---|---|---|
 | Pasta | `C:\Users\user\Downloads\Juliana Cestas` | tem espaço no nome: sempre entre aspas |
 | GitHub | `contatoagentop/juliana-cestas` (privado) | credencial só no terminal do dono |
-| Supabase project ID | `A_DEFINIR` | conferir caractere a caractere antes de `execute_sql` |
-| Supabase org | `A_DEFINIR` | |
-| Vercel projeto | `juliana-cestas` · projectId `prj_Ppn51mgLxal3TAyh2YekqeKAyCpb` · team `team_161MBNwIA4M4AhKydZ8b4waD` | conta `adrianorosa2012-3315s-projects` (CLI já logada). GitHub ainda NÃO conectado (falta autorizar o app da Vercel em `contatoagentop`) |
+| Supabase project ID | `oygizajevizwhiymgsly` | URL `https://oygizajevizwhiymgsly.supabase.co` · região sa-east-1 (São Paulo) · plano Free. Conferir caractere a caractere antes de `execute_sql` |
+| Supabase org | `Juliana Cestas` (Free) — org id a conferir no dashboard | conta Supabase = `contatoagentop` (Google). Outras orgs dessa conta: `agentop` (Pro, kbdghebozdwyqozoldso) e `jarvis` (Free, lnndplsyudulsigkiybv). O MCP do Supabase desta máquina está em OUTRA conta (org adrianorosa2012, só Fácilbicas): não usar o MCP para este projeto até reconectar |
+| Vercel projeto | `juliana-cestas` | conta `contatoagentop-5784` (Hobby, mesma do GitHub). Deploy automático a cada push em `main`. Primeiro deploy OK: `juliana-cestas-dzwbg87bl-contatoagentop-5784s-projects.vercel.app`. CLI local (`vercel`) ainda está logada como `adrianorosa2012-3315` — não usar `vercel --prod` até rodar `vercel login` nesta conta |
 | Domínio | `A_DEFINIR` | |
 | Asaas | sandbox (`https://api-sandbox.asaas.com`) | chave de produção só quando o dono publicar |
 

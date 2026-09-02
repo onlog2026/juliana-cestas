@@ -1,6 +1,17 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "dev", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev"], "port": 3000 }
+    {
+      "name": "dev",
+      "runtimeExecutable": "C:/Users/user/Downloads/Juliana Cestas/dev.cmd",
+      "runtimeArgs": [],
+      "port": 3010
+    },
+    {
+      "name": "juliana-cestas",
+      "runtimeExecutable": "C:/Users/user/Downloads/Juliana Cestas/dev.cmd",
+      "runtimeArgs": [],
+      "port": 3010
+    }
   ]
 }
