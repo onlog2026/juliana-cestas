@@ -48,3 +48,7 @@ next-env.d.ts
 
 # script local de dev (gerado, caminho absoluto desta maquina)
 dev.cmd
+
+# fotos brutas enviadas pelo WhatsApp (originais ficam so localmente;
+# as usadas de verdade sao copiadas com nome limpo pra public/images/produtos)
+Banners/

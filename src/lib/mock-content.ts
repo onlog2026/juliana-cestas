@@ -1,6 +1,7 @@
 // Conteúdo de exemplo para a Home — pendente de catálogo real da Juliana.
-// Preços, nomes de produto e fotos aqui são placeholders para aprovação
-// visual do cliente; nenhum dado real de estoque ou pagamento depende disto.
+// Fotos em public/images/produtos/ são reais (enviadas pelo cliente em 2026-09-02),
+// mas nomes de produto, preços e vínculo foto->produto ainda são EXEMPLO para
+// aprovação visual; nenhum dado real de estoque ou pagamento depende disto.
 
 export type Product = {
   id: string;
@@ -22,16 +23,15 @@ export type Category = {
   image: string;
 };
 
-const img = (seed: string, w = 900, h = 1125) =>
-  `https://picsum.photos/seed/${seed}/${w}/${h}`;
+const p = (file: string) => `/images/produtos/${file}`;
 
 export const categories: Category[] = [
-  { slug: "cafe-da-manha", name: "Café da manhã", image: img("jc-cat-cafe") },
-  { slug: "romantico", name: "Românticas", image: img("jc-cat-romantico") },
-  { slug: "aniversario", name: "Aniversário", image: img("jc-cat-aniversario") },
-  { slug: "corporativo", name: "Corporativo", image: img("jc-cat-corporativo") },
-  { slug: "infantil", name: "Infantil", image: img("jc-cat-infantil") },
-  { slug: "cha-da-tarde", name: "Chá da tarde", image: img("jc-cat-cha") },
+  { slug: "cafe-da-manha", name: "Café da manhã", image: p("cesta-doce-manha.jpeg") },
+  { slug: "romantico", name: "Românticas", image: p("cesta-romance-ao-amanhecer.jpeg") },
+  { slug: "aniversario", name: "Aniversário", image: p("cesta-aniversario-especial.jpeg") },
+  { slug: "corporativo", name: "Corporativo", image: p("cesta-presente-corporativo.jpeg") },
+  { slug: "infantil", name: "Infantil", image: p("cesta-cafe-completo.png") },
+  { slug: "cha-da-tarde", name: "Chá da tarde", image: p("cesta-cha-da-tarde.jpeg") },
 ];
 
 export const featuredProducts: Product[] = [
@@ -44,7 +44,7 @@ export const featuredProducts: Product[] = [
     rating: 4.9,
     reviewCount: 32,
     badge: "Mais pedida",
-    image: img("jc-prod-cafe-completo"),
+    image: p("cesta-cafe-completo.png"),
     categorySlug: "cafe-da-manha",
   },
   {
@@ -55,7 +55,7 @@ export const featuredProducts: Product[] = [
     installments: "em até 4x sem juros",
     rating: 5,
     reviewCount: 18,
-    image: img("jc-prod-romance"),
+    image: p("cesta-romance-ao-amanhecer.jpeg"),
     categorySlug: "romantico",
   },
   {
@@ -68,7 +68,7 @@ export const featuredProducts: Product[] = [
     rating: 4.8,
     reviewCount: 41,
     badge: "Oferta",
-    image: img("jc-prod-doce-manha"),
+    image: p("cesta-doce-manha.jpeg"),
     categorySlug: "cafe-da-manha",
   },
   {
@@ -79,7 +79,7 @@ export const featuredProducts: Product[] = [
     installments: "em até 4x sem juros",
     rating: 4.9,
     reviewCount: 12,
-    image: img("jc-prod-corporativo"),
+    image: p("cesta-presente-corporativo.jpeg"),
     categorySlug: "corporativo",
   },
   {
@@ -90,7 +90,7 @@ export const featuredProducts: Product[] = [
     installments: "em até 3x sem juros",
     rating: 4.7,
     reviewCount: 27,
-    image: img("jc-prod-aniversario"),
+    image: p("cesta-aniversario-especial.jpeg"),
     categorySlug: "aniversario",
   },
   {
@@ -101,13 +101,13 @@ export const featuredProducts: Product[] = [
     installments: "em até 3x sem juros",
     rating: 5,
     reviewCount: 9,
-    image: img("jc-prod-cha"),
+    image: p("cesta-cha-da-tarde.jpeg"),
     categorySlug: "cha-da-tarde",
   },
 ];
 
 export const collectionPresentes: Product[] = featuredProducts.filter(
-  (p) => p.price <= 200
+  (item) => item.price <= 200
 );
 
 export const faqItems = [

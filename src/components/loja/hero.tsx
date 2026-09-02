@@ -7,8 +7,8 @@ export function Hero() {
       <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 md:grid-cols-2 md:gap-12 md:py-16 lg:px-8">
         <div className="relative aspect-[4/5] overflow-hidden rounded-card md:order-1">
           <Image
-            src="https://picsum.photos/seed/jc-hero-cesta/1000/1250"
-            alt="Cesta de café da manhã Juliana Cestas, com pães, frutas e um cartão de mensagem"
+            src="/images/produtos/cesta-cafe-completo.png"
+            alt="Cesta de café da manhã Juliana Cestas, com pães, frutas e mel, amarrada com fita verde"
             fill
             priority
             sizes="(min-width: 768px) 45vw, 100vw"
