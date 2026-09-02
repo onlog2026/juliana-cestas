@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TENANT_ID } from "@/lib/tenant";
+import type { Product } from "@/lib/mock-content";
 
 export type DbProduct = {
   id: string;
@@ -21,6 +22,38 @@ export type DbProductAddon = {
   name: string;
   price_cents: number;
 };
+
+/** Catálogo público (home, categoria, página de produto) — vem sempre do banco. */
+export async function getAllProducts(): Promise<Product[]> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from("products")
+    .select("id, slug, name, serves, size, price_cents, items, packaging, image_url, badge")
+    .eq("tenant_id", TENANT_ID)
+    .eq("active", true)
+    .order("sort_order", { ascending: true });
+
+  if (error || !data) return [];
+
+  return data.map((p) => ({
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    serves: p.serves ?? "",
+    size: p.size ?? "",
+    price: p.price_cents / 100,
+    items: p.items ?? [],
+    packaging: p.packaging ?? "",
+    image: p.image_url ?? "",
+    badge: p.badge ?? undefined,
+  }));
+}
+
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  const products = await getAllProducts();
+  return products.find((p) => p.slug === slug) ?? null;
+}
 
 export async function getProductForCheckout(slug: string) {
   const supabase = createAdminClient();

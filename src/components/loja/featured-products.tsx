@@ -1,8 +1,9 @@
-import { featuredProducts } from "@/lib/mock-content";
+import { getAllProducts } from "@/modules/catalog/service";
 import { ProductCard } from "./product-card";
 import { Reveal } from "./reveal";
 
-export function FeaturedProducts() {
+export async function FeaturedProducts() {
+  const featuredProducts = await getAllProducts();
   return (
     <section
       id="mais-pedidas"

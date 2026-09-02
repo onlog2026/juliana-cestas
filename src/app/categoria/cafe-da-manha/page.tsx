@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { featuredProducts } from "@/lib/mock-content";
+import { getAllProducts } from "@/modules/catalog/service";
 import { ProductCard } from "@/components/loja/product-card";
 import { Faq } from "@/components/loja/faq";
 import { WhatsappCta } from "@/components/loja/whatsapp-cta";
 import { Reveal } from "@/components/loja/reveal";
+
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Cestas de café da manhã em Brasília | Juliana Cestas",
@@ -13,7 +15,8 @@ export const metadata: Metadata = {
     "As 5 cestas de café da manhã da Juliana Cestas: Enquanto, Afeto, Essência, Aconchego e Memorável. Feitas à mão, com cartão de mensagem personalizado.",
 };
 
-export default function CategoriaCafeDaManhaPage() {
+export default async function CategoriaCafeDaManhaPage() {
+  const featuredProducts = await getAllProducts();
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-muted-foreground">

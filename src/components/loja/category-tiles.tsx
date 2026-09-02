@@ -1,9 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { featuredProducts } from "@/lib/mock-content";
+import { getAllProducts } from "@/modules/catalog/service";
 import { Reveal } from "./reveal";
 
-export function CategoryTiles() {
+export async function CategoryTiles() {
+  const featuredProducts = await getAllProducts();
   return (
     <Reveal className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <h2 className="font-display text-2xl text-foreground">

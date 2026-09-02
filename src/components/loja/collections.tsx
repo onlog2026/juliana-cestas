@@ -1,12 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { collectionPresentes, featuredProducts } from "@/lib/mock-content";
+import { collectionPresentes } from "@/lib/mock-content";
+import { getProductBySlug } from "@/modules/catalog/service";
 import { ProductCard } from "./product-card";
 import { Reveal } from "./reveal";
 
-export function Collections() {
-  const featured = featuredProducts.find((product) => product.id === "memoravel");
+export async function Collections() {
+  const featured = await getProductBySlug("cesta-memoravel");
 
   return (
     <Reveal className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">

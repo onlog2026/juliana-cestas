@@ -3,10 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight, Check, MessageCircle } from "lucide-react";
-import { featuredProducts } from "@/lib/mock-content";
+import { getAllProducts, getProductBySlug } from "@/modules/catalog/service";
 import { ProductCard } from "@/components/loja/product-card";
 import { CartaozinhoSignature } from "@/components/loja/cartaozinho-signature";
 import { Reveal } from "@/components/loja/reveal";
+
+export const revalidate = 300;
 
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
 
@@ -15,19 +17,16 @@ const currency = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 });
 
-function getProduct(slug: string) {
-  return featuredProducts.find((item) => item.slug === slug);
-}
-
-export function generateStaticParams() {
-  return featuredProducts.map((product) => ({ slug: product.slug }));
+export async function generateStaticParams() {
+  const products = await getAllProducts();
+  return products.map((product) => ({ slug: product.slug }));
 }
 
 export async function generateMetadata(
   props: PageProps<"/produto/[slug]">
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const product = getProduct(slug);
+  const product = await getProductBySlug(slug);
   if (!product) return {};
 
   return {
@@ -40,13 +39,14 @@ export default async function ProdutoPage(
   props: PageProps<"/produto/[slug]">
 ) {
   const { slug } = await props.params;
-  const product = getProduct(slug);
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
 
   const whatsappMessage = encodeURIComponent(
     `Olá! Quero encomendar a ${product.name} (${currency.format(product.price)}).`
   );
-  const outrasCestas = featuredProducts.filter((item) => item.id !== product.id);
+  const allProducts = await getAllProducts();
+  const outrasCestas = allProducts.filter((item) => item.id !== product.id);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

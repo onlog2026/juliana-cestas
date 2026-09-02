@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { Search, User } from "lucide-react";
-import { featuredProducts } from "@/lib/mock-content";
+import { getAllProducts } from "@/modules/catalog/service";
 
-const categoryLinks = featuredProducts.map((product) => ({
-  href: `/produto/${product.slug}`,
-  label: product.name,
-}));
+export async function SiteHeader() {
+  const products = await getAllProducts();
+  const categoryLinks = products.map((product) => ({
+    href: `/produto/${product.slug}`,
+    label: product.name,
+  }));
 
-export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-saturate-150">
       <div className="mx-auto flex h-18 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
