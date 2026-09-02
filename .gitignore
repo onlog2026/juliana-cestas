@@ -50,8 +50,11 @@ next-env.d.ts
 dev.cmd
 
 # fotos brutas enviadas pelo WhatsApp (originais ficam so localmente;
-# as usadas de verdade sao copiadas com nome limpo pra public/images/produtos)
-Banners/
+# as usadas de verdade sao copiadas com nome limpo pra public/images/produtos e
+# public/images/banners). Ancorado na raiz (/Banners/) -- sem a barra inicial
+# essa regra tambem batia em public/images/banners/ no Windows (case-insensitive)
+# e as imagens dos banners nunca eram commitadas. Ja aconteceu, nao repetir.
+/Banners/
 
 # logo bruto enviado pela cliente (jpg/png/svg originais ficam so localmente;
 # a versao usada de verdade e o icone recortado em public/logo/)
