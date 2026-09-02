@@ -17,7 +17,7 @@
 | GitHub | `contatoagentop/juliana-cestas` (privado) | credencial só no terminal do dono |
 | Supabase project ID | `oygizajevizwhiymgsly` | URL `https://oygizajevizwhiymgsly.supabase.co` · região sa-east-1 (São Paulo) · plano Free. Conferir caractere a caractere antes de `execute_sql` |
 | Supabase org | `Juliana Cestas` (Free) — org id a conferir no dashboard | conta Supabase = `contatoagentop` (Google). Outras orgs dessa conta: `agentop` (Pro, kbdghebozdwyqozoldso) e `jarvis` (Free, lnndplsyudulsigkiybv). O MCP do Supabase desta máquina está em OUTRA conta (org adrianorosa2012, só Fácilbicas): não usar o MCP para este projeto até reconectar |
-| Vercel projeto | `juliana-cestas` | conta `contatoagentop-5784` (Hobby, mesma do GitHub). Deploy automático a cada push em `main`. Primeiro deploy OK: `juliana-cestas-dzwbg87bl-contatoagentop-5784s-projects.vercel.app`. CLI local (`vercel`) ainda está logada como `adrianorosa2012-3315` — não usar `vercel --prod` até rodar `vercel login` nesta conta |
+| Vercel projeto | `juliana-cestas` | conta `contatoagentop-5784` (Hobby). Primeiro deploy (import direto) OK. Deploy automático por push está BLOQUEADO: commits autenticados como `adrianorosa2012@gmail.com` (GitHub `adrianrosa1`) não são reconhecidos como colaborador no Hobby — decisão do dono: repo público, upgrade pra Pro, ou trocar o e-mail do commit pelo dono do GitHub `contatoagentop`. Até resolver, publicar via `npx vercel --prod` direto da pasta (precisa `vercel login` na conta certa) |
 | Domínio | `A_DEFINIR` | |
 | Asaas | sandbox (`https://api-sandbox.asaas.com`) | chave de produção só quando o dono publicar |
 
