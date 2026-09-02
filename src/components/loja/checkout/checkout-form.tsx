@@ -34,10 +34,19 @@ function newIdempotencyKey(): string {
 }
 
 const weekdayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const monthNames = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
 
 function formatDayLabel(dateStr: string, weekday: number) {
   const [, m, d] = dateStr.split("-");
   return `${weekdayNames[weekday]} ${d}/${m}`;
+}
+
+function formatDayOnlyLabel(dateStr: string, weekday: number) {
+  const [, , d] = dateStr.split("-");
+  return `${weekdayNames[weekday]} ${d}`;
 }
 
 export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
@@ -89,6 +98,13 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
             if (value !== undefined) setValue(field as keyof CheckoutInput, value as never);
           });
           setValue("idempotencyKey", idempotencyKeyRef.current);
+          if (draft.values.deliveryDate) {
+            const [y, m] = draft.values.deliveryDate.split("-");
+            setSelectedMonthKey(`${y}-${m}`);
+          }
+          if (draft.values.deliverySlotStart) {
+            setSelectedHour(draft.values.deliverySlotStart.split(":")[0]);
+          }
           setDraftRestored(true);
         }
       }
@@ -170,7 +186,8 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
 
   // ── Horários ─────────────────────────────────────────────────────────────
   const [days, setDays] = useState<DaySlots[] | null>(null);
-  const [selectedDayIdx, setSelectedDayIdx] = useState(0);
+  const [selectedMonthKey, setSelectedMonthKey] = useState("");
+  const [selectedHour, setSelectedHour] = useState("");
 
   useEffect(() => {
     fetch("/api/checkout/slots")
@@ -178,10 +195,13 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
       .then((data) => {
         if (Array.isArray(data.days)) {
           setDays(data.days);
-          const firstOpen = data.days.findIndex(
-            (d: DaySlots) => !d.closed && d.slots.some((s) => s.available)
-          );
-          if (firstOpen >= 0) setSelectedDayIdx(firstOpen);
+          const firstOpen: DaySlots | undefined =
+            data.days.find((d: DaySlots) => !d.closed && d.slots.some((s) => s.available)) ??
+            data.days[0];
+          if (firstOpen) {
+            const [y, m] = firstOpen.date.split("-");
+            setSelectedMonthKey((prev) => prev || `${y}-${m}`);
+          }
         }
       })
       .catch(() => setDays([]));
@@ -189,11 +209,74 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
 
   const deliveryDate = watch("deliveryDate");
   const deliverySlotStart = watch("deliverySlotStart");
+  const selectedMinute = deliverySlotStart ? deliverySlotStart.split(":")[1] : "";
   const chosenDay = days?.find((d) => d.date === deliveryDate);
+
+  const monthOptions = useMemo(() => {
+    if (!days) return [];
+    const seen = new Map<string, string>();
+    for (const day of days) {
+      const [y, m] = day.date.split("-");
+      const key = `${y}-${m}`;
+      if (!seen.has(key)) seen.set(key, `${monthNames[Number(m) - 1]} de ${y}`);
+    }
+    return Array.from(seen.entries()).map(([key, label]) => ({ key, label }));
+  }, [days]);
+
+  const dayOptions = useMemo(() => {
+    if (!days || !selectedMonthKey) return [];
+    return days
+      .filter((d) => d.date.startsWith(selectedMonthKey))
+      .map((d) => ({
+        date: d.date,
+        hasSlot: !d.closed && d.slots.some((s) => s.available),
+        label: formatDayOnlyLabel(d.date, d.weekday),
+      }));
+  }, [days, selectedMonthKey]);
+
+  const hourOptions = useMemo(() => {
+    if (!chosenDay) return [];
+    const byHour = new Map<string, boolean>();
+    for (const slot of chosenDay.slots) {
+      const hour = slot.start.split(":")[0];
+      byHour.set(hour, (byHour.get(hour) ?? false) || slot.available);
+    }
+    return Array.from(byHour.entries()).map(([hour, hasAvailable]) => ({ hour, hasAvailable }));
+  }, [chosenDay]);
+
+  const minuteOptions = useMemo(() => {
+    if (!chosenDay || !selectedHour) return [];
+    return chosenDay.slots
+      .filter((s) => s.start.startsWith(`${selectedHour}:`))
+      .map((s) => ({ minute: s.start.split(":")[1], available: s.available }));
+  }, [chosenDay, selectedHour]);
 
   function pickSlot(date: string, start: string) {
     setValue("deliveryDate", date, { shouldValidate: true });
     setValue("deliverySlotStart", start, { shouldValidate: true });
+  }
+
+  function handleMonthChange(key: string) {
+    setSelectedMonthKey(key);
+    setSelectedHour("");
+    setValue("deliveryDate", "");
+    setValue("deliverySlotStart", "");
+  }
+
+  function handleDayChange(date: string) {
+    setSelectedHour("");
+    setValue("deliveryDate", date, { shouldValidate: true });
+    setValue("deliverySlotStart", "");
+  }
+
+  function handleHourChange(hour: string) {
+    setSelectedHour(hour);
+    setValue("deliverySlotStart", "");
+  }
+
+  function handleMinuteChange(minute: string) {
+    if (!deliveryDate || !selectedHour) return;
+    pickSlot(deliveryDate, `${selectedHour}:${minute}`);
   }
 
   // ── Cartão ───────────────────────────────────────────────────────────────
@@ -371,76 +454,76 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
             <p className="mt-4 text-sm text-muted-foreground">Carregando horários…</p>
           ) : (
             <>
-              <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
-                {days.slice(0, 14).map((day, i) => {
-                  const hasSlot = !day.closed && day.slots.some((s) => s.available);
-                  return (
-                    <button
-                      key={day.date}
-                      type="button"
-                      disabled={!hasSlot}
-                      onClick={() => setSelectedDayIdx(i)}
-                      className={`flex shrink-0 items-center rounded-full border px-3.5 py-2.5 text-sm font-medium transition-colors ${
-                        i === selectedDayIdx
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : hasSlot
-                            ? "border-border bg-card text-foreground hover:bg-accent"
-                            : "cursor-not-allowed border-border bg-secondary/40 text-muted-foreground/50"
-                      }`}
-                    >
-                      {formatDayLabel(day.date, day.weekday)}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Mobile: dropdown nativo — a grade de ~48 botões vira uma parede intransponível em telas pequenas */}
-              <div className="mt-3 sm:hidden">
-                <label className="block">
-                  <span className="sr-only">Horário</span>
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <Field label="Mês">
                   <select
-                    value={
-                      deliveryDate === days[selectedDayIdx]?.date ? deliverySlotStart || "" : ""
-                    }
-                    onChange={(e) => {
-                      if (e.target.value) pickSlot(days[selectedDayIdx].date, e.target.value);
-                    }}
+                    value={selectedMonthKey}
+                    onChange={(e) => handleMonthChange(e.target.value)}
                     className={inputClass}
                   >
-                    <option value="" disabled>
-                      Selecione um horário
-                    </option>
-                    {days[selectedDayIdx]?.slots.map((slot) => (
-                      <option key={slot.start} value={slot.start} disabled={!slot.available}>
-                        {slot.start} – {slot.end}
-                        {!slot.available ? " (indisponível)" : ""}
+                    {monthOptions.map((m) => (
+                      <option key={m.key} value={m.key}>
+                        {m.label}
                       </option>
                     ))}
                   </select>
-                </label>
-              </div>
+                </Field>
 
-              <div className="mt-3 hidden gap-2 sm:grid sm:grid-cols-4">
-                {days[selectedDayIdx]?.slots.map((slot) => {
-                  const isChosen = deliveryDate === days[selectedDayIdx].date && deliverySlotStart === slot.start;
-                  return (
-                    <button
-                      key={slot.start}
-                      type="button"
-                      disabled={!slot.available}
-                      onClick={() => pickSlot(days[selectedDayIdx].date, slot.start)}
-                      className={`rounded-[10px] border px-3 py-2.5 text-sm font-medium transition-colors ${
-                        isChosen
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : slot.available
-                            ? "border-border bg-card text-foreground hover:bg-accent"
-                            : "cursor-not-allowed border-border bg-secondary/30 text-muted-foreground/50 line-through"
-                      }`}
-                    >
-                      {slot.start}
-                    </button>
-                  );
-                })}
+                <Field label="Dia">
+                  <select
+                    value={deliveryDate}
+                    onChange={(e) => handleDayChange(e.target.value)}
+                    disabled={dayOptions.length === 0}
+                    className={inputClass}
+                  >
+                    <option value="" disabled>
+                      Selecione
+                    </option>
+                    {dayOptions.map((day) => (
+                      <option key={day.date} value={day.date} disabled={!day.hasSlot}>
+                        {day.label}
+                        {!day.hasSlot ? " (sem vaga)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                <Field label="Hora">
+                  <select
+                    value={selectedHour}
+                    onChange={(e) => handleHourChange(e.target.value)}
+                    disabled={!deliveryDate}
+                    className={inputClass}
+                  >
+                    <option value="" disabled>
+                      Selecione
+                    </option>
+                    {hourOptions.map(({ hour, hasAvailable }) => (
+                      <option key={hour} value={hour} disabled={!hasAvailable}>
+                        {hour}h{!hasAvailable ? " (sem vaga)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                <Field label="Minuto">
+                  <select
+                    value={selectedMinute}
+                    onChange={(e) => handleMinuteChange(e.target.value)}
+                    disabled={!selectedHour}
+                    className={inputClass}
+                  >
+                    <option value="" disabled>
+                      Selecione
+                    </option>
+                    {minuteOptions.map(({ minute, available }) => (
+                      <option key={minute} value={minute} disabled={!available}>
+                        {minute}
+                        {!available ? " (esgotado)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
               </div>
 
               {errors.deliveryDate ? (
