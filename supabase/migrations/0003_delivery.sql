@@ -62,24 +62,5 @@ do $$ begin
     with check (public.is_staff() and tenant_id = public.current_tenant_id());
 exception when duplicate_object then null; end $$;
 
--- Ocupacao de slots calculada na hora -- nada de pre-gerar linhas de horario.
--- Pedidos "aguardando_pagamento" contam ate expirar (expires_at), depois
--- liberam sozinhos sem precisar de cron.
-create or replace function public.slot_occupancy(p_tenant uuid, p_from date, p_to date)
-returns table (delivery_date date, slot_start time, taken integer)
-language sql stable security definer set search_path = public as $$
-  select delivery_date, delivery_slot_start, count(*)::int
-  from orders
-  where tenant_id = p_tenant
-    and delivery_type = 'delivery'
-    and delivery_date between p_from and p_to
-    and status not in ('cancelado','reembolsado')
-    and (status <> 'aguardando_pagamento' or expires_at > now())
-  group by 1, 2
-$$;
-
--- security definer + PUBLIC executaria com privilegio elevado por padrao;
--- restringe pra so o service role (chamado sempre por route handler, nunca
--- direto pelo navegador do cliente).
-revoke all on function public.slot_occupancy(uuid, date, date) from public, anon, authenticated;
-grant execute on function public.slot_occupancy(uuid, date, date) to service_role;
+-- A funcao slot_occupancy() precisa da tabela `orders`, que so existe depois
+-- de rodar 0004_orders.sql -- ela mora la no final desse arquivo, nao aqui.
