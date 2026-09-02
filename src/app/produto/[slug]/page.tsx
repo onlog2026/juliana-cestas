@@ -90,15 +90,23 @@ export default async function ProdutoPage(
             {currency.format(product.price)}
           </p>
 
-          <a
-            href={`https://wa.me/${WHATSAPP}?text=${whatsappMessage}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="jc-shine-cta mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--jc-whatsapp)] px-7 text-base font-semibold text-white transition-transform active:scale-[0.98] sm:w-auto"
-          >
-            <MessageCircle className="size-5" />
-            Encomendar pelo WhatsApp
-          </a>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href={`/checkout/${product.slug}`}
+              className="jc-shine-cta inline-flex h-12 items-center justify-center rounded-full bg-primary px-7 text-base font-semibold text-primary-foreground transition-transform hover:bg-primary/90 active:scale-[0.98]"
+            >
+              Comprar
+            </Link>
+            <a
+              href={`https://wa.me/${WHATSAPP}?text=${whatsappMessage}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[var(--jc-whatsapp)] px-7 text-base font-semibold text-[var(--jc-whatsapp)] transition-colors hover:bg-[var(--jc-whatsapp)]/10 active:scale-[0.98]"
+            >
+              <MessageCircle className="size-5" />
+              Falar no WhatsApp
+            </a>
+          </div>
 
           <div className="mt-8">
             <h2 className="text-sm font-semibold text-foreground">
