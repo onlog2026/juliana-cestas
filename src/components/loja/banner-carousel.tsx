@@ -3,12 +3,16 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { activeBanners } from "@/lib/banners";
 
 export function BannerCarousel() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const count = activeBanners.length;
+
+  const goPrev = () => setIndex((current) => (current - 1 + count) % count);
+  const goNext = () => setIndex((current) => (current + 1) % count);
 
   useEffect(() => {
     if (count < 2 || paused) return;
@@ -65,6 +69,27 @@ export function BannerCarousel() {
             </Link>
           ))}
         </div>
+
+        {count > 1 ? (
+          <>
+            <button
+              type="button"
+              onClick={goPrev}
+              aria-label="Banner anterior"
+              className="absolute left-2 top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/25 text-white backdrop-blur-sm transition-colors hover:bg-black/45 sm:left-4"
+            >
+              <ChevronLeft className="size-5" />
+            </button>
+            <button
+              type="button"
+              onClick={goNext}
+              aria-label="Próximo banner"
+              className="absolute right-2 top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/25 text-white backdrop-blur-sm transition-colors hover:bg-black/45 sm:right-4"
+            >
+              <ChevronRight className="size-5" />
+            </button>
+          </>
+        ) : null}
       </div>
 
       {count > 1 ? (
