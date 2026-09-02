@@ -12,6 +12,8 @@ import { formatCents } from "@/lib/money";
 import type { DbProduct, DbProductAddon } from "@/modules/catalog/service";
 import type { DeliveryZone } from "@/modules/delivery/settings";
 import type { DaySlots } from "@/modules/delivery/slots";
+import { CalendarPicker } from "@/components/loja/checkout/calendar-picker";
+import { CardPattern } from "@/components/loja/checkout/card-pattern";
 
 type Props = {
   product: DbProduct;
@@ -98,10 +100,6 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
             if (value !== undefined) setValue(field as keyof CheckoutInput, value as never);
           });
           setValue("idempotencyKey", idempotencyKeyRef.current);
-          if (draft.values.deliveryDate) {
-            const [y, m] = draft.values.deliveryDate.split("-");
-            setSelectedMonthKey(`${y}-${m}`);
-          }
           if (draft.values.deliverySlotStart) {
             setSelectedHour(draft.values.deliverySlotStart.split(":")[0]);
           }
@@ -186,23 +184,13 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
 
   // ── Horários ─────────────────────────────────────────────────────────────
   const [days, setDays] = useState<DaySlots[] | null>(null);
-  const [selectedMonthKey, setSelectedMonthKey] = useState("");
   const [selectedHour, setSelectedHour] = useState("");
 
   useEffect(() => {
     fetch("/api/checkout/slots")
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data.days)) {
-          setDays(data.days);
-          const firstOpen: DaySlots | undefined =
-            data.days.find((d: DaySlots) => !d.closed && d.slots.some((s) => s.available)) ??
-            data.days[0];
-          if (firstOpen) {
-            const [y, m] = firstOpen.date.split("-");
-            setSelectedMonthKey((prev) => prev || `${y}-${m}`);
-          }
-        }
+        if (Array.isArray(data.days)) setDays(data.days);
       })
       .catch(() => setDays([]));
   }, []);
@@ -211,28 +199,6 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
   const deliverySlotStart = watch("deliverySlotStart");
   const selectedMinute = deliverySlotStart ? deliverySlotStart.split(":")[1] : "";
   const chosenDay = days?.find((d) => d.date === deliveryDate);
-
-  const monthOptions = useMemo(() => {
-    if (!days) return [];
-    const seen = new Map<string, string>();
-    for (const day of days) {
-      const [y, m] = day.date.split("-");
-      const key = `${y}-${m}`;
-      if (!seen.has(key)) seen.set(key, `${monthNames[Number(m) - 1]} de ${y}`);
-    }
-    return Array.from(seen.entries()).map(([key, label]) => ({ key, label }));
-  }, [days]);
-
-  const dayOptions = useMemo(() => {
-    if (!days || !selectedMonthKey) return [];
-    return days
-      .filter((d) => d.date.startsWith(selectedMonthKey))
-      .map((d) => ({
-        date: d.date,
-        hasSlot: !d.closed && d.slots.some((s) => s.available),
-        label: formatDayOnlyLabel(d.date, d.weekday),
-      }));
-  }, [days, selectedMonthKey]);
 
   const hourOptions = useMemo(() => {
     if (!chosenDay) return [];
@@ -254,13 +220,6 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
   function pickSlot(date: string, start: string) {
     setValue("deliveryDate", date, { shouldValidate: true });
     setValue("deliverySlotStart", start, { shouldValidate: true });
-  }
-
-  function handleMonthChange(key: string) {
-    setSelectedMonthKey(key);
-    setSelectedHour("");
-    setValue("deliveryDate", "");
-    setValue("deliverySlotStart", "");
   }
 
   function handleDayChange(date: string) {
@@ -454,40 +413,9 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
             <p className="mt-4 text-sm text-muted-foreground">Carregando horários…</p>
           ) : (
             <>
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <Field label="Mês">
-                  <select
-                    value={selectedMonthKey}
-                    onChange={(e) => handleMonthChange(e.target.value)}
-                    className={inputClass}
-                  >
-                    {monthOptions.map((m) => (
-                      <option key={m.key} value={m.key}>
-                        {m.label}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
+              <CalendarPicker days={days} selectedDate={deliveryDate} onSelect={handleDayChange} />
 
-                <Field label="Dia">
-                  <select
-                    value={deliveryDate}
-                    onChange={(e) => handleDayChange(e.target.value)}
-                    disabled={dayOptions.length === 0}
-                    className={inputClass}
-                  >
-                    <option value="" disabled>
-                      Selecione
-                    </option>
-                    {dayOptions.map((day) => (
-                      <option key={day.date} value={day.date} disabled={!day.hasSlot}>
-                        {day.label}
-                        {!day.hasSlot ? " (sem vaga)" : ""}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-
+              <div className="mt-3 grid grid-cols-2 gap-3">
                 <Field label="Hora">
                   <select
                     value={selectedHour}
@@ -592,17 +520,18 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
 
           <div className="mt-6 flex justify-center">
             <div
-              className={`w-full max-w-sm rounded-2xl border px-8 py-10 ${template.paperClass} ${template.borderClass}`}
+              className={`relative w-full max-w-sm overflow-hidden rounded-2xl border px-8 py-10 ${template.paperClass} ${template.borderClass}`}
               style={{ boxShadow: "var(--jc-shadow)" }}
             >
-              <p className="font-display text-lg leading-relaxed text-[#3a3226]">
+              <CardPattern template={template} />
+              <p className="relative font-display text-lg leading-relaxed text-[#3a3226]">
                 {cardMessage || "Sua mensagem aparece aqui."}
               </p>
-              <p className="mt-6 font-display text-base text-[#3a3226]">
+              <p className="relative mt-6 font-display text-base text-[#3a3226]">
                 Para {cardRecipient || "quem você ama"}
                 {cardSender ? `, de ${cardSender}` : ""}.
               </p>
-              <p className="mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">Juliana Cestas</p>
+              <p className="relative mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">Juliana Cestas</p>
             </div>
           </div>
         </section>

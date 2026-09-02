@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Check, Clock, MessageCircle, Package } from "lucide-react";
 import { getOrderByToken } from "@/modules/orders/service";
 import { getCardTemplate } from "@/modules/cards/templates";
+import { CardPattern } from "@/components/loja/checkout/card-pattern";
 import { formatCents } from "@/lib/money";
 
 export const metadata: Metadata = { title: "Seu pedido | Juliana Cestas" };
@@ -97,15 +98,16 @@ export default async function PedidoPage(
       </div>
 
       <div
-        className={`mt-4 rounded-2xl border px-8 py-8 ${template.paperClass} ${template.borderClass}`}
+        className={`relative mt-4 overflow-hidden rounded-2xl border px-8 py-8 ${template.paperClass} ${template.borderClass}`}
         style={{ boxShadow: "var(--jc-shadow)" }}
       >
-        <p className="font-display text-lg leading-relaxed text-[#3a3226]">{order.card_message}</p>
-        <p className="mt-6 font-display text-base text-[#3a3226]">
+        <CardPattern template={template} />
+        <p className="relative font-display text-lg leading-relaxed text-[#3a3226]">{order.card_message}</p>
+        <p className="relative mt-6 font-display text-base text-[#3a3226]">
           Para {order.card_recipient}
           {order.card_sender ? `, de ${order.card_sender}` : ""}.
         </p>
-        <p className="mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">Juliana Cestas</p>
+        <p className="relative mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">Juliana Cestas</p>
       </div>
 
       <div className="mt-6 rounded-card border border-primary/30 bg-accent p-5">

@@ -3,7 +3,9 @@ export type CardTemplate = {
   name: string;
   paperClass: string;
   borderClass: string;
-  icon: "none" | "leaf" | "sparkles" | "heart" | "party";
+  icon: "none" | "leaf" | "sparkles" | "heart" | "party" | "rings";
+  /** Cor (hex) do padrão de fundo — só usada quando icon !== "none". */
+  accentColor?: string;
 };
 
 export const CARD_TEMPLATES: CardTemplate[] = [
@@ -20,6 +22,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     paperClass: "bg-[var(--jc-paper)]",
     borderClass: "border-primary/60",
     icon: "leaf",
+    accentColor: "#556b2f",
   },
   {
     slug: "dourado",
@@ -27,6 +30,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     paperClass: "bg-[#fbf6ea]",
     borderClass: "border-[var(--jc-gold)]",
     icon: "sparkles",
+    accentColor: "#d9a441",
   },
   {
     slug: "minimal",
@@ -41,6 +45,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     paperClass: "bg-[#f9ece8]",
     borderClass: "border-[#b86b6b]/40",
     icon: "heart",
+    accentColor: "#b86b6b",
   },
   {
     slug: "festivo",
@@ -48,6 +53,31 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     paperClass: "bg-[var(--jc-paper)]",
     borderClass: "border-[var(--jc-gold)]",
     icon: "party",
+    accentColor: "#d9a441",
+  },
+  {
+    slug: "namorados",
+    name: "Namorados",
+    paperClass: "bg-[#fbeeee]",
+    borderClass: "border-[#c65d5d]/45",
+    icon: "heart",
+    accentColor: "#c65d5d",
+  },
+  {
+    slug: "aniversario",
+    name: "Aniversário",
+    paperClass: "bg-[#fdf3e4]",
+    borderClass: "border-[#e0a95e]/50",
+    icon: "party",
+    accentColor: "#e0a95e",
+  },
+  {
+    slug: "casamento",
+    name: "Casamento",
+    paperClass: "bg-[#fbf9f2]",
+    borderClass: "border-[#cbb27a]/55",
+    icon: "rings",
+    accentColor: "#cbb27a",
   },
 ];
 
