@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatCents } from "@/lib/money";
@@ -16,11 +16,29 @@ type NavProduct = {
 type HoverState = { product: NavProduct; left: number; top: number };
 
 const POPOVER_WIDTH = 224; // w-56
+// Tempo antes de fechar depois que o mouse sai de qualquer parte do menu --
+// sem isso, o cursor "perde" o hover no vão entre o item e o card (mesmo
+// vão pequeno) e o card some antes da pessoa conseguir clicar nele.
+const CLOSE_DELAY_MS = 200;
 
 export function HeaderNavMenu({ products }: { products: NavProduct[] }) {
   const [hover, setHover] = useState<HoverState | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function cancelClose() {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  }
+
+  function scheduleClose() {
+    cancelClose();
+    closeTimer.current = setTimeout(() => setHover(null), CLOSE_DELAY_MS);
+  }
 
   function showPopover(product: NavProduct, trigger: HTMLElement) {
+    cancelClose();
     const rect = trigger.getBoundingClientRect();
     const center = rect.left + rect.width / 2;
     const left = Math.min(
@@ -30,17 +48,13 @@ export function HeaderNavMenu({ products }: { products: NavProduct[] }) {
     setHover({ product, left, top: rect.bottom + 6 });
   }
 
-  function hidePopover(slug: string) {
-    setHover((current) => (current?.product.slug === slug ? null : current));
-  }
-
   return (
     <nav className="mx-auto flex max-w-7xl items-center gap-6 overflow-x-auto px-4 py-2.5 text-sm font-medium text-foreground sm:px-6 lg:px-8">
       {products.map((product) => (
         <div
           key={product.slug}
           onMouseEnter={(e) => showPopover(product, e.currentTarget)}
-          onMouseLeave={() => hidePopover(product.slug)}
+          onMouseLeave={scheduleClose}
         >
           <Link
             href={`/produto/${product.slug}`}
@@ -60,8 +74,8 @@ export function HeaderNavMenu({ products }: { products: NavProduct[] }) {
         <div
           style={{ position: "fixed", left: hover.left, top: hover.top, width: POPOVER_WIDTH }}
           className="z-50 rounded-card border border-border bg-card p-3 shadow-lg"
-          onMouseEnter={() => setHover(hover)}
-          onMouseLeave={() => hidePopover(hover.product.slug)}
+          onMouseEnter={cancelClose}
+          onMouseLeave={scheduleClose}
         >
           <Link
             href={`/produto/${hover.product.slug}`}
