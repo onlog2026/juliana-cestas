@@ -81,7 +81,7 @@ export function BannerLivePreview({
     <div>
       <div
         ref={containerRef}
-        className="relative aspect-[21/8] w-full select-none overflow-hidden rounded-card border border-border bg-secondary"
+        className="relative aspect-[21/8] w-full select-none overflow-hidden rounded-card border border-border bg-secondary [container-type:inline-size]"
       >
         {draft.image ? (
           <Image
@@ -122,7 +122,7 @@ export function BannerLivePreview({
               textAlign: draft.textAlign,
               fontFamily: bannerFontCssVar(draft.fontFamily),
               color: draft.fontColor,
-              fontSize: `clamp(${Math.round(draft.fontSize * 0.55)}px, 4vw, ${draft.fontSize}px)`,
+              fontSize: `clamp(${Math.round(draft.fontSize * 0.55)}px, 4cqi, ${draft.fontSize}px)`,
             }}
           >
             <Move className="mt-1.5 size-4 shrink-0 opacity-70" />
