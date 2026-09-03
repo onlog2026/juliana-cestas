@@ -17,6 +17,9 @@ export type BannerInput = {
   maxWidth: number;
   objectPosition: string;
   textAlign: "left" | "center" | "right";
+  fontSize: number;
+  fontFamily: string;
+  fontColor: string;
   active: boolean;
 };
 
@@ -50,6 +53,9 @@ export async function upsertBanner(
     text_position: { top: input.top, left: input.left, maxWidth: input.maxWidth },
     object_position: input.objectPosition.trim() || null,
     text_align: input.textAlign,
+    font_size: input.fontSize,
+    font_family: input.fontFamily,
+    font_color: input.fontColor,
     active: input.active,
   };
 

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Loader2, Check } from "lucide-react";
 import { updateProductDetails } from "@/modules/catalog/actions";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
+import { GalleryUploadField } from "@/components/admin/gallery-upload-field";
+import { VideoUploadField } from "@/components/admin/video-upload-field";
 import type { DbProduct } from "@/modules/catalog/service";
 import type { Category } from "@/modules/catalog/categories";
 
@@ -54,6 +56,8 @@ export function ProductDetailsForm({ product, categories }: { product: DbProduct
   );
   const [ncm, setNcm] = useState(product.ncm ?? "");
   const [cest, setCest] = useState(product.cest ?? "");
+  const [galleryUrls, setGalleryUrls] = useState<string[]>(product.gallery_urls ?? []);
+  const [videoUrl, setVideoUrl] = useState(product.video_url ?? "");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -93,6 +97,8 @@ export function ProductDetailsForm({ product, categories }: { product: DbProduct
         lowStockThreshold: intOrNull(lowStockThreshold),
         ncm,
         cest,
+        galleryUrls,
+        videoUrl,
       });
       if (!result.ok) {
         setError(result.error);
@@ -105,7 +111,7 @@ export function ProductDetailsForm({ product, categories }: { product: DbProduct
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium text-foreground">Nome da cesta</span>
           <input
@@ -197,7 +203,12 @@ export function ProductDetailsForm({ product, categories }: { product: DbProduct
         </div>
       </div>
 
-      <ImageUploadField label="Foto da cesta" value={imageUrl} onChange={setImageUrl} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ImageUploadField label="Foto de capa" value={imageUrl} onChange={setImageUrl} />
+        <VideoUploadField label="Vídeo da cesta (opcional)" value={videoUrl} onChange={setVideoUrl} />
+      </div>
+
+      <GalleryUploadField label="Fotos extras" values={galleryUrls} onChange={setGalleryUrls} max={4} />
 
       <label className="block">
         <span className="mb-1.5 block text-sm font-medium text-foreground">O que vem na cesta (um item por linha)</span>
@@ -219,7 +230,7 @@ export function ProductDetailsForm({ product, categories }: { product: DbProduct
         />
       </label>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium text-foreground">SKU (opcional)</span>
           <input

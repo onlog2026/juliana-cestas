@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { bannerFontCssVar } from "@/lib/fonts";
 import type { Banner } from "@/modules/banners/service";
 
 export function BannerCarousel({ banners }: { banners: Banner[] }) {
@@ -56,12 +57,15 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
               <p
-                className="jc-pop absolute font-display text-xl leading-snug text-white [text-shadow:0_2px_12px_rgba(0,0,0,0.45)] sm:text-2xl md:text-4xl"
+                className="jc-pop absolute leading-snug [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]"
                 style={{
                   top: `${banner.textPosition.top}%`,
                   left: `${banner.textPosition.left}%`,
                   maxWidth: `${banner.textPosition.maxWidth}%`,
                   textAlign: banner.textAlign ?? "left",
+                  fontFamily: bannerFontCssVar(banner.fontFamily),
+                  color: banner.fontColor,
+                  fontSize: `clamp(${Math.round(banner.fontSize * 0.55)}px, 4vw, ${banner.fontSize}px)`,
                 }}
               >
                 {banner.text}

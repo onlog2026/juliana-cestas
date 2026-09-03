@@ -8,10 +8,10 @@ const nextConfig: NextConfig = {
     root: path.join(__dirname),
   },
   experimental: {
-    // Default de 1mb e pouco pra foto de banner/produto (upload de imagem
-    // do admin vira Server Action com FormData).
+    // Default de 1mb e pouco pra foto de banner/produto/video (upload vira
+    // Server Action com FormData) -- video de produto vai ate 20mb.
     serverActions: {
-      bodySizeLimit: "8mb",
+      bodySizeLimit: "24mb",
     },
   },
 };

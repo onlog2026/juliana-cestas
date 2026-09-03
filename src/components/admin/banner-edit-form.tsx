@@ -5,6 +5,7 @@ import { Loader2, Check } from "lucide-react";
 import { upsertBanner, type BannerInput } from "@/modules/banners/actions";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { BannerLivePreview } from "@/components/admin/banner-live-preview";
+import { BANNER_FONTS } from "@/lib/fonts";
 import type { Banner } from "@/modules/banners/service";
 
 type Draft = {
@@ -16,6 +17,9 @@ type Draft = {
   maxWidth: number;
   objectPosition: string;
   textAlign: "left" | "center" | "right";
+  fontSize: number;
+  fontFamily: string;
+  fontColor: string;
   active: boolean;
 };
 
@@ -29,6 +33,9 @@ function toDraft(banner?: Banner): Draft {
     maxWidth: banner?.textPosition.maxWidth ?? 60,
     objectPosition: banner?.objectPosition ?? "50% 50%",
     textAlign: banner?.textAlign ?? "left",
+    fontSize: banner?.fontSize ?? 32,
+    fontFamily: banner?.fontFamily ?? "display",
+    fontColor: banner?.fontColor ?? "#ffffff",
     active: banner?.active ?? true,
   };
 }
@@ -64,6 +71,9 @@ export function BannerEditForm({
       maxWidth: draft.maxWidth,
       objectPosition: draft.objectPosition,
       textAlign: draft.textAlign,
+      fontSize: draft.fontSize,
+      fontFamily: draft.fontFamily,
+      fontColor: draft.fontColor,
       active: draft.active,
     };
     startTransition(async () => {
@@ -130,6 +140,45 @@ export function BannerEditForm({
             <option value="center">Centro</option>
             <option value="right">Direita</option>
           </select>
+        </label>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        <label className="block">
+          <span className="mb-1.5 flex items-center justify-between text-sm font-medium text-foreground">
+            Tamanho da fonte <span className="text-xs font-normal text-muted-foreground">{draft.fontSize}px</span>
+          </span>
+          <input
+            type="range"
+            min={16}
+            max={72}
+            value={draft.fontSize}
+            onChange={(e) => set("fontSize", Number(e.target.value))}
+            className="h-11 w-full"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-sm font-medium text-foreground">Fonte</span>
+          <select
+            value={draft.fontFamily}
+            onChange={(e) => set("fontFamily", e.target.value)}
+            className="h-11 w-full rounded-[10px] border border-border bg-card px-3.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {BANNER_FONTS.map((f) => (
+              <option key={f.value} value={f.value}>
+                {f.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-sm font-medium text-foreground">Cor da fonte</span>
+          <input
+            type="color"
+            value={draft.fontColor}
+            onChange={(e) => set("fontColor", e.target.value)}
+            className="h-11 w-full cursor-pointer rounded-[10px] border border-border bg-card px-1.5"
+          />
         </label>
       </div>
 

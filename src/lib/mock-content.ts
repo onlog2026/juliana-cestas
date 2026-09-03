@@ -14,6 +14,9 @@ export type Product = {
   items: string[];
   packaging: string;
   image: string;
+  /** Capa (image) + galeria extra, nessa ordem -- até 5 fotos no total. */
+  images: string[];
+  videoUrl?: string;
   badge?: string;
 };
 
@@ -39,6 +42,7 @@ export const featuredProducts: Product[] = [
     ],
     packaging: "Embalagem em tule, delicada e charmosa. Acompanha laço elegante e cartão.",
     image: p("cesta-doce-manha.webp"),
+    images: [p("cesta-doce-manha.webp")],
   },
   {
     id: "afeto",
@@ -59,6 +63,7 @@ export const featuredProducts: Product[] = [
     ],
     packaging: "Embalagem sofisticada, delicada e charmosa. Acompanha laço elegante e cartão.",
     image: p("cesta-aniversario-especial.webp"),
+    images: [p("cesta-aniversario-especial.webp")],
   },
   {
     id: "essencia",
@@ -80,6 +85,7 @@ export const featuredProducts: Product[] = [
     ],
     packaging: "Embalagem sofisticada, delicada e charmosa — perfeita para surpreender com amor.",
     image: p("cesta-cafe-completo.webp"),
+    images: [p("cesta-cafe-completo.webp")],
     badge: "Mais pedida",
   },
   {
@@ -105,6 +111,7 @@ export const featuredProducts: Product[] = [
     ],
     packaging: "Embalagem refinada, delicada e charmosa. Acompanha laço elegante e cartão personalizado.",
     image: p("cesta-presente-corporativo.webp"),
+    images: [p("cesta-presente-corporativo.webp")],
   },
   {
     id: "memoravel",
@@ -129,6 +136,7 @@ export const featuredProducts: Product[] = [
     ],
     packaging: "Embalagem luxo, acabamento impecável. Acompanha laço delicado e cartão personalizado. Adicional de vinho por R$ 49,90.",
     image: p("cesta-romance-ao-amanhecer.webp"),
+    images: [p("cesta-romance-ao-amanhecer.webp")],
   },
 ];
 

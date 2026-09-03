@@ -24,10 +24,12 @@ export type DbProduct = {
   low_stock_threshold: number | null;
   ncm: string | null;
   cest: string | null;
+  gallery_urls: string[];
+  video_url: string | null;
 };
 
 const ADMIN_PRODUCT_COLUMNS =
-  "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, delivery_fee_cents, active, category_id, cost_cents, sku, barcode, stock_quantity, low_stock_threshold, ncm, cest";
+  "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, delivery_fee_cents, active, category_id, cost_cents, sku, barcode, stock_quantity, low_stock_threshold, ncm, cest, gallery_urls, video_url";
 
 export type UpsellProduct = {
   id: string;
@@ -44,6 +46,9 @@ export type DbProductAddon = {
   price_cents: number;
 };
 
+const PUBLIC_PRODUCT_COLUMNS =
+  "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, gallery_urls, video_url";
+
 function mapPublicProduct(p: {
   id: string;
   slug: string;
@@ -55,6 +60,8 @@ function mapPublicProduct(p: {
   packaging: string | null;
   image_url: string | null;
   badge: string | null;
+  gallery_urls: string[] | null;
+  video_url: string | null;
 }): Product {
   return {
     id: p.id,
@@ -66,6 +73,8 @@ function mapPublicProduct(p: {
     items: p.items ?? [],
     packaging: p.packaging ?? "",
     image: p.image_url ?? "",
+    images: [p.image_url, ...(p.gallery_urls ?? [])].filter((url): url is string => Boolean(url)),
+    videoUrl: p.video_url ?? undefined,
     badge: p.badge ?? undefined,
   };
 }
@@ -76,7 +85,7 @@ export async function getAllProducts(): Promise<Product[]> {
 
   const { data, error } = await supabase
     .from("products")
-    .select("id, slug, name, serves, size, price_cents, items, packaging, image_url, badge")
+    .select(PUBLIC_PRODUCT_COLUMNS)
     .eq("tenant_id", TENANT_ID)
     .eq("active", true)
     .order("sort_order", { ascending: true });
@@ -91,7 +100,7 @@ export async function getProductsByCategoryId(categoryId: string): Promise<Produ
 
   const { data, error } = await supabase
     .from("products")
-    .select("id, slug, name, serves, size, price_cents, items, packaging, image_url, badge")
+    .select(PUBLIC_PRODUCT_COLUMNS)
     .eq("tenant_id", TENANT_ID)
     .eq("category_id", categoryId)
     .eq("active", true)

@@ -3,12 +3,13 @@ import { ChevronRight } from "lucide-react";
 import { getAllProductsAdmin } from "@/modules/catalog/service";
 import { formatCents } from "@/lib/money";
 import { NewProductButton } from "@/components/admin/new-product-button";
+import { ProductThumbnail } from "@/components/admin/product-thumbnail";
 
 export default async function AdminProdutosPage() {
   const products = await getAllProductsAdmin();
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-[1400px]">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl text-foreground">Produtos</h1>
@@ -26,7 +27,9 @@ export default async function AdminProdutosPage() {
             href={`/admin/produtos/${product.id}`}
             className="flex items-center justify-between gap-3 px-4 py-3.5 hover:bg-accent"
           >
-            <div className="min-w-0">
+            <div className="flex min-w-0 items-center gap-3">
+              <ProductThumbnail imageUrl={product.image_url} alt={product.name} />
+              <div className="min-w-0">
               <p className="truncate text-sm font-medium text-foreground">
                 {product.name}
                 {!product.active ? (
@@ -55,6 +58,7 @@ export default async function AdminProdutosPage() {
                   </>
                 ) : null}
               </p>
+              </div>
             </div>
             <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
           </Link>

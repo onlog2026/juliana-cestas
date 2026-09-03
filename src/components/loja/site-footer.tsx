@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getSocialLinks } from "@/modules/settings/social-links";
+import { getSiteSettings } from "@/modules/settings/site-settings";
+import { getStoreProfile, formatStoreAddress } from "@/modules/settings/store-profile";
 import { SocialIcons } from "@/components/loja/social-icons";
 
 const columns = [
@@ -20,13 +22,23 @@ const columns = [
 ];
 
 export async function SiteFooter() {
-  const socialLinks = await getSocialLinks();
+  const [socialLinks, siteSettings, storeProfile] = await Promise.all([
+    getSocialLinks(),
+    getSiteSettings(),
+    getStoreProfile(),
+  ]);
+  const address = formatStoreAddress(storeProfile);
 
   return (
     <footer className="border-t border-border bg-secondary/60">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr] lg:px-8">
         <div>
-          <p className="font-display text-2xl text-primary">Juliana Cestas</p>
+          {siteSettings.logoFooterUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- pode ser GIF animado
+            <img src={siteSettings.logoFooterUrl} alt="" className="h-9 w-auto object-contain" />
+          ) : (
+            <p className="font-display text-2xl text-primary">Juliana Cestas</p>
+          )}
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
             Cestas de café da manhã e presentes afetivos, feitos e entregues
             em Brasília.
@@ -57,9 +69,13 @@ export async function SiteFooter() {
             Endereço e horário
           </p>
           <p className="mt-3 text-sm text-muted-foreground">
-            QNL 7 Bloco D, Edifício São Raimundo
-            <br />
-            Brasília, DF
+            {address ?? (
+              <>
+                QNL 7 Bloco D, Edifício São Raimundo
+                <br />
+                Brasília, DF
+              </>
+            )}
           </p>
           <p className="mt-3 text-sm text-muted-foreground">
             Retirada das 8h às 18h
@@ -68,10 +84,17 @@ export async function SiteFooter() {
             <br />
             Domingo (sob agendamento)
           </p>
+          {storeProfile.phone || storeProfile.email ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              {storeProfile.phone}
+              {storeProfile.phone && storeProfile.email ? <br /> : null}
+              {storeProfile.email}
+            </p>
+          ) : null}
         </div>
       </div>
       <div className="border-t border-border px-4 py-5 text-center text-xs text-muted-foreground sm:px-6 lg:px-8">
-        © {new Date().getFullYear()} Juliana Cestas. Brasília, DF.
+        © {new Date().getFullYear()} {storeProfile.businessName || "Juliana Cestas"}. Brasília, DF.
       </div>
     </footer>
   );

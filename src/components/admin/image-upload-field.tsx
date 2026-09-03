@@ -9,10 +9,15 @@ export function ImageUploadField({
   label,
   value,
   onChange,
+  kind = "photo",
+  accept = "image/*",
 }: {
   label: string;
   value: string;
   onChange: (url: string) => void;
+  /** "logo" mantém o arquivo original (PNG/GIF animado) -- "photo" converte pra WebP. */
+  kind?: "photo" | "logo";
+  accept?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [pending, startTransition] = useTransition();
@@ -23,6 +28,7 @@ export function ImageUploadField({
     setError(null);
     const formData = new FormData();
     formData.set("file", file);
+    formData.set("kind", kind);
     startTransition(async () => {
       const result = await uploadMedia(formData);
       if (!result.ok) {
@@ -60,7 +66,7 @@ export function ImageUploadField({
           <input
             ref={inputRef}
             type="file"
-            accept="image/*"
+            accept={accept}
             className="hidden"
             onChange={(e) => handleFile(e.target.files?.[0])}
           />

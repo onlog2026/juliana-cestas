@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { Move } from "lucide-react";
+import { bannerFontCssVar } from "@/lib/fonts";
 
 type Draft = {
   image: string;
@@ -12,6 +13,9 @@ type Draft = {
   maxWidth: number;
   objectPosition: string;
   textAlign: "left" | "center" | "right";
+  fontSize: number;
+  fontFamily: string;
+  fontColor: string;
 };
 
 function clamp(value: number, min: number, max: number): number {
@@ -108,7 +112,7 @@ export function BannerLivePreview({
             onPointerDown={handleTextPointerDown}
             onPointerMove={handleTextPointerMove}
             onPointerUp={handleTextPointerUp}
-            className={`absolute flex cursor-move items-start gap-1.5 font-display text-xl leading-snug text-white [text-shadow:0_2px_12px_rgba(0,0,0,0.45)] sm:text-2xl md:text-4xl ${
+            className={`absolute flex cursor-move items-start gap-1.5 leading-snug [text-shadow:0_2px_12px_rgba(0,0,0,0.45)] ${
               dragging ? "opacity-80" : ""
             }`}
             style={{
@@ -116,6 +120,9 @@ export function BannerLivePreview({
               left: `${draft.left}%`,
               maxWidth: `${draft.maxWidth}%`,
               textAlign: draft.textAlign,
+              fontFamily: bannerFontCssVar(draft.fontFamily),
+              color: draft.fontColor,
+              fontSize: `clamp(${Math.round(draft.fontSize * 0.55)}px, 4vw, ${draft.fontSize}px)`,
             }}
           >
             <Move className="mt-1.5 size-4 shrink-0 opacity-70" />

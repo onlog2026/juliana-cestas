@@ -35,6 +35,8 @@ export type ProductDetailsInput = {
   lowStockThreshold: number | null;
   ncm: string;
   cest: string;
+  galleryUrls: string[];
+  videoUrl: string;
 };
 
 /** Cria uma cesta em branco (o admin preenche o resto na tela de edição). */
@@ -84,6 +86,9 @@ export async function updateProductDetails(
   ) {
     return { ok: false, error: "Limite de estoque baixo inválido." };
   }
+  if (input.galleryUrls.length > 4) {
+    return { ok: false, error: "No máximo 4 fotos extras (5 no total, com a capa)." };
+  }
 
   const admin = createAdminClient();
   const slug = slugify(input.slug || input.name).slice(0, 80) || input.id;
@@ -109,6 +114,8 @@ export async function updateProductDetails(
       low_stock_threshold: input.lowStockThreshold,
       ncm: input.ncm.trim() || null,
       cest: input.cest.trim() || null,
+      gallery_urls: input.galleryUrls,
+      video_url: input.videoUrl.trim() || null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", input.id)

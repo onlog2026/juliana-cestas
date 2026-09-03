@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight, Check, MessageCircle } from "lucide-react";
 import { getAllProducts, getProductBySlug } from "@/modules/catalog/service";
 import { ProductCard } from "@/components/loja/product-card";
+import { ProductGallery } from "@/components/loja/product-gallery";
 import { CartaozinhoSignature } from "@/components/loja/cartaozinho-signature";
 import { Reveal } from "@/components/loja/reveal";
 import { ProductJsonLd } from "@/components/loja/json-ld";
@@ -71,21 +71,7 @@ export default async function ProdutoPage(
       </nav>
 
       <div className="mt-6 grid gap-10 md:grid-cols-2 md:gap-12">
-        <div className="jc-glow-card jc-pop relative aspect-square overflow-hidden rounded-card bg-secondary">
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            priority
-            sizes="(min-width: 768px) 45vw, 100vw"
-            className="object-cover"
-          />
-          {product.badge ? (
-            <span className="absolute left-4 top-4 rounded-full bg-[var(--jc-gold)] px-3 py-1 text-xs font-semibold text-[#1f2a24]">
-              {product.badge}
-            </span>
-          ) : null}
-        </div>
+        <ProductGallery images={product.images} videoUrl={product.videoUrl} name={product.name} badge={product.badge} />
 
         <div className="jc-pop" style={{ animationDelay: "0.1s" }}>
           <h1 className="font-display text-3xl text-foreground md:text-4xl">

@@ -2,12 +2,17 @@ import Link from "next/link";
 import { User } from "lucide-react";
 import { getAllProducts } from "@/modules/catalog/service";
 import { getSocialLinks } from "@/modules/settings/social-links";
+import { getSiteSettings } from "@/modules/settings/site-settings";
 import { HeaderSearch } from "@/components/loja/header-search";
 import { HeaderNavMenu } from "@/components/loja/header-nav-menu";
 import { SocialIcons } from "@/components/loja/social-icons";
 
 export async function SiteHeader() {
-  const [products, socialLinks] = await Promise.all([getAllProducts(), getSocialLinks()]);
+  const [products, socialLinks, siteSettings] = await Promise.all([
+    getAllProducts(),
+    getSocialLinks(),
+    getSiteSettings(),
+  ]);
   const hasSocialLinks = Object.values(socialLinks).some(Boolean);
 
   return (
@@ -25,13 +30,14 @@ export async function SiteHeader() {
           href="/"
           className="flex shrink-0 items-center gap-2.5 font-display text-2xl text-primary"
         >
+          {/* eslint-disable-next-line @next/next/no-img-element -- pode ser GIF animado; next/image reprocessaria e perderia a animação */}
           <img
-            src="/logo/juliana-present-icon.svg"
+            src={siteSettings.logoHeaderUrl ?? "/logo/juliana-present-icon.svg"}
             alt=""
             aria-hidden="true"
             width={38}
             height={34}
-            className="h-[34px] w-[38px] shrink-0"
+            className="h-[34px] w-[38px] shrink-0 object-contain"
           />
           Juliana Cestas
         </Link>
