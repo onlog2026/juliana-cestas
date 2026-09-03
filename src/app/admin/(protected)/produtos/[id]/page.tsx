@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { getAllProductsAdmin, getUpsellProductIds } from "@/modules/catalog/service";
+import { getAllCategoriesAdmin } from "@/modules/catalog/categories";
 import { ProductDetailsForm } from "@/components/admin/product-details-form";
 import { ProductDeliveryForm } from "@/components/admin/product-delivery-form";
 import { ProductUpsellsForm } from "@/components/admin/product-upsells-form";
@@ -13,7 +14,10 @@ export default async function AdminProdutoPage(props: PageProps<"/admin/produtos
   const product = products.find((p) => p.id === id);
   if (!product) notFound();
 
-  const upsellIds = await getUpsellProductIds(product.id);
+  const [upsellIds, categories] = await Promise.all([
+    getUpsellProductIds(product.id),
+    getAllCategoriesAdmin(),
+  ]);
   const otherProducts = products.filter((p) => p.id !== product.id);
 
   return (
@@ -31,7 +35,7 @@ export default async function AdminProdutoPage(props: PageProps<"/admin/produtos
       <section className="mt-6 rounded-card border border-border bg-card p-5">
         <h2 className="font-display text-lg text-foreground">Dados da cesta</h2>
         <div className="mt-4">
-          <ProductDetailsForm product={product} />
+          <ProductDetailsForm product={product} categories={categories} />
         </div>
       </section>
 

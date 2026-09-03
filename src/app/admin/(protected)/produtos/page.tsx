@@ -39,6 +39,21 @@ export default async function AdminProdutosPage() {
                 {formatCents(product.price_cents)}
                 {" · "}
                 Entrega: {product.delivery_fee_cents > 0 ? formatCents(product.delivery_fee_cents) : "grátis"}
+                {product.stock_quantity !== null ? (
+                  <>
+                    {" · "}
+                    <span
+                      className={
+                        product.low_stock_threshold !== null &&
+                        product.stock_quantity <= product.low_stock_threshold
+                          ? "font-medium text-destructive"
+                          : undefined
+                      }
+                    >
+                      Estoque: {product.stock_quantity}
+                    </span>
+                  </>
+                ) : null}
               </p>
             </div>
             <ChevronRight className="size-4 shrink-0 text-muted-foreground" />

@@ -27,6 +27,14 @@ export type ProductDetailsInput = {
   imageUrl: string;
   badge: string;
   active: boolean;
+  categoryId: string | null;
+  costCents: number | null;
+  sku: string;
+  barcode: string;
+  stockQuantity: number | null;
+  lowStockThreshold: number | null;
+  ncm: string;
+  cest: string;
 };
 
 /** Cria uma cesta em branco (o admin preenche o resto na tela de edição). */
@@ -64,6 +72,18 @@ export async function updateProductDetails(
   if (!Number.isInteger(input.priceCents) || input.priceCents < 500) {
     return { ok: false, error: "O preço mínimo é R$ 5,00." };
   }
+  if (input.costCents !== null && (!Number.isInteger(input.costCents) || input.costCents < 0)) {
+    return { ok: false, error: "Custo inválido." };
+  }
+  if (input.stockQuantity !== null && (!Number.isInteger(input.stockQuantity) || input.stockQuantity < 0)) {
+    return { ok: false, error: "Estoque inválido." };
+  }
+  if (
+    input.lowStockThreshold !== null &&
+    (!Number.isInteger(input.lowStockThreshold) || input.lowStockThreshold < 0)
+  ) {
+    return { ok: false, error: "Limite de estoque baixo inválido." };
+  }
 
   const admin = createAdminClient();
   const slug = slugify(input.slug || input.name).slice(0, 80) || input.id;
@@ -81,6 +101,14 @@ export async function updateProductDetails(
       image_url: input.imageUrl.trim() || null,
       badge: input.badge.trim() || null,
       active: input.active,
+      category_id: input.categoryId,
+      cost_cents: input.costCents,
+      sku: input.sku.trim() || null,
+      barcode: input.barcode.trim() || null,
+      stock_quantity: input.stockQuantity,
+      low_stock_threshold: input.lowStockThreshold,
+      ncm: input.ncm.trim() || null,
+      cest: input.cest.trim() || null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", input.id)

@@ -16,7 +16,18 @@ export type DbProduct = {
   badge: string | null;
   delivery_fee_cents: number;
   active: boolean;
+  category_id: string | null;
+  cost_cents: number | null;
+  sku: string | null;
+  barcode: string | null;
+  stock_quantity: number | null;
+  low_stock_threshold: number | null;
+  ncm: string | null;
+  cest: string | null;
 };
+
+const ADMIN_PRODUCT_COLUMNS =
+  "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, delivery_fee_cents, active, category_id, cost_cents, sku, barcode, stock_quantity, low_stock_threshold, ncm, cest";
 
 export type UpsellProduct = {
   id: string;
@@ -33,6 +44,32 @@ export type DbProductAddon = {
   price_cents: number;
 };
 
+function mapPublicProduct(p: {
+  id: string;
+  slug: string;
+  name: string;
+  serves: string | null;
+  size: string | null;
+  price_cents: number;
+  items: string[] | null;
+  packaging: string | null;
+  image_url: string | null;
+  badge: string | null;
+}): Product {
+  return {
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    serves: p.serves ?? "",
+    size: p.size ?? "",
+    price: p.price_cents / 100,
+    items: p.items ?? [],
+    packaging: p.packaging ?? "",
+    image: p.image_url ?? "",
+    badge: p.badge ?? undefined,
+  };
+}
+
 /** Catálogo público (home, categoria, página de produto) — vem sempre do banco. */
 export async function getAllProducts(): Promise<Product[]> {
   const supabase = createAdminClient();
@@ -45,19 +82,23 @@ export async function getAllProducts(): Promise<Product[]> {
     .order("sort_order", { ascending: true });
 
   if (error || !data) return [];
+  return data.map(mapPublicProduct);
+}
 
-  return data.map((p) => ({
-    id: p.id,
-    slug: p.slug,
-    name: p.name,
-    serves: p.serves ?? "",
-    size: p.size ?? "",
-    price: p.price_cents / 100,
-    items: p.items ?? [],
-    packaging: p.packaging ?? "",
-    image: p.image_url ?? "",
-    badge: p.badge ?? undefined,
-  }));
+/** Produtos ativos de UMA categoria — usado pela página /categoria/[slug]. */
+export async function getProductsByCategoryId(categoryId: string): Promise<Product[]> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from("products")
+    .select("id, slug, name, serves, size, price_cents, items, packaging, image_url, badge")
+    .eq("tenant_id", TENANT_ID)
+    .eq("category_id", categoryId)
+    .eq("active", true)
+    .order("sort_order", { ascending: true });
+
+  if (error || !data) return [];
+  return data.map(mapPublicProduct);
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
@@ -70,9 +111,7 @@ export async function getProductForCheckout(slug: string) {
 
   const { data: product, error } = await supabase
     .from("products")
-    .select(
-      "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, delivery_fee_cents, active"
-    )
+    .select(ADMIN_PRODUCT_COLUMNS)
     .eq("tenant_id", TENANT_ID)
     .eq("slug", slug)
     .eq("active", true)
@@ -97,7 +136,7 @@ export async function getAllProductsAdmin(): Promise<DbProduct[]> {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("products")
-    .select("id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, delivery_fee_cents, active")
+    .select(ADMIN_PRODUCT_COLUMNS)
     .eq("tenant_id", TENANT_ID)
     .order("sort_order", { ascending: true });
   return (data ?? []) as DbProduct[];
