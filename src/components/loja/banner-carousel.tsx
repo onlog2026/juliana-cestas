@@ -7,12 +7,8 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Pencil, Check, X, Loader2, Move } from "lucide-react";
 import { bannerFontCssVar, BANNER_FONTS } from "@/lib/fonts";
 import { upsertBanner } from "@/modules/banners/actions";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { checkStaffSession } from "@/lib/auth/actions";
 import type { Banner } from "@/modules/banners/service";
-
-function isStaffRole(role: unknown): boolean {
-  return role === "admin" || role === "staff";
-}
 
 type EditDraft = {
   top: number;
@@ -75,18 +71,16 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
     return () => window.clearInterval(id);
   }, [count, paused, editing]);
 
-  // Checagem só decide se mostra o botão "Editar" -- roda no navegador (chave
-  // pública, sem custo de servidor) pra não tirar a home da geração estática.
-  // A trava de segurança de verdade é no servidor: upsertBanner() já exige
-  // requireStaff() antes de gravar qualquer coisa, então mesmo que esse
-  // estado fique errado por algum motivo, nada é salvo sem sessão de staff.
+  // Checagem só decide se mostra o botão "Editar" -- chama a MESMA lógica
+  // de sessão que protege o painel de verdade (requireStaff), então nunca
+  // diverge dela. Roda depois que a página carrega (useEffect), então não
+  // tira a home da geração estática -- só quem já está com a página aberta
+  // é que faz essa pergunta ao servidor.
   useEffect(() => {
     let active = true;
-    createBrowserSupabaseClient()
-      .auth.getSession()
-      .then(({ data: { session } }) => {
-        if (active) setIsStaff(isStaffRole(session?.user?.app_metadata?.role));
-      });
+    checkStaffSession().then((staff) => {
+      if (active) setIsStaff(staff);
+    });
     return () => {
       active = false;
     };
