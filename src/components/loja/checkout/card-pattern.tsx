@@ -1,7 +1,9 @@
 import type { CardTemplate } from "@/modules/cards/templates";
 
-// Padrão de fundo bem sutil (semi-transparente) atrás do cartãozinho, uma
-// forma pequena repetida por tema — nunca compete com o texto do cartão.
+// Imagem de fundo do cartãozinho: um motivo temático espalhado, visível mas
+// sem brigar com o texto — "meio transparente" de verdade, não uma textura
+// quase invisível. viewBox 0-100 = um sistema de coordenadas em "%", assim
+// o desenho escala certo em qualquer tamanho de cartão.
 
 const SHAPES: Record<string, string> = {
   // coração
@@ -16,11 +18,11 @@ const SHAPES: Record<string, string> = {
   rings: "M9 15a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8zM15 15a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8z",
 };
 
-const TILE_SIZE = 64;
-const POSITIONS = [
-  { x: 6, y: 6, scale: 0.7, rotate: -12 },
-  { x: 38, y: 20, scale: 0.5, rotate: 18 },
-  { x: 16, y: 42, scale: 0.55, rotate: 6 },
+const SCATTER = [
+  { x: 8, y: 10, scale: 1.3, rotate: -14 },
+  { x: 70, y: 14, scale: 0.9, rotate: 20 },
+  { x: 20, y: 78, scale: 1, rotate: 8 },
+  { x: 55, y: 82, scale: 0.7, rotate: -22 },
 ];
 
 export function CardPattern({ template }: { template: CardTemplate }) {
@@ -28,34 +30,30 @@ export function CardPattern({ template }: { template: CardTemplate }) {
   const shapePath = SHAPES[template.icon];
   if (!shapePath) return null;
 
-  const patternId = `card-pattern-${template.slug}`;
-
   return (
     <svg
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 size-full opacity-[0.07]"
+      viewBox="0 0 100 100"
       preserveAspectRatio="xMidYMid slice"
+      className="pointer-events-none absolute inset-0 size-full opacity-[0.18]"
     >
-      <defs>
-        <pattern
-          id={patternId}
-          width={TILE_SIZE}
-          height={TILE_SIZE}
-          patternUnits="userSpaceOnUse"
-        >
-          {POSITIONS.map((pos, i) => (
-            <path
-              key={i}
-              d={shapePath}
-              fill="none"
-              stroke={template.accentColor}
-              strokeWidth={1.1}
-              transform={`translate(${pos.x} ${pos.y}) scale(${pos.scale}) rotate(${pos.rotate})`}
-            />
-          ))}
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill={`url(#${patternId})`} />
+      {SCATTER.map((pos, i) => (
+        <path
+          key={i}
+          d={shapePath}
+          fill={template.accentColor}
+          stroke="none"
+          transform={`translate(${pos.x} ${pos.y}) scale(${pos.scale * 0.12}) rotate(${pos.rotate})`}
+        />
+      ))}
+      {/* Motivo grande de canto, pra ler como uma ilustração de verdade */}
+      <path
+        d={shapePath}
+        fill={template.accentColor}
+        stroke="none"
+        opacity="0.85"
+        transform="translate(74 58) scale(1.1) rotate(-8)"
+      />
     </svg>
   );
 }
