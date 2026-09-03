@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { getOrderDetail } from "@/modules/orders/actions";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { AdvanceStatusButton } from "@/components/admin/advance-status-button";
+import { CancelOrderButton } from "@/components/admin/cancel-order-button";
 import { formatCents } from "@/lib/money";
 
 export default async function AdminPedidoDetailPage(props: PageProps<"/admin/pedidos/[id]">) {
@@ -33,6 +34,7 @@ export default async function AdminPedidoDetailPage(props: PageProps<"/admin/ped
         <div className="flex items-center gap-3">
           <StatusBadge status={order.status} />
           <AdvanceStatusButton orderId={order.id} status={order.status} />
+          <CancelOrderButton orderId={order.id} status={order.status} />
         </div>
       </div>
 

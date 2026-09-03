@@ -11,11 +11,13 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setInfo(null);
     const supabase = createBrowserSupabaseClient();
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     if (signInError) {
@@ -25,6 +27,20 @@ export default function AdminLoginPage() {
     }
     router.push("/admin/pedidos");
     router.refresh();
+  }
+
+  async function handleForgotPassword() {
+    if (!email) {
+      setError("Digite seu e-mail acima primeiro.");
+      return;
+    }
+    setError(null);
+    setInfo(null);
+    const supabase = createBrowserSupabaseClient();
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/redefinir-senha`,
+    });
+    setInfo("Se esse e-mail tiver conta, mandamos um link pra trocar a senha.");
   }
 
   return (
@@ -56,6 +72,7 @@ export default function AdminLoginPage() {
           </label>
 
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {info ? <p className="text-sm text-primary">{info}</p> : null}
 
           <button
             type="submit"
@@ -66,6 +83,14 @@ export default function AdminLoginPage() {
             Entrar
           </button>
         </form>
+
+        <button
+          type="button"
+          onClick={handleForgotPassword}
+          className="mt-4 block w-full text-center text-sm text-muted-foreground hover:text-primary"
+        >
+          Esqueci minha senha
+        </button>
       </div>
     </div>
   );

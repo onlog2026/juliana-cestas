@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { checkoutInputSchema } from "@/modules/checkout/schemas";
 import { createOrder } from "@/modules/checkout/create-order";
+import { checkRateLimit, clientIp } from "@/lib/security/rate-limit";
 
 function isSameOrigin(req: Request): boolean {
   const origin = req.headers.get("origin");
@@ -20,6 +21,15 @@ function isSameOrigin(req: Request): boolean {
 export async function POST(req: Request) {
   if (!isSameOrigin(req)) {
     return NextResponse.json({ error: "Origem não permitida." }, { status: 403 });
+  }
+
+  const ip = clientIp(req);
+  const withinLimit = await checkRateLimit(`create-order:${ip}`, 10, 600);
+  if (!withinLimit) {
+    return NextResponse.json(
+      { error: "Muitas tentativas. Espera um pouco e tenta de novo." },
+      { status: 429 }
+    );
   }
 
   let body: unknown;

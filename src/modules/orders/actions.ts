@@ -167,3 +167,47 @@ export async function advanceOrderStatus(
   revalidatePath("/admin/entregas");
   return { ok: true };
 }
+
+const NON_CANCELABLE = new Set(["entregue", "cancelado", "reembolsado"]);
+
+export async function cancelOrder(
+  orderId: string,
+  reason: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const staff = await requireStaff();
+  const admin = createAdminClient();
+
+  const { data: order, error: fetchError } = await admin
+    .from("orders")
+    .select("id, status")
+    .eq("id", orderId)
+    .eq("tenant_id", TENANT_ID)
+    .maybeSingle();
+
+  if (fetchError || !order) return { ok: false, error: "Pedido não encontrado." };
+  if (NON_CANCELABLE.has(order.status)) {
+    return { ok: false, error: "Esse pedido não pode mais ser cancelado." };
+  }
+
+  const { error: updateError } = await admin
+    .from("orders")
+    .update({ status: "cancelado" })
+    .eq("id", orderId);
+  if (updateError) return { ok: false, error: "Falha ao cancelar o pedido." };
+
+  await admin.from("order_events").insert({
+    tenant_id: TENANT_ID,
+    order_id: orderId,
+    type: "status_cancelado",
+    from_status: order.status,
+    to_status: "cancelado",
+    actor: "admin",
+    actor_id: staff.id,
+    payload: { reason: reason || null },
+  });
+
+  revalidatePath("/admin/pedidos");
+  revalidatePath(`/admin/pedidos/${orderId}`);
+  revalidatePath("/admin/entregas");
+  return { ok: true };
+}

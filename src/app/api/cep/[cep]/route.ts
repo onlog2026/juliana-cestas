@@ -1,13 +1,19 @@
 import { NextResponse } from "next/server";
+import { checkRateLimit, clientIp } from "@/lib/security/rate-limit";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ cep: string }> }
 ) {
   const { cep } = await params;
   const digits = cep.replace(/\D/g, "");
   if (digits.length !== 8) {
     return NextResponse.json({ error: "CEP inválido" }, { status: 400 });
+  }
+
+  const withinLimit = await checkRateLimit(`cep:${clientIp(req)}`, 60, 60);
+  if (!withinLimit) {
+    return NextResponse.json({ error: "Muitas consultas. Espera um pouco." }, { status: 429 });
   }
 
   try {

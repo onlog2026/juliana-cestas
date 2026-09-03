@@ -53,6 +53,20 @@ export default function ContaEntrarPage() {
     setLoading(false);
   }
 
+  async function handleForgotPassword() {
+    if (!email) {
+      setError("Digite seu e-mail acima primeiro.");
+      return;
+    }
+    setError(null);
+    setInfo(null);
+    const supabase = createBrowserSupabaseClient();
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/redefinir-senha`,
+    });
+    setInfo("Se esse e-mail tiver conta, mandamos um link pra trocar a senha.");
+  }
+
   async function handleGoogle() {
     const supabase = createBrowserSupabaseClient();
     await supabase.auth.signInWithOAuth({
@@ -158,6 +172,16 @@ export default function ContaEntrarPage() {
       >
         {mode === "entrar" ? "Não tem conta? Criar agora" : "Já tem conta? Entrar"}
       </button>
+
+      {mode === "entrar" ? (
+        <button
+          type="button"
+          onClick={handleForgotPassword}
+          className="mt-2 text-center text-sm text-muted-foreground hover:text-primary"
+        >
+          Esqueci minha senha
+        </button>
+      ) : null}
 
       <Link href="/" className="mt-6 text-center text-sm text-muted-foreground hover:text-primary">
         Voltar para a loja
