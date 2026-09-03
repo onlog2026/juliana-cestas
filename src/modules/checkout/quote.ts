@@ -1,6 +1,7 @@
 import "server-only";
 import { getProductForCheckout, getUpsellsForProduct } from "@/modules/catalog/service";
 import { getDeliveryZones } from "@/modules/delivery/settings";
+import { validateCoupon, computeDiscount } from "@/modules/coupons/validate";
 
 export type QuoteResult =
   | {
@@ -9,6 +10,9 @@ export type QuoteResult =
       addonsCents: number;
       upsellsCents: number;
       deliveryFeeCents: number;
+      discountCents: number;
+      couponId: string | null;
+      couponCode: string | null;
       totalCents: number;
       zoneName: string | null;
       upsellItems: { id: string; slug: string; name: string; price_cents: number }[];
@@ -25,6 +29,8 @@ export async function quoteCheckout(input: {
   upsellSlugs?: string[];
   deliveryType: "delivery" | "pickup";
   zoneId?: string;
+  couponCode?: string;
+  buyerEmail?: string;
 }): Promise<QuoteResult> {
   const found = await getProductForCheckout(input.productSlug);
   if (!found) return { ok: false, error: "Cesta não encontrada." };
@@ -62,8 +68,40 @@ export async function quoteCheckout(input: {
     zoneName = zone.name;
   }
 
-  const totalCents = subtotalCents + addonsCents + upsellsCents + deliveryFeeCents;
+  let discountCents = 0;
+  let couponId: string | null = null;
+  let couponCode: string | null = null;
+  if (input.couponCode && input.couponCode.trim()) {
+    const merchandiseCents = subtotalCents + addonsCents + upsellsCents;
+    const result = await validateCoupon({
+      code: input.couponCode,
+      buyerEmail: input.buyerEmail ?? "",
+      merchandiseCents,
+    });
+    if (!result.ok) return { ok: false, error: result.error };
+    couponId = result.coupon.id;
+    couponCode = result.coupon.code;
+    if (result.coupon.type === "free_shipping") {
+      deliveryFeeCents = 0;
+    } else {
+      discountCents = computeDiscount(result.coupon, merchandiseCents);
+    }
+  }
+
+  const totalCents = subtotalCents + addonsCents + upsellsCents + deliveryFeeCents - discountCents;
   if (totalCents < 500) return { ok: false, error: "Valor total abaixo do mínimo." };
 
-  return { ok: true, subtotalCents, addonsCents, upsellsCents, deliveryFeeCents, totalCents, zoneName, upsellItems };
+  return {
+    ok: true,
+    subtotalCents,
+    addonsCents,
+    upsellsCents,
+    deliveryFeeCents,
+    discountCents,
+    couponId,
+    couponCode,
+    totalCents,
+    zoneName,
+    upsellItems,
+  };
 }

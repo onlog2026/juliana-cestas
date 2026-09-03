@@ -64,6 +64,8 @@ export type AdminOrderDetail = AdminOrderRow & {
   subtotal_cents: number;
   addons_cents: number;
   delivery_fee_cents: number;
+  discount_cents: number;
+  coupon_code: string | null;
   items: { name: string; unit_price_cents: number; qty: number }[];
   events: { id: string; type: string; actor: string; created_at: string; payload: unknown }[];
 };
@@ -75,7 +77,7 @@ export async function getOrderDetail(orderId: string): Promise<AdminOrderDetail 
   const { data: order, error } = await admin
     .from("orders")
     .select(
-      "id, number, status, payment_status, buyer_name, buyer_phone, buyer_email, buyer_cpf, recipient_name, recipient_phone, delivery_type, street, address_number, complement, neighborhood, city, state, zone_name, delivery_date, delivery_slot_start, delivery_slot_end, card_template, card_recipient, card_sender, card_message, notes, subtotal_cents, addons_cents, delivery_fee_cents, total_cents, created_at"
+      "id, number, status, payment_status, buyer_name, buyer_phone, buyer_email, buyer_cpf, recipient_name, recipient_phone, delivery_type, street, address_number, complement, neighborhood, city, state, zone_name, delivery_date, delivery_slot_start, delivery_slot_end, card_template, card_recipient, card_sender, card_message, notes, subtotal_cents, addons_cents, delivery_fee_cents, discount_cents, coupon_code, total_cents, created_at"
     )
     .eq("id", orderId)
     .eq("tenant_id", TENANT_ID)
@@ -165,6 +167,52 @@ export async function advanceOrderStatus(
   revalidatePath("/admin/pedidos");
   revalidatePath(`/admin/pedidos/${orderId}`);
   revalidatePath("/admin/entregas");
+  return { ok: true };
+}
+
+/**
+ * Ponte até o pagamento Asaas existir de verdade (Fase 4 do roadmap): hoje
+ * não há nenhum jeito automático de um pedido virar "pago", então o admin
+ * confirma manualmente depois de ver o Pix/link pago por fora.
+ */
+export async function markOrderPaid(
+  orderId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const staff = await requireStaff();
+  const admin = createAdminClient();
+
+  const { data: order, error: fetchError } = await admin
+    .from("orders")
+    .select("id, status")
+    .eq("id", orderId)
+    .eq("tenant_id", TENANT_ID)
+    .maybeSingle();
+
+  if (fetchError || !order) return { ok: false, error: "Pedido não encontrado." };
+  if (order.status !== "aguardando_pagamento" && order.status !== "novo") {
+    return { ok: false, error: "Esse pedido já não está aguardando pagamento." };
+  }
+
+  const { error: updateError } = await admin
+    .from("orders")
+    .update({ status: "pago", payment_status: "paid", paid_at: new Date().toISOString() })
+    .eq("id", orderId);
+  if (updateError) return { ok: false, error: "Falha ao marcar como pago." };
+
+  await admin.from("order_events").insert({
+    tenant_id: TENANT_ID,
+    order_id: orderId,
+    type: "status_pago",
+    from_status: order.status,
+    to_status: "pago",
+    actor: "admin",
+    actor_id: staff.id,
+    payload: { manual: true },
+  });
+
+  revalidatePath("/admin/pedidos");
+  revalidatePath(`/admin/pedidos/${orderId}`);
+  revalidatePath("/admin");
   return { ok: true };
 }
 

@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/loja/site-footer";
 import { BottomNav } from "@/components/loja/bottom-nav";
 import { LocalBusinessJsonLd } from "@/components/loja/json-ld";
 import { getSeoSettings } from "@/modules/seo/service";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 
 const figtree = Figtree({
   variable: "--font-figtree",
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <noscript>
           <style>{`.jc-reveal{opacity:1!important;transform:none!important}`}</style>
         </noscript>
+        <GoogleAnalytics />
         <LocalBusinessJsonLd />
         <SiteHeader />
         <main className="flex-1 pb-16 md:pb-0">{children}</main>

@@ -5,6 +5,7 @@ import { getOrderDetail } from "@/modules/orders/actions";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { AdvanceStatusButton } from "@/components/admin/advance-status-button";
 import { CancelOrderButton } from "@/components/admin/cancel-order-button";
+import { MarkPaidButton } from "@/components/admin/mark-paid-button";
 import { formatCents } from "@/lib/money";
 
 export default async function AdminPedidoDetailPage(props: PageProps<"/admin/pedidos/[id]">) {
@@ -33,6 +34,7 @@ export default async function AdminPedidoDetailPage(props: PageProps<"/admin/ped
         <h1 className="font-display text-2xl text-foreground">Pedido #{order.number}</h1>
         <div className="flex items-center gap-3">
           <StatusBadge status={order.status} />
+          <MarkPaidButton orderId={order.id} status={order.status} />
           <AdvanceStatusButton orderId={order.id} status={order.status} />
           <CancelOrderButton orderId={order.id} status={order.status} />
         </div>
@@ -74,6 +76,12 @@ export default async function AdminPedidoDetailPage(props: PageProps<"/admin/ped
             <li className="flex justify-between text-sm text-muted-foreground">
               <span>Entrega</span>
               <span>{formatCents(order.delivery_fee_cents)}</span>
+            </li>
+          ) : null}
+          {order.discount_cents > 0 ? (
+            <li className="flex justify-between text-sm text-primary">
+              <span>Cupom {order.coupon_code}</span>
+              <span>- {formatCents(order.discount_cents)}</span>
             </li>
           ) : null}
         </ul>

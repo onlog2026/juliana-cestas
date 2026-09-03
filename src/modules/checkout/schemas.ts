@@ -22,6 +22,7 @@ export const checkoutInputSchema = z
     productSlug: z.string().min(1),
     addonSlugs: z.array(z.string()),
     upsellSlugs: z.array(z.string()),
+    couponCode: z.string().trim().max(40).optional(),
 
     buyerName: z.string().trim().min(3, "Digite o nome completo").max(120),
     buyerEmail: z.string().trim().email("E-mail inválido"),

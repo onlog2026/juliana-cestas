@@ -25,7 +25,7 @@ export default function AdminLoginPage() {
       setLoading(false);
       return;
     }
-    router.push("/admin/pedidos");
+    router.push("/admin");
     router.refresh();
   }
 

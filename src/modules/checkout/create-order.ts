@@ -57,6 +57,8 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
     upsellSlugs: input.upsellSlugs,
     deliveryType: input.deliveryType,
     zoneId: input.zoneId,
+    couponCode: input.couponCode,
+    buyerEmail: input.buyerEmail,
   });
   if (!quote.ok) return { ok: false, error: quote.error };
 
@@ -154,6 +156,8 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
       // então o valor não se perde, só a coluna agregada é compartilhada).
       addons_cents: quote.addonsCents + quote.upsellsCents,
       delivery_fee_cents: quote.deliveryFeeCents,
+      discount_cents: quote.discountCents,
+      coupon_code: quote.couponCode,
       total_cents: quote.totalCents,
       public_token_hash: placeholderTokenHash,
       expires_at: expiresAt,
@@ -169,6 +173,21 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
   }
 
   const order = Array.isArray(data) ? data[0] : data;
+
+  // Registra o uso do cupom pra valer nos limites (total e por cliente).
+  // "unique(order_id)" faz um retry pela mesma idempotency_key não contar
+  // duas vezes -- ignora só o erro de duplicidade, propaga qualquer outro.
+  if (quote.couponId) {
+    const { error: redemptionError } = await supabase.from("coupon_redemptions").insert({
+      tenant_id: TENANT_ID,
+      coupon_id: quote.couponId,
+      order_id: order.id,
+      buyer_email: input.buyerEmail,
+    });
+    if (redemptionError && redemptionError.code !== "23505") {
+      return { ok: false, error: "Pedido criado, mas houve falha ao aplicar o cupom. Fale no WhatsApp." };
+    }
+  }
 
   // Sempre emite um token novo aqui (nunca o placeholder acima) e grava o
   // hash dele no pedido -- seja ele recém-criado ou devolvido pela

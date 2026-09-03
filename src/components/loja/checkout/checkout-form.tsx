@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Loader2, MapPin, Store } from "lucide-react";
+import { Check, Loader2, MapPin, Store, Tag, X } from "lucide-react";
 import { checkoutInputSchema, type CheckoutInput } from "@/modules/checkout/schemas";
 import { CARD_TEMPLATES, countWords } from "@/modules/cards/templates";
 import { formatCents } from "@/lib/money";
@@ -277,6 +277,70 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords }: 
     );
   }
 
+  // ── Cupom ────────────────────────────────────────────────────────────────
+  const [couponInput, setCouponInput] = useState("");
+  const [couponApplying, setCouponApplying] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discountCents: number;
+    deliveryFeeCents: number;
+    signature: string;
+  } | null>(null);
+
+  const zoneId = watch("zoneId");
+  const couponSignature = JSON.stringify({ addonSlugs, upsellSlugs, deliveryType, zoneId });
+
+  // Item mudou depois de aplicar o cupom (frete/desconto ficariam errados) --
+  // limpa em silêncio, sem mensagem de erro, só exige aplicar de novo.
+  if (appliedCoupon && appliedCoupon.signature !== couponSignature) {
+    setAppliedCoupon(null);
+  }
+
+  async function handleApplyCoupon() {
+    if (!couponInput.trim()) return;
+    setCouponApplying(true);
+    setCouponError(null);
+    try {
+      const res = await fetch("/api/checkout/apply-coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productSlug: product.slug,
+          addonSlugs,
+          upsellSlugs,
+          deliveryType,
+          zoneId: zoneId || "",
+          couponCode: couponInput,
+          buyerEmail: watch("buyerEmail") || "",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCouponError(data.error || "Cupom inválido.");
+        return;
+      }
+      setAppliedCoupon({
+        code: data.couponCode,
+        discountCents: data.discountCents,
+        deliveryFeeCents: data.deliveryFeeCents,
+        signature: couponSignature,
+      });
+      setValue("couponCode", data.couponCode);
+    } catch {
+      setCouponError("Falha de conexão. Tenta de novo.");
+    } finally {
+      setCouponApplying(false);
+    }
+  }
+
+  function removeCoupon() {
+    setAppliedCoupon(null);
+    setCouponInput("");
+    setCouponError(null);
+    setValue("couponCode", undefined);
+  }
+
   const totalCents = useMemo(() => {
     const addonsCents = addonSlugs.reduce((sum, slug) => {
       const addon = addons.find((a) => a.slug === slug);
@@ -286,12 +350,16 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords }: 
       const upsell = upsells.find((u) => u.slug === slug);
       return sum + (upsell?.price_cents ?? 0);
     }, 0);
-    const zone = zones.find((z) => z.id === watch("zoneId"));
+    const zone = zones.find((z) => z.id === zoneId);
     const deliveryFee =
-      deliveryType === "delivery" ? (zone?.fee_cents ?? 0) + product.delivery_fee_cents : 0;
-    return product.price_cents + addonsCents + upsellsCents + deliveryFee;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addonSlugs, upsellSlugs, deliveryType, watch("zoneId")]);
+      appliedCoupon?.signature === couponSignature
+        ? appliedCoupon.deliveryFeeCents
+        : deliveryType === "delivery"
+          ? (zone?.fee_cents ?? 0) + product.delivery_fee_cents
+          : 0;
+    const discount = appliedCoupon?.signature === couponSignature ? appliedCoupon.discountCents : 0;
+    return product.price_cents + addonsCents + upsellsCents + deliveryFee - discount;
+  }, [addonSlugs, upsellSlugs, deliveryType, zoneId, zones, product, appliedCoupon, couponSignature]);
 
   // ── Envio ────────────────────────────────────────────────────────────────
   const [submitting, setSubmitting] = useState(false);
@@ -667,6 +735,51 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords }: 
 
         <div className="border-t border-border pt-4 text-sm text-muted-foreground">
           {deliveryType === "pickup" ? "Retirada na loja — frete grátis" : "Entrega"}
+        </div>
+
+        <div className="border-t border-border pt-4">
+          {appliedCoupon && appliedCoupon.signature === couponSignature ? (
+            <div className="flex items-center justify-between gap-2 rounded-[10px] bg-accent px-3 py-2 text-sm">
+              <span className="flex items-center gap-1.5 font-medium text-primary">
+                <Tag className="size-3.5" /> {appliedCoupon.code}
+              </span>
+              <button
+                type="button"
+                onClick={removeCoupon}
+                aria-label="Remover cupom"
+                className="text-muted-foreground hover:text-destructive"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <input
+                value={couponInput}
+                onChange={(e) => {
+                  setCouponInput(e.target.value);
+                  setCouponError(null);
+                }}
+                placeholder="Cupom de desconto"
+                className="h-10 min-w-0 flex-1 rounded-[10px] border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <button
+                type="button"
+                onClick={handleApplyCoupon}
+                disabled={couponApplying || !couponInput.trim()}
+                className="flex h-10 shrink-0 items-center gap-1.5 rounded-[10px] border border-border px-3.5 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-60"
+              >
+                {couponApplying ? <Loader2 className="size-4 animate-spin" /> : "Aplicar"}
+              </button>
+            </div>
+          )}
+          {couponError ? <p className="mt-1.5 text-xs text-destructive">{couponError}</p> : null}
+          {appliedCoupon && appliedCoupon.signature === couponSignature && appliedCoupon.discountCents > 0 ? (
+            <div className="mt-2 flex items-center justify-between text-sm text-primary">
+              <span>Desconto</span>
+              <span>- {formatCents(appliedCoupon.discountCents)}</span>
+            </div>
+          ) : null}
         </div>
 
         <div className="flex items-baseline justify-between border-t border-border pt-4">
