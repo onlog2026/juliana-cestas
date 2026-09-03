@@ -4,15 +4,16 @@ import { useState, useTransition } from "react";
 import { Loader2, Check } from "lucide-react";
 import { upsertBanner, type BannerInput } from "@/modules/banners/actions";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
+import { BannerLivePreview } from "@/components/admin/banner-live-preview";
 import type { Banner } from "@/modules/banners/service";
 
 type Draft = {
   image: string;
   href: string;
   text: string;
-  top: string;
-  left: string;
-  maxWidth: string;
+  top: number;
+  left: number;
+  maxWidth: number;
   objectPosition: string;
   textAlign: "left" | "center" | "right";
   active: boolean;
@@ -23,9 +24,9 @@ function toDraft(banner?: Banner): Draft {
     image: banner?.image ?? "",
     href: banner?.href ?? "/categoria/cafe-da-manha",
     text: banner?.text ?? "",
-    top: String(banner?.textPosition.top ?? 40),
-    left: String(banner?.textPosition.left ?? 6),
-    maxWidth: String(banner?.textPosition.maxWidth ?? 60),
+    top: banner?.textPosition.top ?? 40,
+    left: banner?.textPosition.left ?? 6,
+    maxWidth: banner?.textPosition.maxWidth ?? 60,
     objectPosition: banner?.objectPosition ?? "50% 50%",
     textAlign: banner?.textAlign ?? "left",
     active: banner?.active ?? true,
@@ -44,11 +45,9 @@ export function BannerEditForm({
   const [draft, setDraft] = useState<Draft>(toDraft(banner));
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
 
   function set<K extends keyof Draft>(key: K, value: Draft[K]) {
     setDraft((d) => ({ ...d, [key]: value }));
-    setSaved(false);
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -60,9 +59,9 @@ export function BannerEditForm({
       image: draft.image,
       href: draft.href,
       text: draft.text,
-      top: Number(draft.top) || 0,
-      left: Number(draft.left) || 0,
-      maxWidth: Number(draft.maxWidth) || 60,
+      top: draft.top,
+      left: draft.left,
+      maxWidth: draft.maxWidth,
       objectPosition: draft.objectPosition,
       textAlign: draft.textAlign,
       active: draft.active,
@@ -73,13 +72,18 @@ export function BannerEditForm({
         setError(result.error);
         return;
       }
-      setSaved(true);
       onSaved();
     });
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 rounded-[10px] border border-border bg-background p-4">
+      <BannerLivePreview
+        draft={draft}
+        onTextPositionChange={(pos) => setDraft((d) => ({ ...d, ...pos }))}
+        onImageFocusChange={(objectPosition) => set("objectPosition", objectPosition)}
+      />
+
       <ImageUploadField label="Imagem do banner" value={draft.image} onChange={(url) => set("image", url)} />
 
       <label className="block">
@@ -101,44 +105,18 @@ export function BannerEditForm({
         />
       </label>
 
-      <div className="grid grid-cols-3 gap-3">
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-foreground">Texto: topo (%)</span>
-          <input
-            value={draft.top}
-            onChange={(e) => set("top", e.target.value)}
-            inputMode="numeric"
-            className="h-11 w-full rounded-[10px] border border-border bg-card px-3.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-foreground">Texto: esquerda (%)</span>
-          <input
-            value={draft.left}
-            onChange={(e) => set("left", e.target.value)}
-            inputMode="numeric"
-            className="h-11 w-full rounded-[10px] border border-border bg-card px-3.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-foreground">Largura máx. (%)</span>
-          <input
-            value={draft.maxWidth}
-            onChange={(e) => set("maxWidth", e.target.value)}
-            inputMode="numeric"
-            className="h-11 w-full rounded-[10px] border border-border bg-card px-3.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </label>
-      </div>
-
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-foreground">Enquadramento da foto</span>
+          <span className="mb-1.5 flex items-center justify-between text-sm font-medium text-foreground">
+            Largura do texto <span className="text-xs font-normal text-muted-foreground">{draft.maxWidth}%</span>
+          </span>
           <input
-            value={draft.objectPosition}
-            onChange={(e) => set("objectPosition", e.target.value)}
-            placeholder="50% 50%"
-            className="h-11 w-full rounded-[10px] border border-border bg-card px-3.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            type="range"
+            min={20}
+            max={100}
+            value={draft.maxWidth}
+            onChange={(e) => set("maxWidth", Number(e.target.value))}
+            className="h-11 w-full"
           />
         </label>
         <label className="block">
@@ -173,7 +151,7 @@ export function BannerEditForm({
           disabled={pending}
           className="flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
         >
-          {pending ? <Loader2 className="size-4 animate-spin" /> : saved ? <Check className="size-4" /> : null}
+          {pending ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
           Salvar
         </button>
         <button
