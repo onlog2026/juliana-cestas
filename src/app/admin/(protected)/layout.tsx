@@ -15,15 +15,15 @@ import { LogoutButton } from "@/components/admin/logout-button";
 import { MobileNavDrawer } from "@/components/admin/mobile-nav-drawer";
 
 const NAV_ITEMS = [
-  { href: "/admin", label: "Início", icon: LayoutDashboard },
-  { href: "/admin/pedidos", label: "Pedidos", icon: Package },
-  { href: "/admin/entregas", label: "Entregas", icon: Truck },
-  { href: "/admin/atendimento", label: "Atendimento", icon: Headset },
-  { href: "/admin/produtos", label: "Produtos", icon: ShoppingBasket },
-  { href: "/admin/cupons", label: "Cupons", icon: Ticket },
-  { href: "/admin/cms", label: "CMS", icon: LayoutTemplate },
-  { href: "/admin/seo", label: "SEO", icon: Search },
-  { href: "/admin/configuracoes", label: "Configurações", icon: Settings },
+  { href: "/admin", label: "Início", icon: LayoutDashboard, iconName: "LayoutDashboard" },
+  { href: "/admin/pedidos", label: "Pedidos", icon: Package, iconName: "Package" },
+  { href: "/admin/entregas", label: "Entregas", icon: Truck, iconName: "Truck" },
+  { href: "/admin/atendimento", label: "Atendimento", icon: Headset, iconName: "Headset" },
+  { href: "/admin/produtos", label: "Produtos", icon: ShoppingBasket, iconName: "ShoppingBasket" },
+  { href: "/admin/cupons", label: "Cupons", icon: Ticket, iconName: "Ticket" },
+  { href: "/admin/cms", label: "CMS", icon: LayoutTemplate, iconName: "LayoutTemplate" },
+  { href: "/admin/seo", label: "SEO", icon: Search, iconName: "Search" },
+  { href: "/admin/configuracoes", label: "Configurações", icon: Settings, iconName: "Settings" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -38,7 +38,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin" className="font-display text-lg text-primary">
           Juliana Cestas
         </Link>
-        <MobileNavDrawer items={NAV_ITEMS} staffEmail={staff.email} />
+        <MobileNavDrawer
+          items={NAV_ITEMS.map(({ href, label, iconName }) => ({ href, label, iconName }))}
+          staffEmail={staff.email}
+        />
       </div>
 
       <aside className="hidden shrink-0 md:flex md:w-56 md:flex-col md:border-r md:border-border md:bg-card md:px-4 md:py-6">

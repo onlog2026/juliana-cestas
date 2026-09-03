@@ -3,11 +3,41 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import {
+  Menu,
+  X,
+  Package,
+  Truck,
+  Search,
+  LayoutTemplate,
+  ShoppingBasket,
+  LayoutDashboard,
+  Ticket,
+  Settings,
+  Headset,
+} from "lucide-react";
 import { LogoutButton } from "@/components/admin/logout-button";
 import type { LucideIcon } from "lucide-react";
 
-type NavItem = { href: string; label: string; icon: LucideIcon };
+// Ícones de componente de servidor (layout.tsx) não podem atravessar a
+// fronteira Server->Client como prop -- passar a função do ícone direto
+// quebrava a página inteira em produção (funcionava local, o build/tsc não
+// pegam isso porque é um erro de serialização em tempo de execução, não de
+// tipo). Em vez disso, passa só o NOME (string, serializável) e resolve o
+// componente aqui dentro, que já é client.
+const ICONS: Record<string, LucideIcon> = {
+  Package,
+  Truck,
+  Search,
+  LayoutTemplate,
+  ShoppingBasket,
+  LayoutDashboard,
+  Ticket,
+  Settings,
+  Headset,
+};
+
+type NavItem = { href: string; label: string; iconName: string };
 
 export function MobileNavDrawer({ items, staffEmail }: { items: NavItem[]; staffEmail: string | null }) {
   const [open, setOpen] = useState(false);
@@ -53,7 +83,7 @@ export function MobileNavDrawer({ items, staffEmail }: { items: NavItem[]; staff
             <div className="mt-6 flex flex-col gap-1">
               {items.map((item) => {
                 const active = pathname === item.href;
-                const Icon = item.icon;
+                const Icon = ICONS[item.iconName] ?? LayoutDashboard;
                 return (
                   <Link
                     key={item.href}
