@@ -9,7 +9,7 @@ import { Check, Loader2, MapPin, Store } from "lucide-react";
 import { checkoutInputSchema, type CheckoutInput } from "@/modules/checkout/schemas";
 import { CARD_TEMPLATES, countWords } from "@/modules/cards/templates";
 import { formatCents } from "@/lib/money";
-import type { DbProduct, DbProductAddon } from "@/modules/catalog/service";
+import type { DbProduct, DbProductAddon, UpsellProduct } from "@/modules/catalog/service";
 import type { DeliveryZone } from "@/modules/delivery/settings";
 import type { DaySlots } from "@/modules/delivery/slots";
 import { CalendarPicker } from "@/components/loja/checkout/calendar-picker";
@@ -18,6 +18,7 @@ import { CardPattern } from "@/components/loja/checkout/card-pattern";
 type Props = {
   product: DbProduct;
   addons: DbProductAddon[];
+  upsells: UpsellProduct[];
   zones: DeliveryZone[];
   cardMaxWords: number;
 };
@@ -51,7 +52,7 @@ function formatDayOnlyLabel(dateStr: string, weekday: number) {
   return `${weekdayNames[weekday]} ${d}`;
 }
 
-export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
+export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords }: Props) {
   const router = useRouter();
   const key = draftKey(product.slug);
 
@@ -71,6 +72,7 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
       idempotencyKey: idempotencyKeyRef.current,
       productSlug: product.slug,
       addonSlugs: [],
+      upsellSlugs: [],
       deliveryType: "delivery",
       cardTemplate: CARD_TEMPLATES[0].slug,
       buyerName: "",
@@ -257,6 +259,7 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
   // ── Entrega / retirada ──────────────────────────────────────────────────
   const deliveryType = watch("deliveryType");
   const addonSlugs = watch("addonSlugs") || [];
+  const upsellSlugs = watch("upsellSlugs") || [];
 
   function toggleAddon(slug: string) {
     const current = getValues("addonSlugs") || [];
@@ -266,16 +269,29 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
     );
   }
 
+  function toggleUpsell(slug: string) {
+    const current = getValues("upsellSlugs") || [];
+    setValue(
+      "upsellSlugs",
+      current.includes(slug) ? current.filter((s) => s !== slug) : [...current, slug]
+    );
+  }
+
   const totalCents = useMemo(() => {
     const addonsCents = addonSlugs.reduce((sum, slug) => {
       const addon = addons.find((a) => a.slug === slug);
       return sum + (addon?.price_cents ?? 0);
     }, 0);
+    const upsellsCents = upsellSlugs.reduce((sum, slug) => {
+      const upsell = upsells.find((u) => u.slug === slug);
+      return sum + (upsell?.price_cents ?? 0);
+    }, 0);
     const zone = zones.find((z) => z.id === watch("zoneId"));
-    const deliveryFee = deliveryType === "delivery" ? zone?.fee_cents ?? 0 : 0;
-    return product.price_cents + addonsCents + deliveryFee;
+    const deliveryFee =
+      deliveryType === "delivery" ? (zone?.fee_cents ?? 0) + product.delivery_fee_cents : 0;
+    return product.price_cents + addonsCents + upsellsCents + deliveryFee;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addonSlugs, deliveryType, watch("zoneId")]);
+  }, [addonSlugs, upsellSlugs, deliveryType, watch("zoneId")]);
 
   // ── Envio ────────────────────────────────────────────────────────────────
   const [submitting, setSubmitting] = useState(false);
@@ -541,7 +557,48 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
           </div>
         </section>
 
-        {/* 5. Observações */}
+        {/* 5. Aproveite e leve também (upsell / cross-sell) */}
+        {upsells.length > 0 ? (
+          <section>
+            <h2 className="font-display text-xl text-foreground">Aproveite e leve também</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Complementos que combinam com {product.name}.
+            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {upsells.map((upsell) => {
+                const checked = upsellSlugs.includes(upsell.slug);
+                return (
+                  <label
+                    key={upsell.id}
+                    className={`flex cursor-pointer items-center gap-3 rounded-card border p-3 transition-colors ${
+                      checked ? "border-primary bg-accent" : "border-border bg-card hover:bg-accent/50"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleUpsell(upsell.slug)}
+                      className="size-4 shrink-0 rounded border-border"
+                    />
+                    {upsell.image_url ? (
+                      <div className="relative size-14 shrink-0 overflow-hidden rounded-[10px] bg-secondary">
+                        <Image src={upsell.image_url} alt={upsell.name} fill sizes="56px" className="object-cover" />
+                      </div>
+                    ) : null}
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium text-foreground">{upsell.name}</span>
+                      <span className="block text-sm text-muted-foreground">
+                        + {formatCents(upsell.price_cents)}
+                      </span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        {/* 6. Observações */}
         <section>
           <h2 className="font-display text-xl text-foreground">Observações</h2>
           <textarea
@@ -593,8 +650,23 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
           </div>
         ) : null}
 
+        {upsellSlugs.length > 0 ? (
+          <div className="space-y-1.5 border-t border-border pt-4">
+            {upsellSlugs.map((slug) => {
+              const upsell = upsells.find((u) => u.slug === slug);
+              if (!upsell) return null;
+              return (
+                <div key={slug} className="flex items-center justify-between gap-2 text-sm">
+                  <span className="truncate text-foreground">{upsell.name}</span>
+                  <span className="shrink-0 text-muted-foreground">{formatCents(upsell.price_cents)}</span>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+
         <div className="border-t border-border pt-4 text-sm text-muted-foreground">
-          {deliveryType === "pickup" ? "Retirada na loja" : "Entrega"}
+          {deliveryType === "pickup" ? "Retirada na loja — frete grátis" : "Entrega"}
         </div>
 
         <div className="flex items-baseline justify-between border-t border-border pt-4">

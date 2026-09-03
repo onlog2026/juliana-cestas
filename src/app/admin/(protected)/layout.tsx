@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Package, Truck, Search } from "lucide-react";
+import { Package, Truck, Search, LayoutTemplate, ShoppingBasket } from "lucide-react";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { LogoutButton } from "@/components/admin/logout-button";
 
@@ -34,6 +34,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             className="flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-foreground hover:bg-accent md:rounded-[10px]"
           >
             <Search className="size-4" /> SEO
+          </Link>
+          <Link
+            href="/admin/produtos"
+            className="flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-foreground hover:bg-accent md:rounded-[10px]"
+          >
+            <ShoppingBasket className="size-4" /> Produtos
+          </Link>
+          <Link
+            href="/admin/cms"
+            className="flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-foreground hover:bg-accent md:rounded-[10px]"
+          >
+            <LayoutTemplate className="size-4" /> CMS
           </Link>
         </nav>
 

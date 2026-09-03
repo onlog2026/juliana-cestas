@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
-import { getProductForCheckout } from "@/modules/catalog/service";
+import { getProductForCheckout, getUpsellsForProduct } from "@/modules/catalog/service";
 import { getDeliverySettings, getDeliveryZones } from "@/modules/delivery/settings";
 import { CheckoutForm } from "@/components/loja/checkout/checkout-form";
 
@@ -20,13 +20,16 @@ export async function generateMetadata(
 export default async function CheckoutPage(props: PageProps<"/checkout/[slug]">) {
   const { slug } = await props.params;
 
-  const [found, settings, zones] = await Promise.all([
-    getProductForCheckout(slug),
+  const found = await getProductForCheckout(slug);
+  if (!found) notFound();
+
+  const [settings, zones, upsells] = await Promise.all([
     getDeliverySettings(),
     getDeliveryZones(),
+    getUpsellsForProduct(found.product.id),
   ]);
 
-  if (!found || !settings) notFound();
+  if (!settings) notFound();
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
@@ -50,6 +53,7 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[slug]">)
         <CheckoutForm
           product={found.product}
           addons={found.addons}
+          upsells={upsells}
           zones={zones}
           cardMaxWords={settings.cardMaxWords}
         />

@@ -1,17 +1,26 @@
 import Link from "next/link";
-import { Search, User } from "lucide-react";
+import { User } from "lucide-react";
 import { getAllProducts } from "@/modules/catalog/service";
+import { getSocialLinks } from "@/modules/settings/social-links";
+import { HeaderSearch } from "@/components/loja/header-search";
+import { HeaderNavMenu } from "@/components/loja/header-nav-menu";
+import { SocialIcons } from "@/components/loja/social-icons";
 
 export async function SiteHeader() {
-  const products = await getAllProducts();
-  const categoryLinks = products.map((product) => ({
-    href: `/produto/${product.slug}`,
-    label: product.name,
-  }));
+  const [products, socialLinks] = await Promise.all([getAllProducts(), getSocialLinks()]);
+  const hasSocialLinks = Object.values(socialLinks).some(Boolean);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-saturate-150">
-      <div className="mx-auto flex h-18 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+      {hasSocialLinks ? (
+        <div className="border-b border-border/60 bg-secondary/30">
+          <div className="mx-auto flex h-9 max-w-7xl items-center justify-end px-4 sm:px-6 lg:px-8">
+            <SocialIcons links={socialLinks} />
+          </div>
+        </div>
+      ) : null}
+
+      <div className="mx-auto flex h-18 max-w-7xl items-center gap-8 px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
           className="flex shrink-0 items-center gap-2.5 font-display text-2xl text-primary"
@@ -27,20 +36,13 @@ export async function SiteHeader() {
           Juliana Cestas
         </Link>
 
-        <label className="relative hidden flex-1 max-w-md md:block">
-          <span className="sr-only">Buscar cestas</span>
-          <Search
-            className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden
-          />
-          <input
-            type="search"
-            placeholder="Buscar cestas, ocasiões..."
-            className="h-11 w-full rounded-full border border-border bg-card pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </label>
+        <div className="hidden flex-1 justify-center md:flex">
+          <div className="w-full max-w-md">
+            <HeaderSearch products={products} id="header-search-desktop" />
+          </div>
+        </div>
 
-        <nav className="ml-auto hidden items-center gap-2 md:flex">
+        <nav className="ml-auto hidden shrink-0 items-center gap-2 md:flex">
           <Link
             href="/conta"
             className="jc-nav-hover flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-foreground"
@@ -53,32 +55,11 @@ export async function SiteHeader() {
       </div>
 
       <div className="hidden border-t border-border md:block">
-        <nav className="mx-auto flex max-w-7xl items-center gap-6 overflow-x-auto px-4 py-2.5 text-sm font-medium text-foreground sm:px-6 lg:px-8">
-          {categoryLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="jc-nav-hover whitespace-nowrap rounded-full px-3 py-1.5 -mx-3 -my-1.5"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        <HeaderNavMenu products={products} />
       </div>
 
       <div className="border-t border-border px-4 py-2.5 md:hidden">
-        <label className="relative block">
-          <span className="sr-only">Buscar cestas</span>
-          <Search
-            className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden
-          />
-          <input
-            type="search"
-            placeholder="Buscar cestas, ocasiões..."
-            className="h-11 w-full rounded-full border border-border bg-card pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </label>
+        <HeaderSearch products={products} id="header-search-mobile" />
       </div>
     </header>
   );

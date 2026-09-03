@@ -298,6 +298,22 @@
   color: var(--primary);
 }
 
+/* Ícone de rede social — dourado com o mesmo brilho do logo no hover */
+.jc-social-icon {
+  color: var(--jc-gold);
+  filter: drop-shadow(0 0 0 rgba(217, 164, 65, 0));
+  transition:
+    filter 0.25s ease,
+    transform 0.25s ease,
+    color 0.25s ease;
+}
+.jc-social-icon:hover,
+.jc-social-icon:focus-visible {
+  color: #c6902f;
+  filter: drop-shadow(0 0 6px rgba(217, 164, 65, 0.65));
+  transform: translateY(-1px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .jc-glow-card:hover::after,
   .jc-shine-cta::before {

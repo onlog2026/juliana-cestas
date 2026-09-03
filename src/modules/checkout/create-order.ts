@@ -54,6 +54,7 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
   const quote = await quoteCheckout({
     productSlug: input.productSlug,
     addonSlugs: input.addonSlugs,
+    upsellSlugs: input.upsellSlugs,
     deliveryType: input.deliveryType,
     zoneId: input.zoneId,
   });
@@ -89,6 +90,14 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
         qty: 1,
         items_snapshot: null,
       })),
+    ...quote.upsellItems.map((upsell) => ({
+      kind: "product",
+      product_id: upsell.id,
+      name: upsell.name,
+      unit_price_cents: upsell.price_cents,
+      qty: 1,
+      items_snapshot: null,
+    })),
   ];
 
   const supabase = createAdminClient();
@@ -140,7 +149,10 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
       card_message: input.cardMessage,
       notes: input.notes || null,
       subtotal_cents: quote.subtotalCents,
-      addons_cents: quote.addonsCents,
+      // orders não tem coluna própria pra upsell -- soma no mesmo total de
+      // addons_cents (cada upsell já vira sua própria linha em order_items,
+      // então o valor não se perde, só a coluna agregada é compartilhada).
+      addons_cents: quote.addonsCents + quote.upsellsCents,
       delivery_fee_cents: quote.deliveryFeeCents,
       total_cents: quote.totalCents,
       public_token_hash: placeholderTokenHash,

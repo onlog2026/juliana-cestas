@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getSocialLinks } from "@/modules/settings/social-links";
+import { SocialIcons } from "@/components/loja/social-icons";
 
 const columns = [
   {
@@ -17,7 +19,9 @@ const columns = [
   },
 ];
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const socialLinks = await getSocialLinks();
+
   return (
     <footer className="border-t border-border bg-secondary/60">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr] lg:px-8">
@@ -27,6 +31,7 @@ export function SiteFooter() {
             Cestas de café da manhã e presentes afetivos, feitos e entregues
             em Brasília.
           </p>
+          <SocialIcons links={socialLinks} className="mt-4" />
         </div>
         {columns.map((col) => (
           <div key={col.title}>
