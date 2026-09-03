@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Package, Truck } from "lucide-react";
+import { Package, Truck, Search } from "lucide-react";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { LogoutButton } from "@/components/admin/logout-button";
 
@@ -28,6 +28,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             className="flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-foreground hover:bg-accent md:rounded-[10px]"
           >
             <Truck className="size-4" /> Entregas
+          </Link>
+          <Link
+            href="/admin/seo"
+            className="flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-foreground hover:bg-accent md:rounded-[10px]"
+          >
+            <Search className="size-4" /> SEO
           </Link>
         </nav>
 

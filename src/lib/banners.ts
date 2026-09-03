@@ -21,7 +21,7 @@ export type Banner = {
 export const banners: Banner[] = [
   {
     id: "cesta-completa",
-    image: "/images/banners/banner-cesta-completa.png",
+    image: "/images/banners/banner-cesta-completa.webp",
     objectPosition: "62% 45%",
     href: "/categoria/cafe-da-manha",
     text: "Detalhes que encantam, sabores que emocionam, amor que se celebra.",
@@ -31,7 +31,7 @@ export const banners: Banner[] = [
   },
   {
     id: "mesa-manha",
-    image: "/images/banners/banner-mesa-manha.png",
+    image: "/images/banners/banner-mesa-manha.webp",
     objectPosition: "40% 50%",
     href: "/categoria/cafe-da-manha",
     text: "Cestas de café da manhã, montadas à mão em Brasília.",
@@ -41,7 +41,7 @@ export const banners: Banner[] = [
   },
   {
     id: "ingredientes",
-    image: "/images/banners/banner-ingredientes.png",
+    image: "/images/banners/banner-ingredientes.webp",
     objectPosition: "45% 50%",
     href: "/categoria/cafe-da-manha",
     text: "Presentes que surpreendem, feitos à mão por encomenda.",
@@ -51,7 +51,7 @@ export const banners: Banner[] = [
   },
   {
     id: "vitrine",
-    image: "/images/banners/banner-vitrine.png",
+    image: "/images/banners/banner-vitrine.webp",
     objectPosition: "50% 45%",
     href: "/categoria/cafe-da-manha",
     text: "Presente pra quem você ama, entregue em Brasília.",
@@ -61,7 +61,7 @@ export const banners: Banner[] = [
   },
   {
     id: "lifestyle",
-    image: "/images/banners/banner-lifestyle.png",
+    image: "/images/banners/banner-lifestyle.webp",
     objectPosition: "50% 40%",
     href: "/categoria/cafe-da-manha",
     text: "Momentos gostosos começam com a cesta certa.",
@@ -74,7 +74,7 @@ export const banners: Banner[] = [
     // Fica desligado (active: false) fora da época pra não mostrar uma
     // campanha errada; reative perto do Dia das Mães (2º domingo de maio).
     id: "dia-das-maes",
-    image: "/images/banners/banner-dia-das-maes.png",
+    image: "/images/banners/banner-dia-das-maes.webp",
     objectPosition: "50% 50%",
     href: "/categoria/cafe-da-manha",
     text: "Um presente especial pro Dia das Mães.",

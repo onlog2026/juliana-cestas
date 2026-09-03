@@ -14,7 +14,7 @@ export async function generateMetadata(
   const { slug } = await props.params;
   const found = await getProductForCheckout(slug);
   if (!found) return {};
-  return { title: `Comprar ${found.product.name} | Juliana Cestas` };
+  return { title: `Comprar ${found.product.name}` };
 }
 
 export default async function CheckoutPage(props: PageProps<"/checkout/[slug]">) {

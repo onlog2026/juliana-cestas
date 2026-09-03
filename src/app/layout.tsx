@@ -4,6 +4,8 @@ import "./globals.css";
 import { SiteHeader } from "@/components/loja/site-header";
 import { SiteFooter } from "@/components/loja/site-footer";
 import { BottomNav } from "@/components/loja/bottom-nav";
+import { LocalBusinessJsonLd } from "@/components/loja/json-ld";
+import { getSeoSettings } from "@/modules/seo/service";
 
 const figtree = Figtree({
   variable: "--font-figtree",
@@ -16,11 +18,34 @@ const youngSerif = Young_Serif({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Juliana Cestas | Cestas de café da manhã em Brasília",
-  description:
-    "Detalhes que encantam, sabores que emocionam, amor que se celebra. Cestas de café da manhã artesanais em Brasília, com cartão de mensagem personalizado em cada pedido.",
-};
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://juliana-cestas-loja.vercel.app";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getSeoSettings();
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: seo.siteTitle,
+      template: `%s | Juliana Cestas`,
+    },
+    description: seo.siteDescription,
+    keywords: seo.keywords,
+    openGraph: {
+      title: seo.siteTitle,
+      description: seo.siteDescription,
+      siteName: "Juliana Cestas",
+      locale: "pt_BR",
+      type: "website",
+      images: seo.ogImageUrl ? [{ url: seo.ogImageUrl }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seo.siteTitle,
+      description: seo.siteDescription,
+    },
+    alternates: { canonical: "/" },
+  };
+}
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -32,6 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <noscript>
           <style>{`.jc-reveal{opacity:1!important;transform:none!important}`}</style>
         </noscript>
+        <LocalBusinessJsonLd />
         <SiteHeader />
         <main className="flex-1 pb-16 md:pb-0">{children}</main>
         <SiteFooter />

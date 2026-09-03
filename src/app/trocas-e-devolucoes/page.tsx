@@ -4,7 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { WhatsappCta } from "@/components/loja/whatsapp-cta";
 
 export const metadata: Metadata = {
-  title: "Trocas e entregas | Juliana Cestas",
+  title: "Trocas e entregas",
   description:
     "Como funciona a substituição de itens e a entrega das cestas Juliana Cestas.",
 };

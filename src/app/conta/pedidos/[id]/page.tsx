@@ -8,7 +8,7 @@ import { CardPattern } from "@/components/loja/checkout/card-pattern";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { formatCents } from "@/lib/money";
 
-export const metadata = { title: "Meu pedido | Juliana Cestas" };
+export const metadata = { title: "Meu pedido" };
 
 export default async function ContaPedidoPage(props: PageProps<"/conta/pedidos/[id]">) {
   const { id } = await props.params;

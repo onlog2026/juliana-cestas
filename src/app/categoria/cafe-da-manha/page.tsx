@@ -10,7 +10,7 @@ import { Reveal } from "@/components/loja/reveal";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Cestas de café da manhã em Brasília | Juliana Cestas",
+  title: "Cestas de café da manhã em Brasília",
   description:
     "As 5 cestas de café da manhã da Juliana Cestas: Enquanto, Afeto, Essência, Aconchego e Memorável. Feitas à mão, com cartão de mensagem personalizado.",
 };

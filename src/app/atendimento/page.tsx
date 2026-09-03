@@ -5,7 +5,7 @@ import { ChevronRight, MessageCircle } from "lucide-react";
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
 
 export const metadata: Metadata = {
-  title: "Atendimento | Juliana Cestas",
+  title: "Atendimento",
   description: "Fale com a Juliana Cestas pelo WhatsApp para pedidos, dúvidas e acompanhamento.",
 };
 

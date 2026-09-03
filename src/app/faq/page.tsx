@@ -5,7 +5,7 @@ import { Faq } from "@/components/loja/faq";
 import { WhatsappCta } from "@/components/loja/whatsapp-cta";
 
 export const metadata: Metadata = {
-  title: "Perguntas frequentes | Juliana Cestas",
+  title: "Perguntas frequentes",
   description:
     "Como fazer seu pedido, formas de pagamento e como funcionam as entregas das cestas Juliana Cestas.",
 };

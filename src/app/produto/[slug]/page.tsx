@@ -7,6 +7,7 @@ import { getAllProducts, getProductBySlug } from "@/modules/catalog/service";
 import { ProductCard } from "@/components/loja/product-card";
 import { CartaozinhoSignature } from "@/components/loja/cartaozinho-signature";
 import { Reveal } from "@/components/loja/reveal";
+import { ProductJsonLd } from "@/components/loja/json-ld";
 
 export const revalidate = 300;
 
@@ -30,7 +31,7 @@ export async function generateMetadata(
   if (!product) return {};
 
   return {
-    title: `${product.name} | Juliana Cestas`,
+    title: `${product.name}`,
     description: `${product.name} — ${product.serves}, ${currency.format(product.price)}. ${product.packaging}`,
   };
 }
@@ -50,6 +51,13 @@ export default async function ProdutoPage(
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <ProductJsonLd
+        name={product.name}
+        description={`${product.serves} — ${product.packaging}`}
+        priceCents={Math.round(product.price * 100)}
+        imageUrl={product.image}
+        slug={product.slug}
+      />
       <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
         <Link href="/" className="transition-colors hover:text-primary">
           Início

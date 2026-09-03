@@ -38,7 +38,7 @@ export const featuredProducts: Product[] = [
       "Suco de uva integral",
     ],
     packaging: "Embalagem em tule, delicada e charmosa. Acompanha laço elegante e cartão.",
-    image: p("cesta-doce-manha.jpeg"),
+    image: p("cesta-doce-manha.webp"),
   },
   {
     id: "afeto",
@@ -58,7 +58,7 @@ export const featuredProducts: Product[] = [
       "Café ou suco de uva integral",
     ],
     packaging: "Embalagem sofisticada, delicada e charmosa. Acompanha laço elegante e cartão.",
-    image: p("cesta-aniversario-especial.jpeg"),
+    image: p("cesta-aniversario-especial.webp"),
   },
   {
     id: "essencia",
@@ -79,7 +79,7 @@ export const featuredProducts: Product[] = [
       "Suco de uva integral",
     ],
     packaging: "Embalagem sofisticada, delicada e charmosa — perfeita para surpreender com amor.",
-    image: p("cesta-cafe-completo.png"),
+    image: p("cesta-cafe-completo.webp"),
     badge: "Mais pedida",
   },
   {
@@ -104,7 +104,7 @@ export const featuredProducts: Product[] = [
       "Chocolates",
     ],
     packaging: "Embalagem refinada, delicada e charmosa. Acompanha laço elegante e cartão personalizado.",
-    image: p("cesta-presente-corporativo.jpeg"),
+    image: p("cesta-presente-corporativo.webp"),
   },
   {
     id: "memoravel",
@@ -128,7 +128,7 @@ export const featuredProducts: Product[] = [
       "Suco",
     ],
     packaging: "Embalagem luxo, acabamento impecável. Acompanha laço delicado e cartão personalizado. Adicional de vinho por R$ 49,90.",
-    image: p("cesta-romance-ao-amanhecer.jpeg"),
+    image: p("cesta-romance-ao-amanhecer.webp"),
   },
 ];
 

@@ -7,7 +7,7 @@ import { getCardTemplate } from "@/modules/cards/templates";
 import { CardPattern } from "@/components/loja/checkout/card-pattern";
 import { formatCents } from "@/lib/money";
 
-export const metadata: Metadata = { title: "Seu pedido | Juliana Cestas" };
+export const metadata: Metadata = { title: "Seu pedido" };
 
 const weekdayNames = [
   "domingo",

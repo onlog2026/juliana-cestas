@@ -5,7 +5,7 @@ import { benefits } from "@/lib/mock-content";
 import { WhatsappCta } from "@/components/loja/whatsapp-cta";
 
 export const metadata: Metadata = {
-  title: "Sobre a Juliana Cestas | Juliana Cestas",
+  title: "Sobre",
   description:
     "Cestas de café da manhã e presentes afetivos, feitos à mão em Brasília, com cartão de mensagem personalizado em cada pedido.",
 };
