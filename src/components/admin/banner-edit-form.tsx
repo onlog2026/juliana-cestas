@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Loader2, Check } from "lucide-react";
 import { upsertBanner, type BannerInput } from "@/modules/banners/actions";
+import { BANNER_TEXT_MAX_LENGTH } from "@/modules/banners/constants";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { BannerLivePreview } from "@/components/admin/banner-live-preview";
 import { BANNER_FONTS } from "@/lib/fonts";
@@ -10,6 +11,8 @@ import type { Banner } from "@/modules/banners/service";
 
 type Draft = {
   image: string;
+  mobileImage: string;
+  mobileObjectPosition: string;
   href: string;
   text: string;
   top: number;
@@ -26,6 +29,8 @@ type Draft = {
 function toDraft(banner?: Banner): Draft {
   return {
     image: banner?.image ?? "",
+    mobileImage: banner?.mobileImage ?? "",
+    mobileObjectPosition: banner?.mobileObjectPosition ?? "50% 50%",
     href: banner?.href ?? "/categoria/cafe-da-manha",
     text: banner?.text ?? "",
     top: banner?.textPosition.top ?? 40,
@@ -64,6 +69,8 @@ export function BannerEditForm({
       id: banner?.id,
       slug: banner?.slug ?? draft.text,
       image: draft.image,
+      mobileImage: draft.mobileImage || null,
+      mobileObjectPosition: draft.mobileImage ? draft.mobileObjectPosition : null,
       href: draft.href,
       text: draft.text,
       top: draft.top,
@@ -92,17 +99,31 @@ export function BannerEditForm({
         draft={draft}
         onTextPositionChange={(pos) => setDraft((d) => ({ ...d, ...pos }))}
         onImageFocusChange={(objectPosition) => set("objectPosition", objectPosition)}
+        onMobileImageFocusChange={(objectPosition) => set("mobileObjectPosition", objectPosition)}
       />
 
-      <ImageUploadField label="Imagem do banner" value={draft.image} onChange={(url) => set("image", url)} />
+      <ImageUploadField label="Imagem do banner (desktop)" value={draft.image} onChange={(url) => set("image", url)} />
+
+      <ImageUploadField
+        label="Foto pro celular (opcional -- foto vertical, evita cortar estranho)"
+        value={draft.mobileImage}
+        onChange={(url) => set("mobileImage", url)}
+      />
 
       <label className="block">
-        <span className="mb-1.5 block text-sm font-medium text-foreground">Texto</span>
+        <span className="mb-1.5 flex items-center justify-between text-sm font-medium text-foreground">
+          Texto
+          <span className={`text-xs font-normal ${draft.text.length > BANNER_TEXT_MAX_LENGTH ? "text-destructive" : "text-muted-foreground"}`}>
+            {draft.text.length}/{BANNER_TEXT_MAX_LENGTH}
+          </span>
+        </span>
         <input
           value={draft.text}
           onChange={(e) => set("text", e.target.value)}
+          maxLength={BANNER_TEXT_MAX_LENGTH}
           className="h-11 w-full rounded-[10px] border border-border bg-card px-3.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
+        <span className="mt-1 block text-xs text-muted-foreground">Texto longo quebra o layout no celular -- prefira frases curtas.</span>
       </label>
 
       <label className="block">

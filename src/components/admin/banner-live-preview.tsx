@@ -2,11 +2,13 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { Move } from "lucide-react";
+import { Move, Monitor, Smartphone } from "lucide-react";
 import { bannerFontCssVar } from "@/lib/fonts";
 
 type Draft = {
   image: string;
+  mobileImage: string;
+  mobileObjectPosition: string;
   text: string;
   top: number;
   left: number;
@@ -26,18 +28,27 @@ function clamp(value: number, min: number, max: number): number {
  * Preview do banner EXATAMENTE como aparece na home (mesma proporção,
  * mesmo gradiente, mesma tipografia) -- arrastar o texto ou clicar na foto
  * atualiza a posição ao vivo, em vez de digitar números "no escuro".
+ * Alterna entre a proporção do desktop e a do celular -- útil pra conferir
+ * as duas, já que a home usa uma foto e um enquadramento diferentes em cada.
  */
 export function BannerLivePreview({
   draft,
   onTextPositionChange,
   onImageFocusChange,
+  onMobileImageFocusChange,
 }: {
   draft: Draft;
   onTextPositionChange: (pos: { top: number; left: number }) => void;
   onImageFocusChange: (objectPosition: string) => void;
+  onMobileImageFocusChange: (objectPosition: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
+  const [viewport, setViewport] = useState<"desktop" | "mobile">("desktop");
+
+  const showingMobilePhoto = viewport === "mobile" && !!draft.mobileImage;
+  const image = showingMobilePhoto ? draft.mobileImage : draft.image;
+  const objectPosition = showingMobilePhoto ? draft.mobileObjectPosition : draft.objectPosition;
 
   function positionFromEvent(e: { clientX: number; clientY: number }) {
     const rect = containerRef.current?.getBoundingClientRect();
@@ -70,27 +81,53 @@ export function BannerLivePreview({
   function handleImageClick(e: React.MouseEvent) {
     const pos = positionFromEvent(e);
     if (!pos) return;
-    onImageFocusChange(`${Math.round(pos.xPct)}% ${Math.round(pos.yPct)}%`);
+    const value = `${Math.round(pos.xPct)}% ${Math.round(pos.yPct)}%`;
+    if (showingMobilePhoto) onMobileImageFocusChange(value);
+    else onImageFocusChange(value);
   }
 
-  const [focusX, focusY] = draft.objectPosition
-    .split(" ")
-    .map((v) => Number.parseFloat(v) || 50);
+  const [focusX, focusY] = objectPosition.split(" ").map((v) => Number.parseFloat(v) || 50);
 
   return (
     <div>
+      <div className="mb-2 flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => setViewport("desktop")}
+          className={`flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium ${
+            viewport === "desktop" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+          }`}
+        >
+          <Monitor className="size-3.5" /> Desktop
+        </button>
+        <button
+          type="button"
+          onClick={() => setViewport("mobile")}
+          className={`flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium ${
+            viewport === "mobile" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+          }`}
+        >
+          <Smartphone className="size-3.5" /> Celular
+        </button>
+        {viewport === "mobile" && !draft.mobileImage ? (
+          <span className="text-xs text-muted-foreground">sem foto própria -- usando a do desktop</span>
+        ) : null}
+      </div>
+
       <div
         ref={containerRef}
-        className="relative aspect-[21/8] w-full select-none overflow-hidden rounded-card border border-border bg-secondary [container-type:inline-size]"
+        className={`relative w-full select-none overflow-hidden rounded-card border border-border bg-secondary [container-type:inline-size] ${
+          viewport === "mobile" ? "aspect-[4/5]" : "aspect-[21/8]"
+        }`}
       >
-        {draft.image ? (
+        {image ? (
           <Image
-            src={draft.image}
+            src={image}
             alt=""
             fill
             sizes="100vw"
             className="cursor-crosshair object-cover"
-            style={{ objectPosition: draft.objectPosition }}
+            style={{ objectPosition }}
             onClick={handleImageClick}
           />
         ) : (

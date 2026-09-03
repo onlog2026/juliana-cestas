@@ -7,6 +7,8 @@ export type Banner = {
   slug: string;
   image: string;
   objectPosition: string | null;
+  mobileImage: string | null;
+  mobileObjectPosition: string | null;
   href: string;
   text: string;
   textPosition: { top: number; left: number; maxWidth: number };
@@ -22,6 +24,8 @@ type BannerRow = {
   id: string;
   slug: string;
   image_url: string;
+  mobile_image_url: string | null;
+  mobile_object_position: string | null;
   href: string;
   text: string;
   text_position: { top: number; left: number; maxWidth: number };
@@ -35,7 +39,7 @@ type BannerRow = {
 };
 
 const BANNER_COLUMNS =
-  "id, slug, image_url, href, text, text_position, object_position, text_align, font_size, font_family, font_color, active, sort_order";
+  "id, slug, image_url, mobile_image_url, mobile_object_position, href, text, text_position, object_position, text_align, font_size, font_family, font_color, active, sort_order";
 
 function mapBanner(row: BannerRow): Banner {
   return {
@@ -43,6 +47,8 @@ function mapBanner(row: BannerRow): Banner {
     slug: row.slug,
     image: row.image_url,
     objectPosition: row.object_position,
+    mobileImage: row.mobile_image_url,
+    mobileObjectPosition: row.mobile_object_position,
     href: row.href,
     text: row.text,
     textPosition: row.text_position,

@@ -5,11 +5,14 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TENANT_ID } from "@/lib/tenant";
 import { requireStaff } from "@/lib/auth/require-staff";
+import { BANNER_TEXT_MAX_LENGTH } from "@/modules/banners/constants";
 
 export type BannerInput = {
   id?: string;
   slug: string;
   image: string;
+  mobileImage: string | null;
+  mobileObjectPosition: string | null;
   href: string;
   text: string;
   top: number;
@@ -39,6 +42,9 @@ export async function upsertBanner(
 
   if (!input.image) return { ok: false, error: "Envie uma imagem para o banner." };
   if (!input.text.trim()) return { ok: false, error: "Escreva o texto do banner." };
+  if (input.text.trim().length > BANNER_TEXT_MAX_LENGTH) {
+    return { ok: false, error: `Texto muito longo (máximo ${BANNER_TEXT_MAX_LENGTH} caracteres) -- quebra o banner no celular.` };
+  }
   if (!input.href.trim()) return { ok: false, error: "Informe o link do banner." };
 
   const admin = createAdminClient();
@@ -48,6 +54,8 @@ export async function upsertBanner(
     tenant_id: TENANT_ID,
     slug,
     image_url: input.image,
+    mobile_image_url: input.mobileImage,
+    mobile_object_position: input.mobileObjectPosition,
     href: input.href.trim(),
     text: input.text.trim(),
     text_position: { top: input.top, left: input.left, maxWidth: input.maxWidth },

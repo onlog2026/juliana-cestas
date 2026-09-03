@@ -154,6 +154,8 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
         id: current.id,
         slug: current.slug,
         image: current.image,
+        mobileImage: current.mobileImage,
+        mobileObjectPosition: current.mobileObjectPosition,
         href: current.href,
         text: current.text,
         top: draft.top,
@@ -220,13 +222,26 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
                   if (isEditingThis) e.preventDefault();
                 }}
               >
+                {banner.mobileImage ? (
+                  <Image
+                    src={banner.mobileImage}
+                    alt={banner.text}
+                    fill
+                    priority={i === 0}
+                    sizes="100vw"
+                    className="object-cover sm:hidden"
+                    style={{ objectPosition: banner.mobileObjectPosition ?? "50% 50%" }}
+                  />
+                ) : null}
                 <Image
                   src={banner.image}
                   alt={banner.text}
                   fill
                   priority={i === 0}
                   sizes="100vw"
-                  className={isEditingThis ? "cursor-crosshair object-cover" : "object-cover"}
+                  className={`object-cover ${banner.mobileImage ? "hidden sm:block" : ""} ${
+                    isEditingThis ? "cursor-crosshair" : ""
+                  }`}
                   style={{ objectPosition: effective.objectPosition }}
                   onClick={isCurrent ? handleImageClick : undefined}
                 />
