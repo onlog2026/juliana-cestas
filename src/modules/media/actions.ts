@@ -9,7 +9,7 @@ import { requireStaff } from "@/lib/auth/require-staff";
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 20 * 1024 * 1024;
 
-type MediaKind = "photo" | "logo" | "video";
+type MediaKind = "photo" | "logo" | "favicon" | "video";
 type UploadResult = { ok: true; url: string } | { ok: false; error: string };
 
 async function uploadBuffer(buffer: Buffer, contentType: string, ext: string): Promise<UploadResult> {
@@ -42,11 +42,29 @@ async function processUpload(file: File, kind: MediaKind): Promise<UploadResult>
 
   const original = Buffer.from(await file.arrayBuffer());
 
-  // Logo/favicon: mantém o arquivo original -- precisa preservar
-  // transparência e animação (PNG/GIF), coisa que converter arriscaria.
+  // Logo: mantém o arquivo original -- precisa preservar transparência e
+  // animação (PNG/GIF), coisa que converter arriscaria.
   if (kind === "logo") {
     const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
     return uploadBuffer(original, file.type, ext);
+  }
+
+  // Favicon PRECISA ser quadrado -- ícone da aba do navegador. Se a pessoa
+  // enviar uma foto/logo retangular (ex.: 436x516), sem isso ela fica
+  // cortada de um jeito estranho (às vezes mostrando só uma área transparente
+  // em branco, parecendo "quebrada"). Encaixa num quadrado com fundo
+  // transparente em vez de cortar -- nada do desenho original se perde.
+  if (kind === "favicon") {
+    try {
+      const square = await sharp(original)
+        .resize(256, 256, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .png()
+        .toBuffer();
+      return uploadBuffer(square, "image/png", "png");
+    } catch {
+      const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
+      return uploadBuffer(original, file.type, ext);
+    }
   }
 
   // Foto normal (banner, produto, categoria, anexo de chamado): converte pra

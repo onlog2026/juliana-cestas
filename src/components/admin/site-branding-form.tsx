@@ -49,9 +49,12 @@ export function SiteBrandingForm({ settings }: { settings: SiteSettings }) {
         label="Favicon (ícone da aba do navegador)"
         value={faviconUrl}
         onChange={setFaviconUrl}
-        kind="logo"
-        accept="image/png,image/x-icon,image/svg+xml"
+        kind="favicon"
+        accept="image/png,image/jpeg,image/webp,image/svg+xml"
       />
+      <p className="-mt-2 text-xs text-muted-foreground">
+        Qualquer imagem serve -- a gente encaixa automaticamente num quadrado.
+      </p>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 

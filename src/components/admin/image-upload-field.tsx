@@ -15,8 +15,8 @@ export function ImageUploadField({
   label: string;
   value: string;
   onChange: (url: string) => void;
-  /** "logo" mantém o arquivo original (PNG/GIF animado) -- "photo" converte pra WebP. */
-  kind?: "photo" | "logo";
+  /** "logo" mantém o arquivo original (PNG/GIF animado); "favicon" força quadrado; "photo" converte pra WebP. */
+  kind?: "photo" | "logo" | "favicon";
   accept?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
