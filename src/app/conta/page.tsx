@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Package } from "lucide-react";
+import { Package, Headset } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCustomerOrders } from "@/modules/customers/service";
 import { StatusBadge } from "@/components/admin/status-badge";
@@ -29,6 +29,16 @@ export default async function ContaPage() {
         </div>
         <LogoutButton />
       </div>
+
+      <Link
+        href="/conta/atendimento"
+        className="jc-nav-hover mt-6 flex items-center justify-between rounded-card border border-border bg-card p-4"
+      >
+        <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <Headset className="size-4" /> Atendimento
+        </span>
+        <span className="text-xs text-muted-foreground">Ver chamados</span>
+      </Link>
 
       <h2 className="mt-8 flex items-center gap-2 text-sm font-semibold text-foreground">
         <Package className="size-4" /> Meus pedidos

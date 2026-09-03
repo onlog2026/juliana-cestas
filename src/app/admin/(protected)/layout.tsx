@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Ticket,
   Settings,
+  Headset,
 } from "lucide-react";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { LogoutButton } from "@/components/admin/logout-button";
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { href: "/admin", label: "Início", icon: LayoutDashboard },
   { href: "/admin/pedidos", label: "Pedidos", icon: Package },
   { href: "/admin/entregas", label: "Entregas", icon: Truck },
+  { href: "/admin/atendimento", label: "Atendimento", icon: Headset },
   { href: "/admin/produtos", label: "Produtos", icon: ShoppingBasket },
   { href: "/admin/cupons", label: "Cupons", icon: Ticket },
   { href: "/admin/cms", label: "CMS", icon: LayoutTemplate },
