@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowUp, ArrowDown, Pencil, Trash2, Plus, Loader2 } from "lucide-react";
@@ -14,6 +14,13 @@ export function BannersManager({ banners: initialBanners }: { banners: Banner[] 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  // router.refresh() busca dados novos do servidor, mas o estado local (useState
+  // acima) não se re-sincroniza sozinho com a prop nova -- sem isso, depois de
+  // salvar, o formulário reabria com o valor ANTIGO (parecia "não salvou").
+  useEffect(() => {
+    setBanners(initialBanners);
+  }, [initialBanners]);
 
   function handleSaved() {
     setEditingId(null);
