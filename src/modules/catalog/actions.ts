@@ -6,6 +6,117 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { TENANT_ID } from "@/lib/tenant";
 import { requireStaff } from "@/lib/auth/require-staff";
 
+function slugify(raw: string): string {
+  return raw
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export type ProductDetailsInput = {
+  id: string;
+  name: string;
+  slug: string;
+  serves: string;
+  size: string;
+  priceCents: number;
+  items: string[];
+  packaging: string;
+  imageUrl: string;
+  badge: string;
+  active: boolean;
+};
+
+/** Cria uma cesta em branco (o admin preenche o resto na tela de edição). */
+export async function createProduct(): Promise<
+  { ok: true; id: string } | { ok: false; error: string }
+> {
+  await requireStaff();
+
+  const admin = createAdminClient();
+  const slug = `nova-cesta-${Date.now().toString(36)}`;
+  const { data, error } = await admin
+    .from("products")
+    .insert({
+      tenant_id: TENANT_ID,
+      slug,
+      name: "Nova cesta",
+      price_cents: 500,
+      active: false,
+    })
+    .select("id")
+    .single();
+
+  if (error || !data) return { ok: false, error: "Não foi possível criar o produto." };
+
+  revalidatePath("/admin/produtos");
+  return { ok: true, id: data.id };
+}
+
+export async function updateProductDetails(
+  input: ProductDetailsInput
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  await requireStaff();
+
+  if (!input.name.trim()) return { ok: false, error: "Dê um nome para a cesta." };
+  if (!Number.isInteger(input.priceCents) || input.priceCents < 500) {
+    return { ok: false, error: "O preço mínimo é R$ 5,00." };
+  }
+
+  const admin = createAdminClient();
+  const slug = slugify(input.slug || input.name).slice(0, 80) || input.id;
+
+  const { error } = await admin
+    .from("products")
+    .update({
+      name: input.name.trim(),
+      slug,
+      serves: input.serves.trim() || null,
+      size: input.size.trim() || null,
+      price_cents: input.priceCents,
+      items: input.items,
+      packaging: input.packaging.trim() || null,
+      image_url: input.imageUrl.trim() || null,
+      badge: input.badge.trim() || null,
+      active: input.active,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", input.id)
+    .eq("tenant_id", TENANT_ID);
+
+  if (error) {
+    if (error.code === "23505") return { ok: false, error: "Já existe uma cesta com esse link (slug)." };
+    return { ok: false, error: "Não foi possível salvar." };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/checkout", "layout");
+  revalidatePath("/produto", "layout");
+  revalidatePath("/admin/produtos");
+  return { ok: true };
+}
+
+export async function deleteProduct(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  await requireStaff();
+
+  const admin = createAdminClient();
+  // Soft delete: pedidos antigos referenciam product_id, apagar de vez
+  // quebraria o histórico. Desativar já tira do site.
+  const { error } = await admin
+    .from("products")
+    .update({ active: false })
+    .eq("id", id)
+    .eq("tenant_id", TENANT_ID);
+
+  if (error) return { ok: false, error: "Não foi possível remover." };
+
+  revalidatePath("/");
+  revalidatePath("/admin/produtos");
+  return { ok: true };
+}
+
 export async function updateProductDelivery(input: {
   productId: string;
   deliveryFeeCents: number;

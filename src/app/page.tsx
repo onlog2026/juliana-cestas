@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BannerCarousel } from "@/components/loja/banner-carousel";
+import { getActiveBanners } from "@/modules/banners/service";
 import { CategoryTiles } from "@/components/loja/category-tiles";
 import { FeaturedProducts } from "@/components/loja/featured-products";
 import { CartaozinhoSignature } from "@/components/loja/cartaozinho-signature";
@@ -9,10 +10,12 @@ import { Faq } from "@/components/loja/faq";
 import { WhatsappCta } from "@/components/loja/whatsapp-cta";
 import { Reveal } from "@/components/loja/reveal";
 
-export default function Home() {
+export default async function Home() {
+  const banners = await getActiveBanners();
+
   return (
     <>
-      <BannerCarousel />
+      <BannerCarousel banners={banners} />
       <div className="mx-auto flex max-w-7xl flex-wrap gap-3 px-4 pt-6 sm:px-6 lg:px-8">
         <Link
           href="/categoria/cafe-da-manha"

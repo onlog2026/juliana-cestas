@@ -1,8 +1,10 @@
 import { getSocialLinks } from "@/modules/settings/social-links";
+import { getAllBannersAdmin } from "@/modules/banners/service";
 import { SocialLinksForm } from "@/components/admin/social-links-form";
+import { BannersManager } from "@/components/admin/banners-manager";
 
 export default async function AdminCmsPage() {
-  const links = await getSocialLinks();
+  const [links, banners] = await Promise.all([getSocialLinks(), getAllBannersAdmin()]);
 
   return (
     <div className="max-w-2xl">
@@ -10,6 +12,16 @@ export default async function AdminCmsPage() {
       <p className="mt-1 text-sm text-muted-foreground">
         Conteúdo do site que você pode editar sem mexer em código.
       </p>
+
+      <section className="mt-6 rounded-card border border-border bg-card p-5">
+        <h2 className="font-display text-lg text-foreground">Banners da home</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Fotos e frases do carrossel no topo da home. A ordem daqui é a ordem que aparece no site.
+        </p>
+        <div className="mt-4">
+          <BannersManager banners={banners} />
+        </div>
+      </section>
 
       <section className="mt-6 rounded-card border border-border bg-card p-5">
         <h2 className="font-display text-lg text-foreground">Redes sociais</h2>

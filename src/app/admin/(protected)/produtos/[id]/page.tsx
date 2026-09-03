@@ -2,8 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { getAllProductsAdmin, getUpsellProductIds } from "@/modules/catalog/service";
+import { ProductDetailsForm } from "@/components/admin/product-details-form";
 import { ProductDeliveryForm } from "@/components/admin/product-delivery-form";
 import { ProductUpsellsForm } from "@/components/admin/product-upsells-form";
+import { DeleteProductButton } from "@/components/admin/delete-product-button";
 
 export default async function AdminProdutoPage(props: PageProps<"/admin/produtos/[id]">) {
   const { id } = await props.params;
@@ -25,6 +27,13 @@ export default async function AdminProdutoPage(props: PageProps<"/admin/produtos
       </nav>
 
       <h1 className="mt-2 font-display text-2xl text-foreground">{product.name}</h1>
+
+      <section className="mt-6 rounded-card border border-border bg-card p-5">
+        <h2 className="font-display text-lg text-foreground">Dados da cesta</h2>
+        <div className="mt-4">
+          <ProductDetailsForm product={product} />
+        </div>
+      </section>
 
       <section className="mt-6 rounded-card border border-border bg-card p-5">
         <h2 className="font-display text-lg text-foreground">Valor de entrega</h2>
@@ -49,6 +58,10 @@ export default async function AdminProdutoPage(props: PageProps<"/admin/produtos
           />
         </div>
       </section>
+
+      <div className="mt-6">
+        <DeleteProductButton productId={product.id} productName={product.name} />
+      </div>
     </div>
   );
 }

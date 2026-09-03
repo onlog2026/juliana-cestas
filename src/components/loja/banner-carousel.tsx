@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { activeBanners } from "@/lib/banners";
+import type { Banner } from "@/modules/banners/service";
 
-export function BannerCarousel() {
+export function BannerCarousel({ banners }: { banners: Banner[] }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const count = activeBanners.length;
+  const count = banners.length;
 
   const goPrev = () => setIndex((current) => (current - 1 + count) % count);
   const goNext = () => setIndex((current) => (current + 1) % count);
@@ -37,7 +37,7 @@ export function BannerCarousel() {
           className="flex h-full transition-transform duration-700 ease-out"
           style={{ transform: `translateX(-${index * 100}%)` }}
         >
-          {activeBanners.map((banner, i) => (
+          {banners.map((banner, i) => (
             <Link
               key={banner.id}
               href={banner.href}
@@ -52,7 +52,7 @@ export function BannerCarousel() {
                 priority={i === 0}
                 sizes="100vw"
                 className="object-cover"
-                style={{ objectPosition: banner.objectPosition }}
+                style={{ objectPosition: banner.objectPosition ?? undefined }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
               <p
@@ -94,7 +94,7 @@ export function BannerCarousel() {
 
       {count > 1 ? (
         <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
-          {activeBanners.map((banner, i) => (
+          {banners.map((banner, i) => (
             <button
               key={banner.id}
               type="button"

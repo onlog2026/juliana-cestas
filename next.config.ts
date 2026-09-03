@@ -7,6 +7,13 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.join(__dirname),
   },
+  experimental: {
+    // Default de 1mb e pouco pra foto de banner/produto (upload de imagem
+    // do admin vira Server Action com FormData).
+    serverActions: {
+      bodySizeLimit: "8mb",
+    },
+  },
 };
 
 export default nextConfig;

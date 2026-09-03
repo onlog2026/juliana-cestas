@@ -15,6 +15,7 @@ export type DbProduct = {
   image_url: string | null;
   badge: string | null;
   delivery_fee_cents: number;
+  active: boolean;
 };
 
 export type UpsellProduct = {
@@ -70,7 +71,7 @@ export async function getProductForCheckout(slug: string) {
   const { data: product, error } = await supabase
     .from("products")
     .select(
-      "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, delivery_fee_cents"
+      "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, delivery_fee_cents, active"
     )
     .eq("tenant_id", TENANT_ID)
     .eq("slug", slug)
@@ -96,7 +97,7 @@ export async function getAllProductsAdmin(): Promise<DbProduct[]> {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("products")
-    .select("id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, delivery_fee_cents")
+    .select("id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, delivery_fee_cents, active")
     .eq("tenant_id", TENANT_ID)
     .order("sort_order", { ascending: true });
   return (data ?? []) as DbProduct[];
