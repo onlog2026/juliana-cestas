@@ -309,7 +309,12 @@ export function CheckoutForm({ product, addons, zones, cardMaxWords }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="grid gap-8 lg:grid-cols-[1fr_360px]">
+    <form
+      onSubmit={handleSubmit(onSubmit, () =>
+        setSubmitError("Falta preencher ou corrigir algum campo. Revise o formulário e tente de novo.")
+      )}
+      className="grid gap-8 lg:grid-cols-[1fr_360px]"
+    >
       <div className="min-w-0 space-y-10">
         {draftRestored ? (
           <p className="rounded-card border border-border bg-secondary/40 px-4 py-2.5 text-sm text-muted-foreground">

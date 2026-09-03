@@ -51,7 +51,11 @@ export const checkoutInputSchema = z
     neighborhood: z.string().trim().optional(),
     city: z.string().trim().optional(),
     state: z.string().trim().max(2).optional(),
-    zoneId: z.string().uuid().optional(),
+    // "" é o valor real que o <select> não tocado manda (retirada na loja
+    // nunca renderiza esse campo) -- sem aceitar "", checkout com retirada
+    // falhava a validação em silêncio e o botão "Ir para pagamento" não
+    // fazia nada.
+    zoneId: z.union([z.string().uuid(), z.literal("")]).optional(),
 
     deliveryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     deliverySlotStart: z.string().regex(/^\d{2}:\d{2}$/),
