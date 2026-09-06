@@ -25,10 +25,16 @@ export type DbProduct = {
   cest: string | null;
   gallery_urls: string[];
   video_url: string | null;
+  description: string | null;
+  short_description: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  image_alt: string | null;
+  social_caption: string | null;
 };
 
 const ADMIN_PRODUCT_COLUMNS =
-  "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, delivery_fee_cents, active, category_id, cost_cents, sku, barcode, stock_quantity, low_stock_threshold, ncm, cest, gallery_urls, video_url";
+  "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, delivery_fee_cents, active, category_id, cost_cents, sku, barcode, stock_quantity, low_stock_threshold, ncm, cest, gallery_urls, video_url, description, short_description, seo_title, seo_description, image_alt, social_caption";
 
 export type UpsellProduct = {
   id: string;
@@ -46,7 +52,7 @@ export type DbProductAddon = {
 };
 
 const PUBLIC_PRODUCT_COLUMNS =
-  "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, gallery_urls, video_url";
+  "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, gallery_urls, video_url, description, short_description, seo_title, seo_description, image_alt";
 
 function mapPublicProduct(p: {
   id: string;
@@ -61,6 +67,11 @@ function mapPublicProduct(p: {
   badge: string | null;
   gallery_urls: string[] | null;
   video_url: string | null;
+  description?: string | null;
+  short_description?: string | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  image_alt?: string | null;
 }): Product {
   return {
     id: p.id,
@@ -75,6 +86,11 @@ function mapPublicProduct(p: {
     images: [p.image_url, ...(p.gallery_urls ?? [])].filter((url): url is string => Boolean(url)),
     videoUrl: p.video_url ?? undefined,
     badge: p.badge ?? undefined,
+    description: p.description ?? undefined,
+    shortDescription: p.short_description ?? undefined,
+    seoTitle: p.seo_title ?? undefined,
+    seoDescription: p.seo_description ?? undefined,
+    imageAlt: p.image_alt ?? undefined,
   };
 }
 

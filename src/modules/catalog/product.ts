@@ -20,4 +20,11 @@ export type Product = {
   images: string[];
   videoUrl?: string;
   badge?: string;
+  /** Texto mais longo pra página do produto. Vazio = a página não mostra a seção. */
+  description?: string;
+  shortDescription?: string;
+  /** Sobrescrevem o `<title>`/description gerados a partir de nome+preço. */
+  seoTitle?: string;
+  seoDescription?: string;
+  imageAlt?: string;
 };

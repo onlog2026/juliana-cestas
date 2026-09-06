@@ -7,6 +7,7 @@ import { updateProductDetails } from "@/modules/catalog/actions";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { GalleryUploadField } from "@/components/admin/gallery-upload-field";
 import { VideoUploadField } from "@/components/admin/video-upload-field";
+import { AiFillButton } from "@/components/admin/ai-fill-button";
 import type { DbProduct } from "@/modules/catalog/service";
 import type { Category } from "@/modules/catalog/categories";
 
@@ -32,7 +33,16 @@ function intOrNull(raw: string): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
-export function ProductDetailsForm({ product, categories }: { product: DbProduct; categories: Category[] }) {
+export function ProductDetailsForm({
+  product,
+  categories,
+  iaLiberada,
+}: {
+  product: DbProduct;
+  categories: Category[];
+  /** Módulo `ia` contratado pela loja -- sem ele o botão "Preencher com IA" nem aparece. */
+  iaLiberada: boolean;
+}) {
   const router = useRouter();
   const [name, setName] = useState(product.name);
   const [slug, setSlug] = useState(product.slug);
@@ -58,6 +68,12 @@ export function ProductDetailsForm({ product, categories }: { product: DbProduct
   const [cest, setCest] = useState(product.cest ?? "");
   const [galleryUrls, setGalleryUrls] = useState<string[]>(product.gallery_urls ?? []);
   const [videoUrl, setVideoUrl] = useState(product.video_url ?? "");
+  const [description, setDescription] = useState(product.description ?? "");
+  const [shortDescription, setShortDescription] = useState(product.short_description ?? "");
+  const [seoTitle, setSeoTitle] = useState(product.seo_title ?? "");
+  const [seoDescription, setSeoDescription] = useState(product.seo_description ?? "");
+  const [imageAlt, setImageAlt] = useState(product.image_alt ?? "");
+  const [socialCaption, setSocialCaption] = useState(product.social_caption ?? "");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -99,6 +115,12 @@ export function ProductDetailsForm({ product, categories }: { product: DbProduct
         cest,
         galleryUrls,
         videoUrl,
+        description,
+        shortDescription,
+        seoTitle,
+        seoDescription,
+        imageAlt,
+        socialCaption,
       });
       if (!result.ok) {
         setError(result.error);
@@ -267,6 +289,100 @@ export function ProductDetailsForm({ product, categories }: { product: DbProduct
             className="h-11 w-full rounded-[10px] border border-border bg-background px-3.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </label>
+      </div>
+
+      <div className="rounded-[10px] border border-border p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-foreground">Descrição e SEO (opcional)</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Aparece na página do produto e ajuda o Google a encontrar esta cesta.
+            </p>
+          </div>
+          {iaLiberada ? (
+            <AiFillButton
+              productId={product.id}
+              nomeAtual={name}
+              itensAtuais={itemsText.split("\n")}
+              imagemAtual={imageUrl}
+              onGenerated={(c) => {
+                setDescription(c.descricaoLonga);
+                setShortDescription(c.descricaoCurta);
+                setSeoTitle(c.seoTitulo);
+                setSeoDescription(c.seoDescricao);
+                setImageAlt(c.altTexto);
+                setSocialCaption(c.legendaRedeSocial);
+              }}
+            />
+          ) : null}
+        </div>
+
+        <div className="mt-4 grid gap-4">
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-foreground">Descrição da cesta</span>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={5}
+              maxLength={4000}
+              placeholder="O texto que aparece na página do produto, contando o que torna esta cesta especial."
+              className="w-full resize-none rounded-[10px] border border-border bg-background px-3.5 py-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-foreground">Descrição curta (para o card do produto)</span>
+            <input
+              value={shortDescription}
+              onChange={(e) => setShortDescription(e.target.value)}
+              maxLength={300}
+              className="h-11 w-full rounded-[10px] border border-border bg-background px-3.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1.5 block text-sm font-medium text-foreground">Título de SEO (opcional)</span>
+              <input
+                value={seoTitle}
+                onChange={(e) => setSeoTitle(e.target.value)}
+                maxLength={160}
+                placeholder="Em branco = usa o nome da cesta"
+                className="h-11 w-full rounded-[10px] border border-border bg-background px-3.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-sm font-medium text-foreground">Descrição de SEO (opcional)</span>
+              <input
+                value={seoDescription}
+                onChange={(e) => setSeoDescription(e.target.value)}
+                maxLength={300}
+                placeholder="O texto que aparece no resultado do Google"
+                className="h-11 w-full rounded-[10px] border border-border bg-background px-3.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </label>
+          </div>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-foreground">
+              Texto alternativo da foto (para quem usa leitor de tela e para o Google Imagens)
+            </span>
+            <input
+              value={imageAlt}
+              onChange={(e) => setImageAlt(e.target.value)}
+              maxLength={200}
+              className="h-11 w-full rounded-[10px] border border-border bg-background px-3.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-foreground">Legenda pronta para rede social (opcional)</span>
+            <textarea
+              value={socialCaption}
+              onChange={(e) => setSocialCaption(e.target.value)}
+              rows={3}
+              maxLength={600}
+              placeholder="Um texto pronto para colar num post do Instagram, por exemplo."
+              className="w-full resize-none rounded-[10px] border border-border bg-background px-3.5 py-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </label>
+        </div>
       </div>
 
       <details className="rounded-[10px] border border-border">

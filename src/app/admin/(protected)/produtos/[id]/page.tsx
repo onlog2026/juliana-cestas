@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { getAllProductsAdmin, getUpsellProductIds } from "@/modules/catalog/service";
 import { requireStaff } from "@/lib/auth/require-staff";
+import { canUseModule } from "@/modules/entitlements/service";
 import { getAllCategoriesAdmin } from "@/modules/catalog/categories";
 import { ProductDetailsForm } from "@/components/admin/product-details-form";
 import { ProductDeliveryForm } from "@/components/admin/product-delivery-form";
@@ -16,9 +17,10 @@ export default async function AdminProdutoPage(props: PageProps<"/admin/produtos
   const product = products.find((p) => p.id === id);
   if (!product) notFound();
 
-  const [upsellIds, categories] = await Promise.all([
+  const [upsellIds, categories, iaLiberada] = await Promise.all([
     getUpsellProductIds(staff.tenantId, product.id),
     getAllCategoriesAdmin(staff.tenantId),
+    canUseModule(staff, "ia"),
   ]);
   const otherProducts = products.filter((p) => p.id !== product.id);
 
@@ -38,7 +40,7 @@ export default async function AdminProdutoPage(props: PageProps<"/admin/produtos
         <section className="rounded-card border border-border bg-card p-5 lg:p-6">
           <h2 className="font-display text-lg text-foreground">Dados da cesta</h2>
           <div className="mt-4">
-            <ProductDetailsForm product={product} categories={categories} />
+            <ProductDetailsForm product={product} categories={categories} iaLiberada={iaLiberada} />
           </div>
         </section>
 

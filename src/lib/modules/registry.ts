@@ -262,6 +262,7 @@ export const MODULE_REGISTRY: readonly ModuleDefinition[] = [
     category: "operacao",
     isCore: false,
     sortOrder: 23,
+    menu: { href: "/admin/financeiro", label: "Financeiro", iconName: "Wallet", menuOrder: 12 },
   },
   {
     slug: "automacoes",

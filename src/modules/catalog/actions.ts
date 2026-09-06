@@ -36,6 +36,12 @@ export type ProductDetailsInput = {
   cest: string;
   galleryUrls: string[];
   videoUrl: string;
+  description: string;
+  shortDescription: string;
+  seoTitle: string;
+  seoDescription: string;
+  imageAlt: string;
+  socialCaption: string;
 };
 
 /** Cria uma cesta em branco (o admin preenche o resto na tela de edição). */
@@ -88,11 +94,19 @@ export async function updateProductDetails(
   if (input.galleryUrls.length > 4) {
     return { ok: false, error: "No máximo 4 fotos extras (5 no total, com a capa)." };
   }
+  // Mesmos tetos da migração 0036 -- checar aqui também evita depender só do
+  // CHECK do banco recusar em silêncio (a mensagem fica clara pra lojista).
+  if (input.description.length > 4000) return { ok: false, error: "Descrição muito longa." };
+  if (input.shortDescription.length > 300) return { ok: false, error: "Descrição curta muito longa." };
+  if (input.seoTitle.length > 160) return { ok: false, error: "Título de SEO muito longo." };
+  if (input.seoDescription.length > 300) return { ok: false, error: "Descrição de SEO muito longa." };
+  if (input.imageAlt.length > 200) return { ok: false, error: "Texto alternativo muito longo." };
+  if (input.socialCaption.length > 600) return { ok: false, error: "Legenda muito longa." };
 
   const admin = createAdminClient();
   const slug = slugify(input.slug || input.name).slice(0, 80) || input.id;
 
-  const { error } = await admin
+  const { data, error } = await admin
     .from("products")
     .update({
       name: input.name.trim(),
@@ -115,14 +129,26 @@ export async function updateProductDetails(
       cest: input.cest.trim() || null,
       gallery_urls: input.galleryUrls,
       video_url: input.videoUrl.trim() || null,
+      description: input.description.trim() || null,
+      short_description: input.shortDescription.trim() || null,
+      seo_title: input.seoTitle.trim() || null,
+      seo_description: input.seoDescription.trim() || null,
+      image_alt: input.imageAlt.trim() || null,
+      social_caption: input.socialCaption.trim() || null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", input.id)
-    .eq("tenant_id", staff.tenantId);
+    .eq("tenant_id", staff.tenantId)
+    .select("id");
 
   if (error) {
     if (error.code === "23505") return { ok: false, error: "Já existe uma cesta com esse link (slug)." };
     return { ok: false, error: "Não foi possível salvar." };
+  }
+  // RLS pode recusar em silêncio (0 linhas, sem exceção) -- sem checar isso a
+  // tela diria "salvo!" e nada teria mudado.
+  if (!data || data.length === 0) {
+    return { ok: false, error: "Não foi possível salvar: a cesta não pertence a esta loja." };
   }
 
   revalidatePath("/");

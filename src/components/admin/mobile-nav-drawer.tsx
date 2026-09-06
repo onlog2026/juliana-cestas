@@ -7,6 +7,7 @@ import {
   Menu,
   X,
   CreditCard,
+  Wallet,
   Boxes,
   Images,
   Shapes,
@@ -35,6 +36,7 @@ import type { LucideIcon } from "lucide-react";
 // componente aqui dentro, que já é client.
 const ICONS: Record<string, LucideIcon> = {
   CreditCard,
+  Wallet,
   Boxes,
   Images,
   Shapes,

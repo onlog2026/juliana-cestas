@@ -11,11 +11,14 @@ export function ProductGallery({
   videoUrl,
   name,
   badge,
+  imageAlt,
 }: {
   images: string[];
   videoUrl?: string;
   name: string;
   badge?: string;
+  /** Texto alternativo escrito pela lojista (ou pela IA). Vazio = usa o nome. */
+  imageAlt?: string;
 }) {
   const media: Media[] = [
     ...images.map((url): Media => ({ type: "image", url })),
@@ -31,7 +34,7 @@ export function ProductGallery({
           // eslint-disable-next-line jsx-a11y/media-has-caption
           <video src={current.url} controls className="absolute inset-0 size-full object-cover" />
         ) : current ? (
-          <Image src={current.url} alt={name} fill priority sizes="(min-width: 768px) 45vw, 100vw" className="object-cover" />
+          <Image src={current.url} alt={imageAlt || name} fill priority sizes="(min-width: 768px) 45vw, 100vw" className="object-cover" />
         ) : null}
         {badge ? (
           <span className="absolute left-4 top-4 rounded-full bg-[var(--jc-gold)] px-3 py-1 text-xs font-semibold text-[#1f2a24]">

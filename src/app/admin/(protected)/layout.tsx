@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   CreditCard,
+  Wallet,
   Boxes,
   Images,
   Shapes,
@@ -51,6 +52,7 @@ import { PlanBanner } from "@/components/admin/plan-banner";
 /** Nome do ícone (texto, vindo do registro) -> componente. Só aqui, no servidor. */
 const ICONS: Record<string, LucideIcon> = {
   CreditCard,
+  Wallet,
   Boxes,
   Images,
   Shapes,

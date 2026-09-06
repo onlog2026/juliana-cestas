@@ -36,8 +36,10 @@ export async function generateMetadata(
   if (!product) return {};
 
   return {
-    title: `${product.name}`,
-    description: `${product.name} — ${product.serves}, ${currency.format(product.price)}. ${product.packaging}`,
+    title: product.seoTitle?.trim() || product.name,
+    description:
+      product.seoDescription?.trim() ||
+      `${product.name} — ${product.serves}, ${currency.format(product.price)}. ${product.packaging}`,
   };
 }
 
@@ -77,7 +79,7 @@ export default async function ProdutoPage(
       </nav>
 
       <div className="mt-6 grid gap-10 md:grid-cols-2 md:gap-12">
-        <ProductGallery images={product.images} videoUrl={product.videoUrl} name={product.name} badge={product.badge} />
+        <ProductGallery images={product.images} videoUrl={product.videoUrl} name={product.name} badge={product.badge} imageAlt={product.imageAlt} />
 
         <div className="jc-pop" style={{ animationDelay: "0.1s" }}>
           <h1 className="font-display text-3xl text-foreground md:text-4xl">
@@ -107,6 +109,10 @@ export default async function ProdutoPage(
               Falar no WhatsApp
             </a>
           </div>
+
+          {product.description ? (
+            <p className="mt-6 text-sm leading-relaxed text-muted-foreground">{product.description}</p>
+          ) : null}
 
           <div className="mt-8">
             <h2 className="text-sm font-semibold text-foreground">

@@ -250,6 +250,7 @@ describe("menu do painel da loja", () => {
       // Daqui para baixo, o que foi ganhando tela.
       "Pagamentos",
       "Avaliações",
+      "Financeiro",
       "Modelos",
       "Galeria",
       "Marcas",
@@ -282,7 +283,6 @@ describe("menu do painel da loja", () => {
   it("módulo sem rota no registro continua fora do menu (escondido por padrão)", () => {
     const comMenu = ADMIN_MENU_MODULES.map((m) => m.slug);
     // Nada de "aparece cinza e não funciona": sem tela, sem item.
-    expect(comMenu).not.toContain("financeiro");
     expect(comMenu).not.toContain("paginas");
     expect(comMenu).not.toContain("ia");
     expect(comMenu).not.toContain("dominio");
