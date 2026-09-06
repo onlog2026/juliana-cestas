@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
 import { Figtree, Young_Serif, Playfair_Display, Poppins } from "next/font/google";
 import "./globals.css";
-import { SiteHeader } from "@/components/loja/site-header";
-import { SiteFooter } from "@/components/loja/site-footer";
-import { BottomNav } from "@/components/loja/bottom-nav";
-import { LocalBusinessJsonLd } from "@/components/loja/json-ld";
-import { getSeoSettings } from "@/modules/seo/service";
-import { getSiteSettings } from "@/modules/settings/site-settings";
-import { getStoreProfile } from "@/modules/settings/store-profile";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
-import { getTenantId } from "@/lib/tenant/context";
+
+/**
+ * Layout RAIZ -- só o que vale para o site inteiro: fontes, estilos e
+ * analytics.
+ *
+ * O cabeçalho, o rodapé e a barra de baixo da LOJA vivem em
+ * `src/app/(store)/layout.tsx`. Antes moravam aqui, e por isso apareciam
+ * também por cima do painel do lojista e do painel da plataforma -- dava para
+ * ver o cabeçalho da loja sobrepondo o menu do admin. Painel não é vitrine.
+ */
 
 const figtree = Figtree({
   variable: "--font-figtree",
@@ -35,44 +37,11 @@ const poppins = Poppins({
   subsets: ["latin"],
 });
 
-// TODO F7: a URL pública de cada loja vai vir de `tenant_domains`. Enquanto
-// esse mapa não existe, a única fonte é o env da loja legada.
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://juliana-cestas-loja.vercel.app";
-
-export async function generateMetadata(): Promise<Metadata> {
-  const tenantId = await getTenantId();
-  const [seo, siteSettings, storeProfile] = await Promise.all([
-    getSeoSettings(tenantId),
-    getSiteSettings(tenantId),
-    getStoreProfile(tenantId),
-  ]);
-  // Nome da loja: o do perfil; se ainda não foi preenchido, o título de SEO.
-  const storeName = storeProfile.businessName?.trim() || seo.siteTitle;
-  return {
-    metadataBase: new URL(SITE_URL),
-    title: {
-      default: seo.siteTitle,
-      template: `%s | ${storeName}`,
-    },
-    description: seo.siteDescription,
-    keywords: seo.keywords,
-    icons: siteSettings.faviconUrl ? { icon: siteSettings.faviconUrl } : undefined,
-    openGraph: {
-      title: seo.siteTitle,
-      description: seo.siteDescription,
-      siteName: storeName,
-      locale: "pt_BR",
-      type: "website",
-      images: seo.ogImageUrl ? [{ url: seo.ogImageUrl }] : undefined,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: seo.siteTitle,
-      description: seo.siteDescription,
-    },
-    alternates: { canonical: "/" },
-  };
-}
+// Metadados específicos da loja ficam em (store)/layout.tsx -- aqui só o que
+// não depende de qual loja (nem de haver uma).
+export const metadata: Metadata = {
+  robots: { index: true, follow: true },
+};
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -85,11 +54,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <style>{`.jc-reveal{opacity:1!important;transform:none!important}`}</style>
         </noscript>
         <GoogleAnalytics />
-        <LocalBusinessJsonLd />
-        <SiteHeader />
-        <main className="flex-1 pb-16 md:pb-0">{children}</main>
-        <SiteFooter />
-        <BottomNav />
+        {children}
       </body>
     </html>
   );
