@@ -257,6 +257,8 @@ describe("menu do painel da loja", () => {
       "Equipe",
       "Estoque",
       "Compras",
+      "Domínio",
+      "Automações",
     ]);
   });
 
@@ -285,7 +287,7 @@ describe("menu do painel da loja", () => {
     // Nada de "aparece cinza e não funciona": sem tela, sem item.
     expect(comMenu).not.toContain("paginas");
     expect(comMenu).not.toContain("ia");
-    expect(comMenu).not.toContain("dominio");
+    expect(comMenu).not.toContain("social");
   });
 });
 

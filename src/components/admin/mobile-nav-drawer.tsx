@@ -8,6 +8,8 @@ import {
   X,
   CreditCard,
   Wallet,
+  Globe,
+  Zap,
   Boxes,
   Images,
   Shapes,
@@ -37,6 +39,8 @@ import type { LucideIcon } from "lucide-react";
 const ICONS: Record<string, LucideIcon> = {
   CreditCard,
   Wallet,
+  Globe,
+  Zap,
   Boxes,
   Images,
   Shapes,

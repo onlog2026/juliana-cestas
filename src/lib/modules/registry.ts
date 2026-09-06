@@ -245,6 +245,7 @@ export const MODULE_REGISTRY: readonly ModuleDefinition[] = [
     category: "crescimento",
     isCore: false,
     sortOrder: 21,
+    menu: { href: "/admin/dominio", label: "Domínio", iconName: "Globe", menuOrder: 19 },
   },
   {
     slug: "equipe",
@@ -271,6 +272,7 @@ export const MODULE_REGISTRY: readonly ModuleDefinition[] = [
     category: "crescimento",
     isCore: false,
     sortOrder: 24,
+    menu: { href: "/admin/automacoes", label: "Automações", iconName: "Zap", menuOrder: 20 },
   },
   {
     slug: "avaliacoes",

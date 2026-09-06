@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { reportError } from "@/lib/platform/report-error";
+import { runAutomations } from "@/modules/automations/run";
 
 /**
  * ROTINA DIÁRIA DA PLATAFORMA.
@@ -463,6 +464,7 @@ async function executarRotina(request: Request): Promise<Response> {
   for (const tarefa of [
     { nome: "expire_trials", executar: () => expirarTestes(env, agora) },
     { nome: "storefront_grace", executar: () => suspenderVitrines(env, agora) },
+    { nome: "automacoes_carrinho_abandonado", executar: () => runAutomations(env) },
   ]) {
     try {
       resultados.push(await tarefa.executar());

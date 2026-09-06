@@ -2,6 +2,8 @@ import Link from "next/link";
 import {
   CreditCard,
   Wallet,
+  Globe,
+  Zap,
   Boxes,
   Images,
   Shapes,
@@ -53,6 +55,8 @@ import { PlanBanner } from "@/components/admin/plan-banner";
 const ICONS: Record<string, LucideIcon> = {
   CreditCard,
   Wallet,
+  Globe,
+  Zap,
   Boxes,
   Images,
   Shapes,
