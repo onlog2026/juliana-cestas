@@ -60,3 +60,14 @@ Ver `.env.example`. Supabase injetado pela integração Vercel ↔ Supabase; Asa
 
 ## Fases
 0 Infra → 1 Banco/auth/RBAC/seed → 2 Design system + Home → 3 Catálogo → 4 Carrinho/checkout/pagamento/pedidos/conta → 5 Painel admin essencial → 6 SEO/PWA/testes/publicação. Roadmap B: CRM, Kanban, estoque completo, financeiro, marketing/automações, suporte, avaliações, analytics, LGPD completo, painel da plataforma.
+
+## Plataforma (multi-tenant) — decidido em 2026-09-04
+Este repositório deixa de ser "a loja da Juliana" e passa a ser **a plataforma**: um super admin (dono) controla a landing e os sellers; cada seller tem loja + painel próprios. A Juliana é o tenant #1 e a loja dela (`julianacesta.com.br`) tem que continuar no ar em toda etapa. Plano completo (13 fases, F0–F12) em `~/.claude/plans/de-replica-o-estilo-wobbly-squid.md`.
+
+- **Tenant pelo host**: `PLATFORM_DOMAIN` = plataforma; `{slug}.PLATFORM_DOMAIN` e domínios próprios = loja. `src/proxy.ts` resolve e injeta `x-tenant-*`; `src/lib/tenant/context.ts` lê (`getTenantId()`); services recebem `tenantId` como 1º parâmetro. Nunca voltar a usar constante global de tenant.
+- **Isolamento**: RLS é a fronteira, não o filtro no código. `npm run test:isolation` prova pela API REST (anon não lê nada; staff de uma loja não lê a outra). Rodar a cada fase.
+- **Pagamento das vendas**: cada seller conecta a **própria conta Asaas** (chave cifrada por tenant, webhook `/api/asaas/webhook/[tenantId]`). A plataforma não toca no dinheiro das vendas — cobra só a licença, por outra conta Asaas.
+- **Planos e módulos**: vocabulário único (`platform_modules` + `src/lib/modules/registry.ts`). Módulo não contratado **some do menu** e vira oferta. Trial de 2 dias com tudo liberado, garantido em 3 camadas (UI, servidor e cron que grava a expiração no banco).
+- **Templates**: biblioteca de blocos + template = preset de composição (`store_pages`/`store_theme`). Seis estruturas diferentes, não seis codebases. A home atual é o template `classica`.
+- **Super admin**: `src/lib/platform/super-admins.ts` + função SQL `is_super_admin()` — as duas listas TÊM que bater (teste garante). Nenhum seller acessa o painel da plataforma.
+- Migrações da plataforma começam em `0019`. `npm run backup` antes de cada uma (Supabase Free não tem PITR).

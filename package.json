@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:isolation": "node tests/isolation/tenant-isolation.mjs",
+    "backup": "node scripts/db-backup.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
