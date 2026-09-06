@@ -88,6 +88,8 @@ insert into site_content (tenant_id, surface, section, slot, payload) values
   "openDays": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 }'::jsonb)
 
+-- Depende da constraint criada na 0024 (a 0022 tinha criado um índice PARCIAL,
+-- que o ON CONFLICT não consegue inferir). Rodar 0024 ANTES desta.
 on conflict (tenant_id, surface, section, slot)
 do update set payload = excluded.payload, updated_at = now();
 

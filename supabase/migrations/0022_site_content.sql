@@ -25,16 +25,11 @@ create table if not exists site_content (
   updated_by uuid
 );
 
--- Um conteúdo por (loja, superfície, seção, slot). Índice único parcial
--- porque tenant_id pode ser null (landing da plataforma) e no Postgres
--- NULL nunca é igual a NULL num unique comum.
-create unique index if not exists site_content_tenant_key
-  on site_content (tenant_id, surface, section, slot)
-  where tenant_id is not null;
-
-create unique index if not exists site_content_platform_key
-  on site_content (surface, section, slot)
-  where tenant_id is null;
+-- ATENÇÃO: os índices ÚNICOS PARCIAIS que existiam aqui foram substituídos
+-- pela constraint da migration 0024. Índice parcial não serve para `ON
+-- CONFLICT` sem repetir a condição, e o PostgREST (usado pelo painel) não
+-- consegue expressá-la -- quebrava o seed e o botão "Salvar" da tela de textos.
+-- A unicidade agora vem de `site_content_key` (0024).
 
 create index if not exists site_content_tenant_surface
   on site_content (tenant_id, surface);
