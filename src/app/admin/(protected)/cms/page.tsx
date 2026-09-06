@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { requireStaff } from "@/lib/auth/require-staff";
+import { requireStaffWithModule } from "@/lib/auth/require-module";
 import { getSocialLinks } from "@/modules/settings/social-links";
 import { getAllBannersAdmin } from "@/modules/banners/service";
 import { getAllCategoriesAdmin } from "@/modules/catalog/categories";
@@ -11,7 +11,11 @@ import { CategoriesManager } from "@/components/admin/categories-manager";
 import { SiteBrandingForm } from "@/components/admin/site-branding-form";
 
 export default async function AdminCmsPage() {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR: esconder o item do menu não impede ninguém de
+  // digitar este endereço na barra do navegador. Quem chega aqui sem o
+  // módulo "cms" no plano é levado para a página de oferta.
+  // (Esta tela edita banners, categorias e a marca do site.)
+  const staff = await requireStaffWithModule("cms");
   const [links, banners, categories, siteSettings] = await Promise.all([
     getSocialLinks(staff.tenantId),
     getAllBannersAdmin(staff.tenantId),

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getAllTicketsAdmin } from "@/modules/support/service";
-import { requireStaff } from "@/lib/auth/require-staff";
+import { requireStaffWithModule } from "@/lib/auth/require-module";
 import { TicketStatusBadge, categoryLabel } from "@/components/support/ticket-status-badge";
 
 const FILTERS = [
@@ -12,7 +12,11 @@ const FILTERS = [
 ];
 
 export default async function AdminAtendimentoPage(props: PageProps<"/admin/atendimento">) {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR: esconder o item do menu não impede ninguém de
+  // digitar este endereço na barra do navegador. Quem chega aqui sem o
+  // módulo "atendimento" no plano é levado para a página de oferta.
+  // (Esta tela é a lista de chamados dos clientes.)
+  const staff = await requireStaffWithModule("atendimento");
   const { status } = await props.searchParams;
   const statusValue = Array.isArray(status) ? status[0] : status;
   const tickets = await getAllTicketsAdmin(staff.tenantId, statusValue ? { status: statusValue } : undefined);

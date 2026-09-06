@@ -3,7 +3,7 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { requireStaff } from "@/lib/auth/require-staff";
+import { ensureModuleForAction } from "@/lib/auth/require-module";
 
 export async function updateSeoSettings(input: {
   siteTitle: string;
@@ -11,7 +11,13 @@ export async function updateSeoSettings(input: {
   keywords: string;
   ogImageUrl: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR (módulo "seo"): a action é um endpoint HTTP -- some
+  // do menu não quer dizer que sumiu da rede. Devolve a recusa em vez de
+  // redirecionar, porque quem chamou é um formulário que precisa mostrar o
+  // aviso na tela.
+  const gate = await ensureModuleForAction("seo");
+  if (!gate.ok) return { ok: false, error: gate.mensagem };
+  const staff = gate.staff;
 
   const admin = createAdminClient();
   const keywords = input.keywords

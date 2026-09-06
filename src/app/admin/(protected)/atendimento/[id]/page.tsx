@@ -2,14 +2,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { getTicketDetailAdmin } from "@/modules/support/service";
-import { requireStaff } from "@/lib/auth/require-staff";
+import { requireStaffWithModule } from "@/lib/auth/require-module";
 import { replyAsStaff } from "@/modules/support/actions";
 import { categoryLabel } from "@/components/support/ticket-status-badge";
 import { TicketThread } from "@/components/support/ticket-thread";
 import { TicketStatusSelect } from "@/components/admin/ticket-status-select";
 
 export default async function AdminChamadoPage(props: PageProps<"/admin/atendimento/[id]">) {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR: esconder o item do menu não impede ninguém de
+  // digitar este endereço na barra do navegador. Quem chega aqui sem o
+  // módulo "atendimento" no plano é levado para a página de oferta.
+  // (Esta tela é o chamado aberto, com a conversa.)
+  const staff = await requireStaffWithModule("atendimento");
   const { id } = await props.params;
   const detail = await getTicketDetailAdmin(staff.tenantId, id);
   if (!detail) notFound();

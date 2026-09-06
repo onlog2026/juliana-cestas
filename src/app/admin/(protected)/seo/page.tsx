@@ -1,9 +1,13 @@
-import { requireStaff } from "@/lib/auth/require-staff";
+import { requireStaffWithModule } from "@/lib/auth/require-module";
 import { getSeoSettings } from "@/modules/seo/service";
 import { SeoForm } from "@/components/admin/seo-form";
 
 export default async function AdminSeoPage() {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR: esconder o item do menu não impede ninguém de
+  // digitar este endereço na barra do navegador. Quem chega aqui sem o
+  // módulo "seo" no plano é levado para a página de oferta.
+  // (Esta tela é a do SEO da loja.)
+  const staff = await requireStaffWithModule("seo");
   const settings = await getSeoSettings(staff.tenantId);
 
   return (

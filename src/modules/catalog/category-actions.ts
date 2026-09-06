@@ -3,7 +3,7 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { requireStaff } from "@/lib/auth/require-staff";
+import { ensureModuleForAction } from "@/lib/auth/require-module";
 
 export type CategoryInput = {
   id?: string;
@@ -26,7 +26,13 @@ function slugify(raw: string): string {
 export async function upsertCategory(
   input: CategoryInput
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR (módulo "cms"): a action é um endpoint HTTP -- some
+  // do menu não quer dizer que sumiu da rede. Devolve a recusa em vez de
+  // redirecionar, porque quem chamou é um formulário que precisa mostrar o
+  // aviso na tela.
+  const gate = await ensureModuleForAction("cms");
+  if (!gate.ok) return { ok: false, error: gate.mensagem };
+  const staff = gate.staff;
 
   if (!input.name.trim()) return { ok: false, error: "Dê um nome para a categoria." };
 
@@ -74,7 +80,13 @@ async function nextSortOrder(
 }
 
 export async function deleteCategory(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR (módulo "cms"): a action é um endpoint HTTP -- some
+  // do menu não quer dizer que sumiu da rede. Devolve a recusa em vez de
+  // redirecionar, porque quem chamou é um formulário que precisa mostrar o
+  // aviso na tela.
+  const gate = await ensureModuleForAction("cms");
+  if (!gate.ok) return { ok: false, error: gate.mensagem };
+  const staff = gate.staff;
 
   const admin = createAdminClient();
   const { error } = await admin.from("categories").delete().eq("id", id).eq("tenant_id", staff.tenantId);
@@ -95,7 +107,13 @@ export async function deleteCategory(id: string): Promise<{ ok: true } | { ok: f
 export async function reorderCategories(
   orderedIds: string[]
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR (módulo "cms"): a action é um endpoint HTTP -- some
+  // do menu não quer dizer que sumiu da rede. Devolve a recusa em vez de
+  // redirecionar, porque quem chamou é um formulário que precisa mostrar o
+  // aviso na tela.
+  const gate = await ensureModuleForAction("cms");
+  if (!gate.ok) return { ok: false, error: gate.mensagem };
+  const staff = gate.staff;
 
   const admin = createAdminClient();
   const results = await Promise.all(

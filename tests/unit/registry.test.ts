@@ -124,10 +124,28 @@ type ModuloDoSql = {
   sortOrder: number;
 };
 
+/**
+ * O catálogo de módulos vive em MAIS DE UMA migração: a 0026 trouxe os
+ * primeiros e a 0031 acrescentou `estoque` e `compras`. Ler só a 0026 faria o
+ * teste acusar divergência falsa a cada módulo novo -- e um teste que grita
+ * sem motivo é um teste que as pessoas aprendem a ignorar. Migração que
+ * insere em `platform_modules` entra nesta lista, na ordem em que roda.
+ */
+const MIGRACOES_COM_MODULOS = [
+  "0026_platform_plans_vouchers.sql",
+  "0031_inventory_purchases.sql",
+];
+
 function modulosDoSql(): ModuloDoSql[] {
-  const sql = lerMigracao("0026_platform_plans_vouchers.sql");
+  // `extrairValues` acha o PRIMEIRO "insert into platform_modules (" e para no
+  // "on conflict" daquele bloco -- concatenar os arquivos e chamar uma vez só
+  // faria ele nunca enxergar o insert da segunda migração. Por isso cada
+  // arquivo é lido e extraído SEPARADAMENTE, e as linhas são somadas.
+  const linhas = MIGRACOES_COM_MODULOS.flatMap((arquivo) =>
+    extrairValues(lerMigracao(arquivo), "platform_modules")
+  );
   // Colunas do insert: (slug, name, description, category, is_core, sort_order)
-  return extrairValues(sql, "platform_modules").map((campos) => {
+  return linhas.map((campos) => {
     expect(campos).toHaveLength(6);
     return {
       slug: campos[0],
@@ -140,7 +158,7 @@ function modulosDoSql(): ModuloDoSql[] {
   });
 }
 
-describe("registro de módulos x migração 0026", () => {
+describe("registro de módulos x migrações do catálogo", () => {
   const doSql = modulosDoSql();
 
   it("a migração ainda tem os módulos onde o teste espera (o parser está lendo certo)", () => {
@@ -218,6 +236,8 @@ describe("menu do painel da loja", () => {
 
   it("a ordem do menu é a MESMA que a lojista já usa hoje (mudar isso é mudar o painel dela)", () => {
     expect(ADMIN_MENU_MODULES.map((m) => m.menu.label)).toEqual([
+      // As nove primeiras são a ordem que a lojista já conhece. Mexer NELAS é
+      // mexer no painel dela; acrescentar depois, não.
       "Início",
       "Pedidos",
       "Entregas",
@@ -227,7 +247,15 @@ describe("menu do painel da loja", () => {
       "CMS",
       "SEO",
       "Configurações",
+      // Daqui para baixo, o que foi ganhando tela.
       "Pagamentos",
+      "Avaliações",
+      "Modelos",
+      "Galeria",
+      "Marcas",
+      "Equipe",
+      "Estoque",
+      "Compras",
     ]);
   });
 
@@ -255,8 +283,9 @@ describe("menu do painel da loja", () => {
     const comMenu = ADMIN_MENU_MODULES.map((m) => m.slug);
     // Nada de "aparece cinza e não funciona": sem tela, sem item.
     expect(comMenu).not.toContain("financeiro");
-    expect(comMenu).not.toContain("equipe");
-    expect(comMenu).not.toContain("galeria");
+    expect(comMenu).not.toContain("paginas");
+    expect(comMenu).not.toContain("ia");
+    expect(comMenu).not.toContain("dominio");
   });
 });
 

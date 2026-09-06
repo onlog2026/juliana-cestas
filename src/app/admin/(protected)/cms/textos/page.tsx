@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { requireStaff } from "@/lib/auth/require-staff";
+import { requireStaffWithModule } from "@/lib/auth/require-module";
 import { getContentForAdmin } from "@/modules/content/service";
 import { ContentListForm } from "@/components/admin/content-list-form";
 import { ContentFieldsForm } from "@/components/admin/content-fields-form";
@@ -10,7 +10,11 @@ export const metadata = { title: "Textos do site" };
 const ICON_OPTIONS = ["PenLine", "ShieldCheck", "Truck", "Headset", "Gift", "Clock", "Heart", "Star"] as const;
 
 export default async function AdminTextosPage() {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR: esconder o item do menu não impede ninguém de
+  // digitar este endereço na barra do navegador. Quem chega aqui sem o
+  // módulo "cms" no plano é levado para a página de oferta.
+  // (Esta tela edita os textos do site.)
+  const staff = await requireStaffWithModule("cms");
   const t = staff.tenantId;
 
   const [benefits, faq, signature, whatsappCta, categoryTiles, collections, about, returns, business] =

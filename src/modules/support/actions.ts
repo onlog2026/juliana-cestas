@@ -4,7 +4,7 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { requireStaff } from "@/lib/auth/require-staff";
+import { ensureModuleForAction } from "@/lib/auth/require-module";
 import { getTenantId } from "@/lib/tenant/context";
 import { sendTicketEmail, getEmailBrand } from "@/modules/notifications/send";
 import { ticketCreatedEmail } from "@/modules/notifications/templates/ticket-created";
@@ -143,7 +143,13 @@ export async function replyAsStaff(input: {
   body: string;
   attachmentUrl: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR (módulo "atendimento"): só as DUAS actions do painel
+  // passam por aqui. `createTicket` e `replyAsCustomer` são do COMPRADOR na
+  // loja -- ele não é staff, não tem plano nenhum, e travá-las deixaria o
+  // cliente sem conseguir abrir chamado.
+  const gate = await ensureModuleForAction("atendimento");
+  if (!gate.ok) return { ok: false, error: gate.mensagem };
+  const staff = gate.staff;
   if (!input.body.trim()) return { ok: false, error: "Escreva sua mensagem." };
 
   const admin = createAdminClient();
@@ -198,7 +204,13 @@ export async function updateTicketStatusAdmin(
   ticketId: string,
   status: "aberto" | "em_andamento" | "resolvido" | "reaberto"
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR (módulo "atendimento"): só as DUAS actions do painel
+  // passam por aqui. `createTicket` e `replyAsCustomer` são do COMPRADOR na
+  // loja -- ele não é staff, não tem plano nenhum, e travá-las deixaria o
+  // cliente sem conseguir abrir chamado.
+  const gate = await ensureModuleForAction("atendimento");
+  if (!gate.ok) return { ok: false, error: gate.mensagem };
+  const staff = gate.staff;
 
   const admin = createAdminClient();
   const { error } = await admin

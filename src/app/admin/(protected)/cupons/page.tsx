@@ -1,9 +1,13 @@
-import { requireStaff } from "@/lib/auth/require-staff";
+import { requireStaffWithModule } from "@/lib/auth/require-module";
 import { getAllCouponsAdmin, getCouponRedemptionCounts } from "@/modules/coupons/service";
 import { CouponsManager } from "@/components/admin/coupons-manager";
 
 export default async function AdminCuponsPage() {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR: esconder o item do menu não impede ninguém de
+  // digitar este endereço na barra do navegador. Quem chega aqui sem o
+  // módulo "cupons" no plano é levado para a página de oferta.
+  // (Esta tela é a dos cupons de desconto.)
+  const staff = await requireStaffWithModule("cupons");
   const [coupons, redemptionCounts] = await Promise.all([
     getAllCouponsAdmin(staff.tenantId),
     getCouponRedemptionCounts(staff.tenantId),

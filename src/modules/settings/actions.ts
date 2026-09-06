@@ -4,6 +4,7 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireStaff } from "@/lib/auth/require-staff";
+import { ensureModuleForAction } from "@/lib/auth/require-module";
 
 function normalizeUrl(raw: string): string | null {
   const trimmed = raw.trim();
@@ -17,7 +18,13 @@ export async function updateSocialLinks(input: {
   youtube: string;
   linkedin: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR (módulo "cms"): a action é um endpoint HTTP -- some
+  // do menu não quer dizer que sumiu da rede. Devolve a recusa em vez de
+  // redirecionar, porque quem chamou é um formulário que precisa mostrar o
+  // aviso na tela.
+  const gate = await ensureModuleForAction("cms");
+  if (!gate.ok) return { ok: false, error: gate.mensagem };
+  const staff = gate.staff;
 
   const admin = createAdminClient();
   const { error } = await admin
@@ -91,7 +98,13 @@ export async function updateSiteSettings(input: {
   logoFooterUrl: string;
   faviconUrl: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR (módulo "cms"): a action é um endpoint HTTP -- some
+  // do menu não quer dizer que sumiu da rede. Devolve a recusa em vez de
+  // redirecionar, porque quem chamou é um formulário que precisa mostrar o
+  // aviso na tela.
+  const gate = await ensureModuleForAction("cms");
+  if (!gate.ok) return { ok: false, error: gate.mensagem };
+  const staff = gate.staff;
 
   const admin = createAdminClient();
   const { error } = await admin

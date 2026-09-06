@@ -7,6 +7,7 @@ import { requireStaff } from "@/lib/auth/require-staff";
 import { sendOrderEmail, getEmailBrand } from "@/modules/notifications/send";
 import { outForDeliveryEmail } from "@/modules/notifications/templates/out-for-delivery";
 import { deliveredEmail } from "@/modules/notifications/templates/delivered";
+import { createReviewInvite } from "@/modules/reviews/invite";
 
 export type AdminOrderRow = {
   id: string;
@@ -178,6 +179,20 @@ export async function advanceOrderStatus(
       subject,
       html,
     });
+
+    // Convite de avaliação: só DEPOIS de entregue. Pedir opinião de uma cesta
+    // que ainda não chegou irrita quem comprou -- e quem ouve a reclamação é
+    // a lojista. `createReviewInvite` é idempotente: se o convite já foi
+    // enviado para este pedido, não manda de novo.
+    //
+    // Falhar aqui NÃO pode desfazer a entrega, que já está gravada: o convite
+    // é um extra, o status é o fato. Se der erro, fica registrado e o painel
+    // de avaliações tem o botão "Enviar convites pendentes" para recuperar.
+    try {
+      await createReviewInvite(staff.tenantId, orderId);
+    } catch (erro) {
+      console.error("[orders] falha ao criar o convite de avaliação:", erro);
+    }
   }
 
   revalidatePath("/admin/pedidos");

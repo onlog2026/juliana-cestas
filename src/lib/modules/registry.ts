@@ -194,6 +194,7 @@ export const MODULE_REGISTRY: readonly ModuleDefinition[] = [
     category: "vitrine",
     isCore: false,
     sortOrder: 15,
+    menu: { href: "/admin/modelos", label: "Modelos", iconName: "Shapes", menuOrder: 13 },
   },
   {
     slug: "paginas",
@@ -210,6 +211,7 @@ export const MODULE_REGISTRY: readonly ModuleDefinition[] = [
     category: "vitrine",
     isCore: false,
     sortOrder: 17,
+    menu: { href: "/admin/galeria", label: "Galeria", iconName: "Images", menuOrder: 14 },
   },
   {
     slug: "marcas",
@@ -218,6 +220,7 @@ export const MODULE_REGISTRY: readonly ModuleDefinition[] = [
     category: "vitrine",
     isCore: false,
     sortOrder: 18,
+    menu: { href: "/admin/marcas", label: "Marcas", iconName: "Tag", menuOrder: 15 },
   },
   {
     slug: "ia",
@@ -250,6 +253,7 @@ export const MODULE_REGISTRY: readonly ModuleDefinition[] = [
     category: "operacao",
     isCore: false,
     sortOrder: 22,
+    menu: { href: "/admin/equipe", label: "Equipe", iconName: "Users", menuOrder: 16 },
   },
   {
     slug: "financeiro",
@@ -274,6 +278,25 @@ export const MODULE_REGISTRY: readonly ModuleDefinition[] = [
     category: "crescimento",
     isCore: false,
     sortOrder: 25,
+    menu: { href: "/admin/avaliacoes", label: "Avaliações", iconName: "Star", menuOrder: 11 },
+  },
+  {
+    slug: "estoque",
+    name: "Estoque",
+    description: "Saldo, custo, estoque mínimo e o extrato de cada entrada e saída.",
+    category: "operacao",
+    isCore: false,
+    sortOrder: 26,
+    menu: { href: "/admin/estoque", label: "Estoque", iconName: "Boxes", menuOrder: 17 },
+  },
+  {
+    slug: "compras",
+    name: "Compras",
+    description: "Compras de insumos: alimenta o estoque e lança a despesa.",
+    category: "operacao",
+    isCore: false,
+    sortOrder: 27,
+    menu: { href: "/admin/compras", label: "Compras", iconName: "ShoppingCart", menuOrder: 18 },
   },
 ];
 

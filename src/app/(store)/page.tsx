@@ -6,6 +6,7 @@ import { FeaturedProducts } from "@/components/loja/featured-products";
 import { CartaozinhoSection } from "@/components/loja/cartaozinho-section";
 import { Collections } from "@/components/loja/collections";
 import { Benefits } from "@/components/loja/benefits";
+import { ReviewsShowcase } from "@/components/loja/reviews/reviews-showcase";
 import { Faq } from "@/components/loja/faq";
 import { WhatsappCta } from "@/components/loja/whatsapp-cta";
 import { Reveal } from "@/components/loja/reveal";
@@ -37,6 +38,12 @@ export default async function Home() {
         <CartaozinhoSection />
       </Reveal>
       <Collections />
+      {/* Prova social entra logo depois das coleções, antes dos benefícios:
+          quem chegou até aqui já viu o produto e é onde a opinião de outra
+          pessoa pesa. Sem nenhuma avaliação aprovada, o componente devolve
+          `null` e a home fica exatamente como está hoje -- seção vazia é pior
+          que seção ausente. */}
+      <ReviewsShowcase />
       <Benefits />
       <Faq />
       <Reveal>

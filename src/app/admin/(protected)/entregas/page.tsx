@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { requireStaff } from "@/lib/auth/require-staff";
+import { requireStaffWithModule } from "@/lib/auth/require-module";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { AdvanceStatusButton } from "@/components/admin/advance-status-button";
 import { saoPauloDateStr } from "@/lib/time/sao-paulo";
@@ -8,7 +8,11 @@ import { saoPauloDateStr } from "@/lib/time/sao-paulo";
 export default async function AdminEntregasPage(props: {
   searchParams: Promise<{ data?: string }>;
 }) {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR: esconder o item do menu não impede ninguém de
+  // digitar este endereço na barra do navegador. Quem chega aqui sem o
+  // módulo "entregas" no plano é levado para a página de oferta.
+  // (Esta tela é a agenda de entregas.)
+  const staff = await requireStaffWithModule("entregas");
   const { data: dateParam } = await props.searchParams;
   const date = dateParam ?? saoPauloDateStr();
 

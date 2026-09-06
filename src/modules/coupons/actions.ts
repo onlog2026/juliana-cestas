@@ -3,7 +3,7 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { requireStaff } from "@/lib/auth/require-staff";
+import { ensureModuleForAction } from "@/lib/auth/require-module";
 
 export type CouponInput = {
   id?: string;
@@ -22,7 +22,13 @@ export type CouponInput = {
 export async function upsertCoupon(
   input: CouponInput
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const staff = await requireStaff();
+  // TRAVA DE SERVIDOR (módulo "cupons"): a action é um endpoint HTTP -- some
+  // do menu não quer dizer que sumiu da rede. Devolve a recusa em vez de
+  // redirecionar, porque quem chamou é um formulário que precisa mostrar o
+  // aviso na tela.
+  const gate = await ensureModuleForAction("cupons");
+  if (!gate.ok) return { ok: false, error: gate.mensagem };
+  const staff = gate.staff;
 
   const code = input.code.trim().toUpperCase();
   if (!code) return { ok: false, error: "Dê um código para o cupom." };

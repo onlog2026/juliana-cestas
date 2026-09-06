@@ -4,7 +4,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getStoreProfile } from "@/modules/settings/store-profile";
 import { getSiteSettings } from "@/modules/settings/site-settings";
 
-type OrderNotificationType = "order_confirmed" | "out_for_delivery" | "delivered";
+// `review_invite` é o convite de avaliação, disparado quando o pedido é
+// ENTREGUE. O CHECK do banco já aceita este valor (migração 0030) -- sem ele
+// aqui, o TypeScript obrigava um cast em `reviews/invite.ts`.
+type OrderNotificationType = "order_confirmed" | "out_for_delivery" | "delivered" | "review_invite";
 type TicketNotificationType = "ticket_created" | "ticket_reply";
 
 /** Identidade da loja usada nos e-mails transacionais (assunto, cabeçalho, resposta). */
