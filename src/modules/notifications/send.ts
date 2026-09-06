@@ -1,12 +1,11 @@
 import "server-only";
 import { Resend } from "resend";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 
 type OrderNotificationType = "order_confirmed" | "out_for_delivery" | "delivered";
 type TicketNotificationType = "ticket_created" | "ticket_reply";
 
-async function send(params: {
+async function send(tenantId: string, params: {
   type: OrderNotificationType | TicketNotificationType;
   orderId?: string;
   ticketId?: string;
@@ -21,7 +20,7 @@ async function send(params: {
   const apiKey = process.env.RESEND_API_KEY;
   const emailFrom = process.env.EMAIL_FROM;
   const row = {
-    tenant_id: TENANT_ID,
+    tenant_id: tenantId,
     order_id: orderId ?? null,
     ticket_id: ticketId ?? null,
     type,
@@ -64,22 +63,28 @@ async function send(params: {
   }
 }
 
-export async function sendOrderEmail(params: {
-  orderId: string;
-  type: OrderNotificationType;
-  toEmail: string | null;
-  subject: string;
-  html: string;
-}) {
-  await send({ ...params, orderId: params.orderId });
+export async function sendOrderEmail(
+  tenantId: string,
+  params: {
+    orderId: string;
+    type: OrderNotificationType;
+    toEmail: string | null;
+    subject: string;
+    html: string;
+  }
+) {
+  await send(tenantId, { ...params, orderId: params.orderId });
 }
 
-export async function sendTicketEmail(params: {
-  ticketId: string;
-  type: TicketNotificationType;
-  toEmail: string | null;
-  subject: string;
-  html: string;
-}) {
-  await send({ ...params, ticketId: params.ticketId });
+export async function sendTicketEmail(
+  tenantId: string,
+  params: {
+    ticketId: string;
+    type: TicketNotificationType;
+    toEmail: string | null;
+    subject: string;
+    html: string;
+  }
+) {
+  await send(tenantId, { ...params, ticketId: params.ticketId });
 }

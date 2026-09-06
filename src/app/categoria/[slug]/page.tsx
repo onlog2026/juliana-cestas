@@ -8,6 +8,7 @@ import { ProductCard } from "@/components/loja/product-card";
 import { Faq } from "@/components/loja/faq";
 import { WhatsappCta } from "@/components/loja/whatsapp-cta";
 import { Reveal } from "@/components/loja/reveal";
+import { getTenantId } from "@/lib/tenant/context";
 
 export const revalidate = 300;
 
@@ -15,7 +16,7 @@ export async function generateMetadata(
   props: PageProps<"/categoria/[slug]">
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const category = await getCategoryBySlug(slug);
+  const category = await getCategoryBySlug(await getTenantId(), slug);
   if (!category) return {};
   return {
     title: category.name,
@@ -25,10 +26,11 @@ export async function generateMetadata(
 
 export default async function CategoriaPage(props: PageProps<"/categoria/[slug]">) {
   const { slug } = await props.params;
-  const category = await getCategoryBySlug(slug);
+  const tenantId = await getTenantId();
+  const category = await getCategoryBySlug(tenantId, slug);
   if (!category) notFound();
 
-  const products = await getProductsByCategoryId(category.id);
+  const products = await getProductsByCategoryId(tenantId, category.id);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

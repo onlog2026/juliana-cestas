@@ -8,6 +8,7 @@ import { LocalBusinessJsonLd } from "@/components/loja/json-ld";
 import { getSeoSettings } from "@/modules/seo/service";
 import { getSiteSettings } from "@/modules/settings/site-settings";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { getTenantId } from "@/lib/tenant/context";
 
 const figtree = Figtree({
   variable: "--font-figtree",
@@ -36,7 +37,8 @@ const poppins = Poppins({
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://juliana-cestas-loja.vercel.app";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [seo, siteSettings] = await Promise.all([getSeoSettings(), getSiteSettings()]);
+  const tenantId = await getTenantId();
+  const [seo, siteSettings] = await Promise.all([getSeoSettings(tenantId), getSiteSettings(tenantId)]);
   return {
     metadataBase: new URL(SITE_URL),
     title: {

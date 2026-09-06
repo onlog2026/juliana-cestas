@@ -1,6 +1,5 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 import { formatCents } from "@/lib/money";
 
 export type ValidatedCoupon = {
@@ -16,11 +15,14 @@ export type ValidatedCoupon = {
  * total e por cliente. Nunca confia no que o cliente mandou sobre o cupom,
  * só o código; tudo o mais (tipo, desconto, limites) vem do banco.
  */
-export async function validateCoupon(input: {
-  code: string;
-  buyerEmail: string;
-  merchandiseCents: number;
-}): Promise<{ ok: true; coupon: ValidatedCoupon } | { ok: false; error: string }> {
+export async function validateCoupon(
+  tenantId: string,
+  input: {
+    code: string;
+    buyerEmail: string;
+    merchandiseCents: number;
+  }
+): Promise<{ ok: true; coupon: ValidatedCoupon } | { ok: false; error: string }> {
   const code = input.code.trim().toUpperCase();
   if (!code) return { ok: false, error: "Informe um cupom." };
 
@@ -30,7 +32,7 @@ export async function validateCoupon(input: {
     .select(
       "id, code, type, percent_off, value_cents, min_order_cents, usage_limit, per_customer_limit, starts_at, ends_at, active"
     )
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .ilike("code", code)
     .maybeSingle();
 
@@ -51,6 +53,7 @@ export async function validateCoupon(input: {
     const { count } = await admin
       .from("coupon_redemptions")
       .select("id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
       .eq("coupon_id", coupon.id);
     if ((count ?? 0) >= coupon.usage_limit) return { ok: false, error: "Esse cupom já atingiu o limite de uso." };
   }
@@ -59,6 +62,7 @@ export async function validateCoupon(input: {
     const { count } = await admin
       .from("coupon_redemptions")
       .select("id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
       .eq("coupon_id", coupon.id)
       .ilike("buyer_email", input.buyerEmail);
     if ((count ?? 0) >= coupon.per_customer_limit) {

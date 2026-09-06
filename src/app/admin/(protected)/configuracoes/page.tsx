@@ -1,8 +1,10 @@
+import { requireStaff } from "@/lib/auth/require-staff";
 import { getStoreProfile } from "@/modules/settings/store-profile";
 import { StoreProfileForm } from "@/components/admin/store-profile-form";
 
 export default async function AdminConfiguracoesPage() {
-  const profile = await getStoreProfile();
+  const staff = await requireStaff();
+  const profile = await getStoreProfile(staff.tenantId);
 
   return (
     <div className="max-w-[900px]">

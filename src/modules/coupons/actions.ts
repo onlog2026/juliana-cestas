@@ -3,7 +3,6 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 import { requireStaff } from "@/lib/auth/require-staff";
 
 export type CouponInput = {
@@ -23,7 +22,7 @@ export type CouponInput = {
 export async function upsertCoupon(
   input: CouponInput
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   const code = input.code.trim().toUpperCase();
   if (!code) return { ok: false, error: "Dê um código para o cupom." };
@@ -36,7 +35,7 @@ export async function upsertCoupon(
 
   const admin = createAdminClient();
   const row = {
-    tenant_id: TENANT_ID,
+    tenant_id: staff.tenantId,
     code,
     type: input.type,
     percent_off: input.type === "percent" ? input.percentOff : null,
@@ -51,7 +50,7 @@ export async function upsertCoupon(
   };
 
   const query = input.id
-    ? admin.from("coupons").update(row).eq("id", input.id).eq("tenant_id", TENANT_ID)
+    ? admin.from("coupons").update(row).eq("id", input.id).eq("tenant_id", staff.tenantId)
     : admin.from("coupons").insert(row);
 
   const { error } = await query;

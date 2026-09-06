@@ -1,3 +1,4 @@
+import { requireStaff } from "@/lib/auth/require-staff";
 import { getSocialLinks } from "@/modules/settings/social-links";
 import { getAllBannersAdmin } from "@/modules/banners/service";
 import { getAllCategoriesAdmin } from "@/modules/catalog/categories";
@@ -8,11 +9,12 @@ import { CategoriesManager } from "@/components/admin/categories-manager";
 import { SiteBrandingForm } from "@/components/admin/site-branding-form";
 
 export default async function AdminCmsPage() {
+  const staff = await requireStaff();
   const [links, banners, categories, siteSettings] = await Promise.all([
-    getSocialLinks(),
-    getAllBannersAdmin(),
-    getAllCategoriesAdmin(),
-    getSiteSettings(),
+    getSocialLinks(staff.tenantId),
+    getAllBannersAdmin(staff.tenantId),
+    getAllCategoriesAdmin(staff.tenantId),
+    getSiteSettings(staff.tenantId),
   ]);
 
   return (

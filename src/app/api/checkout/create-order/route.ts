@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { checkoutInputSchema } from "@/modules/checkout/schemas";
 import { createOrder } from "@/modules/checkout/create-order";
 import { checkRateLimit, clientIp } from "@/lib/security/rate-limit";
+import { getTenantId } from "@/lib/tenant/context";
 
 function isSameOrigin(req: Request): boolean {
   const origin = req.headers.get("origin");
@@ -47,7 +48,10 @@ export async function POST(req: Request) {
     );
   }
 
-  const result = await createOrder(parsed.data);
+  // A loja vem do endereço acessado (resolvido no middleware), nunca do corpo
+  // do pedido -- senão o navegador poderia criar pedido na loja de outro.
+  const tenantId = await getTenantId();
+  const result = await createOrder(tenantId, parsed.data);
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: 400 });
   }

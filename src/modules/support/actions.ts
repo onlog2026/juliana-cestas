@@ -4,8 +4,8 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { TENANT_ID } from "@/lib/tenant";
 import { requireStaff } from "@/lib/auth/require-staff";
+import { getTenantId } from "@/lib/tenant/context";
 import { sendTicketEmail } from "@/modules/notifications/send";
 import { ticketCreatedEmail } from "@/modules/notifications/templates/ticket-created";
 import { ticketReplyEmail } from "@/modules/notifications/templates/ticket-reply";
@@ -29,6 +29,7 @@ export async function createTicket(input: {
   body: string;
   attachmentUrl: string;
 }): Promise<{ ok: true; ticketId: string } | { ok: false; error: string }> {
+  const tenantId = await getTenantId();
   const session = await requireCustomerSession();
   if (!session || !session.email) return { ok: false, error: "Faça login para abrir um chamado." };
   if (!input.subject.trim()) return { ok: false, error: "Escreva um assunto." };
@@ -38,6 +39,7 @@ export async function createTicket(input: {
   const { data: customer } = await admin
     .from("customers")
     .select("id, name")
+    .eq("tenant_id", tenantId)
     .eq("auth_user_id", session.id)
     .maybeSingle();
 
@@ -46,7 +48,7 @@ export async function createTicket(input: {
   const { data: ticket, error } = await admin
     .from("support_tickets")
     .insert({
-      tenant_id: TENANT_ID,
+      tenant_id: tenantId,
       customer_id: customer?.id ?? null,
       buyer_email: session.email,
       buyer_name: buyerName,
@@ -60,7 +62,7 @@ export async function createTicket(input: {
   if (error || !ticket) return { ok: false, error: "Não foi possível abrir o chamado." };
 
   await admin.from("support_messages").insert({
-    tenant_id: TENANT_ID,
+    tenant_id: tenantId,
     ticket_id: ticket.id,
     sender: "customer",
     sender_name: buyerName,
@@ -73,7 +75,13 @@ export async function createTicket(input: {
     subject: input.subject.trim(),
     ticketUrl: `${siteUrl()}/conta/atendimento/${ticket.id}`,
   });
-  await sendTicketEmail({ ticketId: ticket.id, type: "ticket_created", toEmail: session.email, subject, html });
+  await sendTicketEmail(tenantId, {
+    ticketId: ticket.id,
+    type: "ticket_created",
+    toEmail: session.email,
+    subject,
+    html,
+  });
 
   revalidatePath("/conta/atendimento");
   return { ok: true, ticketId: ticket.id };
@@ -84,6 +92,7 @@ export async function replyAsCustomer(input: {
   body: string;
   attachmentUrl: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
+  const tenantId = await getTenantId();
   const session = await requireCustomerSession();
   if (!session || !session.email) return { ok: false, error: "Faça login pra responder." };
   if (!input.body.trim()) return { ok: false, error: "Escreva sua mensagem." };
@@ -93,20 +102,21 @@ export async function replyAsCustomer(input: {
     .from("support_tickets")
     .select("id, buyer_email, customer_id, status")
     .eq("id", input.ticketId)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .maybeSingle();
 
   if (!ticket) return { ok: false, error: "Chamado não encontrado." };
   const { data: customer } = await admin
     .from("customers")
     .select("id, name")
+    .eq("tenant_id", tenantId)
     .eq("auth_user_id", session.id)
     .maybeSingle();
   const owns = (customer && ticket.customer_id === customer.id) || ticket.buyer_email.toLowerCase() === session.email.toLowerCase();
   if (!owns) return { ok: false, error: "Chamado não encontrado." };
 
   await admin.from("support_messages").insert({
-    tenant_id: TENANT_ID,
+    tenant_id: tenantId,
     ticket_id: ticket.id,
     sender: "customer",
     sender_name: customer?.name ?? session.name,
@@ -120,7 +130,8 @@ export async function replyAsCustomer(input: {
       last_message_at: new Date().toISOString(),
       status: ticket.status === "resolvido" ? "reaberto" : ticket.status,
     })
-    .eq("id", ticket.id);
+    .eq("id", ticket.id)
+    .eq("tenant_id", tenantId);
 
   revalidatePath(`/conta/atendimento/${ticket.id}`);
   revalidatePath("/admin/atendimento");
@@ -140,12 +151,12 @@ export async function replyAsStaff(input: {
     .from("support_tickets")
     .select("id, buyer_email, buyer_name, subject, status")
     .eq("id", input.ticketId)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", staff.tenantId)
     .maybeSingle();
   if (!ticket) return { ok: false, error: "Chamado não encontrado." };
 
   await admin.from("support_messages").insert({
-    tenant_id: TENANT_ID,
+    tenant_id: staff.tenantId,
     ticket_id: ticket.id,
     sender: "staff",
     sender_name: staff.name ?? "Juliana Cestas",
@@ -159,7 +170,8 @@ export async function replyAsStaff(input: {
       last_message_at: new Date().toISOString(),
       status: ticket.status === "aberto" ? "em_andamento" : ticket.status,
     })
-    .eq("id", ticket.id);
+    .eq("id", ticket.id)
+    .eq("tenant_id", staff.tenantId);
 
   const { subject, html } = ticketReplyEmail({
     buyerName: ticket.buyer_name,
@@ -167,7 +179,13 @@ export async function replyAsStaff(input: {
     replyBody: input.body.trim(),
     ticketUrl: `${siteUrl()}/conta/atendimento/${ticket.id}`,
   });
-  await sendTicketEmail({ ticketId: ticket.id, type: "ticket_reply", toEmail: ticket.buyer_email, subject, html });
+  await sendTicketEmail(staff.tenantId, {
+    ticketId: ticket.id,
+    type: "ticket_reply",
+    toEmail: ticket.buyer_email,
+    subject,
+    html,
+  });
 
   revalidatePath(`/admin/atendimento/${ticket.id}`);
   revalidatePath("/admin/atendimento");
@@ -178,14 +196,14 @@ export async function updateTicketStatusAdmin(
   ticketId: string,
   status: "aberto" | "em_andamento" | "resolvido" | "reaberto"
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   const admin = createAdminClient();
   const { error } = await admin
     .from("support_tickets")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", ticketId)
-    .eq("tenant_id", TENANT_ID);
+    .eq("tenant_id", staff.tenantId);
   if (error) return { ok: false, error: "Não foi possível mudar o status." };
 
   revalidatePath(`/admin/atendimento/${ticketId}`);

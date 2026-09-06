@@ -1,6 +1,5 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 import type { DeliverySettingsInput } from "./slots";
 
 export type DeliveryZone = {
@@ -11,14 +10,14 @@ export type DeliveryZone = {
 
 export type DeliverySettings = DeliverySettingsInput & { cardMaxWords: number };
 
-export async function getDeliverySettings(): Promise<DeliverySettings | null> {
+export async function getDeliverySettings(tenantId: string): Promise<DeliverySettings | null> {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("delivery_settings")
     .select(
       "slot_minutes, lead_time_hours, capacity_per_slot, horizon_days, hours, blocked_dates, card_max_words"
     )
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .maybeSingle();
 
   if (error || !data) return null;
@@ -34,22 +33,22 @@ export async function getDeliverySettings(): Promise<DeliverySettings | null> {
   };
 }
 
-export async function getDeliveryZones(): Promise<DeliveryZone[]> {
+export async function getDeliveryZones(tenantId: string): Promise<DeliveryZone[]> {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("delivery_zones")
     .select("id, name, fee_cents")
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .eq("active", true)
     .order("sort_order");
 
   return data ?? [];
 }
 
-export async function getSlotOccupancy(fromDate: string, toDate: string) {
+export async function getSlotOccupancy(tenantId: string, fromDate: string, toDate: string) {
   const supabase = createAdminClient();
   const { data } = await supabase.rpc("slot_occupancy", {
-    p_tenant: TENANT_ID,
+    p_tenant: tenantId,
     p_from: fromDate,
     p_to: toDate,
   });

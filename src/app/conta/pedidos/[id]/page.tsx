@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronRight, Check } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCustomerOrderDetail } from "@/modules/customers/service";
+import { getTenantId } from "@/lib/tenant/context";
 import { getCardTemplate } from "@/modules/cards/templates";
 import { CardPattern } from "@/components/loja/checkout/card-pattern";
 import { StatusBadge } from "@/components/admin/status-badge";
@@ -18,7 +19,8 @@ export default async function ContaPedidoPage(props: PageProps<"/conta/pedidos/[
   } = await supabase.auth.getUser();
   if (!user) notFound();
 
-  const order = await getCustomerOrderDetail(user.id, id);
+  const tenantId = await getTenantId();
+  const order = await getCustomerOrderDetail(tenantId, user.id, id);
   if (!order) notFound();
 
   const template = getCardTemplate(order.card_template);

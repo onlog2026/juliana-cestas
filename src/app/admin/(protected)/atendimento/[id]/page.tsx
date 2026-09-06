@@ -2,14 +2,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { getTicketDetailAdmin } from "@/modules/support/service";
+import { requireStaff } from "@/lib/auth/require-staff";
 import { replyAsStaff } from "@/modules/support/actions";
 import { categoryLabel } from "@/components/support/ticket-status-badge";
 import { TicketThread } from "@/components/support/ticket-thread";
 import { TicketStatusSelect } from "@/components/admin/ticket-status-select";
 
 export default async function AdminChamadoPage(props: PageProps<"/admin/atendimento/[id]">) {
+  const staff = await requireStaff();
   const { id } = await props.params;
-  const detail = await getTicketDetailAdmin(id);
+  const detail = await getTicketDetailAdmin(staff.tenantId, id);
   if (!detail) notFound();
   const { ticket, messages } = detail;
 

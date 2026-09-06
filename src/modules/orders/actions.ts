@@ -3,7 +3,6 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { sendOrderEmail } from "@/modules/notifications/send";
 import { outForDeliveryEmail } from "@/modules/notifications/templates/out-for-delivery";
@@ -26,14 +25,14 @@ export type AdminOrderRow = {
 };
 
 export async function listOrders(filters?: { status?: string; date?: string }): Promise<AdminOrderRow[]> {
-  await requireStaff();
+  const staff = await requireStaff();
   const admin = createAdminClient();
   let query = admin
     .from("orders")
     .select(
       "id, number, status, payment_status, buyer_name, buyer_phone, recipient_name, delivery_type, delivery_date, delivery_slot_start, delivery_slot_end, total_cents, created_at"
     )
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", staff.tenantId)
     .order("created_at", { ascending: false })
     .limit(200);
 
@@ -71,7 +70,7 @@ export type AdminOrderDetail = AdminOrderRow & {
 };
 
 export async function getOrderDetail(orderId: string): Promise<AdminOrderDetail | null> {
-  await requireStaff();
+  const staff = await requireStaff();
   const admin = createAdminClient();
 
   const { data: order, error } = await admin
@@ -80,7 +79,7 @@ export async function getOrderDetail(orderId: string): Promise<AdminOrderDetail 
       "id, number, status, payment_status, buyer_name, buyer_phone, buyer_email, buyer_cpf, recipient_name, recipient_phone, delivery_type, street, address_number, complement, neighborhood, city, state, zone_name, delivery_date, delivery_slot_start, delivery_slot_end, card_template, card_recipient, card_sender, card_message, notes, subtotal_cents, addons_cents, delivery_fee_cents, discount_cents, coupon_code, total_cents, created_at"
     )
     .eq("id", orderId)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", staff.tenantId)
     .maybeSingle();
 
   if (error || !order) return null;
@@ -88,12 +87,14 @@ export async function getOrderDetail(orderId: string): Promise<AdminOrderDetail 
   const { data: items } = await admin
     .from("order_items")
     .select("name, unit_price_cents, qty")
-    .eq("order_id", orderId);
+    .eq("order_id", orderId)
+    .eq("tenant_id", staff.tenantId);
 
   const { data: events } = await admin
     .from("order_events")
     .select("id, type, actor, created_at, payload")
     .eq("order_id", orderId)
+    .eq("tenant_id", staff.tenantId)
     .order("created_at", { ascending: false });
 
   return { ...order, items: items ?? [], events: events ?? [] };
@@ -118,7 +119,7 @@ export async function advanceOrderStatus(
       "id, number, status, buyer_name, buyer_email, recipient_name, delivery_type, street, address_number, complement, neighborhood, zone_name, public_token_hash"
     )
     .eq("id", orderId)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", staff.tenantId)
     .maybeSingle();
 
   if (fetchError || !order) return { ok: false, error: "Pedido não encontrado." };
@@ -129,11 +130,12 @@ export async function advanceOrderStatus(
   const { error: updateError } = await admin
     .from("orders")
     .update({ status: nextStatus })
-    .eq("id", orderId);
+    .eq("id", orderId)
+    .eq("tenant_id", staff.tenantId);
   if (updateError) return { ok: false, error: "Falha ao atualizar o status." };
 
   await admin.from("order_events").insert({
-    tenant_id: TENANT_ID,
+    tenant_id: staff.tenantId,
     order_id: orderId,
     type: `status_${nextStatus}`,
     from_status: order.status,
@@ -158,10 +160,22 @@ export async function advanceOrderStatus(
       addressLine,
       orderUrl: `${siteUrl}/pedido/${order.id}`,
     });
-    await sendOrderEmail({ orderId, type: "out_for_delivery", toEmail: order.buyer_email, subject, html });
+    await sendOrderEmail(staff.tenantId, {
+      orderId,
+      type: "out_for_delivery",
+      toEmail: order.buyer_email,
+      subject,
+      html,
+    });
   } else if (nextStatus === "entregue") {
     const { subject, html } = deliveredEmail({ orderNumber: order.number, buyerName: order.buyer_name });
-    await sendOrderEmail({ orderId, type: "delivered", toEmail: order.buyer_email, subject, html });
+    await sendOrderEmail(staff.tenantId, {
+      orderId,
+      type: "delivered",
+      toEmail: order.buyer_email,
+      subject,
+      html,
+    });
   }
 
   revalidatePath("/admin/pedidos");
@@ -185,7 +199,7 @@ export async function markOrderPaid(
     .from("orders")
     .select("id, status")
     .eq("id", orderId)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", staff.tenantId)
     .maybeSingle();
 
   if (fetchError || !order) return { ok: false, error: "Pedido não encontrado." };
@@ -196,11 +210,12 @@ export async function markOrderPaid(
   const { error: updateError } = await admin
     .from("orders")
     .update({ status: "pago", payment_status: "paid", paid_at: new Date().toISOString() })
-    .eq("id", orderId);
+    .eq("id", orderId)
+    .eq("tenant_id", staff.tenantId);
   if (updateError) return { ok: false, error: "Falha ao marcar como pago." };
 
   await admin.from("order_events").insert({
-    tenant_id: TENANT_ID,
+    tenant_id: staff.tenantId,
     order_id: orderId,
     type: "status_pago",
     from_status: order.status,
@@ -229,7 +244,7 @@ export async function cancelOrder(
     .from("orders")
     .select("id, status")
     .eq("id", orderId)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", staff.tenantId)
     .maybeSingle();
 
   if (fetchError || !order) return { ok: false, error: "Pedido não encontrado." };
@@ -240,11 +255,12 @@ export async function cancelOrder(
   const { error: updateError } = await admin
     .from("orders")
     .update({ status: "cancelado" })
-    .eq("id", orderId);
+    .eq("id", orderId)
+    .eq("tenant_id", staff.tenantId);
   if (updateError) return { ok: false, error: "Falha ao cancelar o pedido." };
 
   await admin.from("order_events").insert({
-    tenant_id: TENANT_ID,
+    tenant_id: staff.tenantId,
     order_id: orderId,
     type: "status_cancelado",
     from_status: order.status,

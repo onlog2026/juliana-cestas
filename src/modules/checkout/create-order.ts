@@ -1,6 +1,5 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 import { generatePublicToken, hashToken } from "@/modules/orders/token";
 import { getProductForCheckout } from "@/modules/catalog/service";
 import { quoteCheckout } from "@/modules/checkout/quote";
@@ -30,11 +29,14 @@ export type CreateOrderResult =
   | { ok: true; orderId: string; number: number; token: string; totalCents: number }
   | { ok: false; error: string };
 
-export async function createOrder(input: CheckoutInput): Promise<CreateOrderResult> {
-  const found = await getProductForCheckout(input.productSlug);
+export async function createOrder(
+  tenantId: string,
+  input: CheckoutInput
+): Promise<CreateOrderResult> {
+  const found = await getProductForCheckout(tenantId, input.productSlug);
   if (!found) return { ok: false, error: "Cesta não encontrada." };
 
-  const settings = await getDeliverySettings();
+  const settings = await getDeliverySettings(tenantId);
   if (!settings) return { ok: false, error: "Configuração de entrega indisponível." };
 
   if (countWords(input.cardMessage) > settings.cardMaxWords) {
@@ -42,7 +44,7 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
   }
 
   // Revalida o slot no servidor -- nunca confia no que o cliente mandou.
-  const occupancy = await getSlotOccupancy(input.deliveryDate, input.deliveryDate);
+  const occupancy = await getSlotOccupancy(tenantId, input.deliveryDate, input.deliveryDate);
   const days = generateSlots(settings, new Date(), occupancy);
   if (!isSlotStillAvailable(days, input.deliveryDate, input.deliverySlotStart)) {
     return { ok: false, error: "Esse horário não está mais disponível. Escolha outro." };
@@ -51,7 +53,7 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
   const slot = day?.slots.find((s) => s.start === input.deliverySlotStart);
   if (!slot) return { ok: false, error: "Horário inválido." };
 
-  const quote = await quoteCheckout({
+  const quote = await quoteCheckout(tenantId, {
     productSlug: input.productSlug,
     addonSlugs: input.addonSlugs,
     upsellSlugs: input.upsellSlugs,
@@ -69,7 +71,7 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
   const placeholderTokenHash = hashToken(generatePublicToken());
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-  const zones = input.deliveryType === "delivery" ? await getDeliveryZones() : [];
+  const zones = input.deliveryType === "delivery" ? await getDeliveryZones(tenantId) : [];
   const zone = zones.find((z) => z.id === input.zoneId);
 
   const items = [
@@ -110,7 +112,7 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
     .from("customers")
     .upsert(
       {
-        tenant_id: TENANT_ID,
+        tenant_id: tenantId,
         phone: input.buyerPhone,
         name: input.buyerName,
         email: input.buyerEmail || null,
@@ -123,7 +125,7 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
 
   const { data, error } = await supabase.rpc("create_order_tx", {
     p: {
-      tenant_id: TENANT_ID,
+      tenant_id: tenantId,
       idempotency_key: input.idempotencyKey,
       customer_id: customer?.id ?? null,
       buyer_name: input.buyerName,
@@ -179,7 +181,7 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
   // duas vezes -- ignora só o erro de duplicidade, propaga qualquer outro.
   if (quote.couponId) {
     const { error: redemptionError } = await supabase.from("coupon_redemptions").insert({
-      tenant_id: TENANT_ID,
+      tenant_id: tenantId,
       coupon_id: quote.couponId,
       order_id: order.id,
       buyer_email: input.buyerEmail,
@@ -198,7 +200,8 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
   const { error: tokenError } = await supabase
     .from("orders")
     .update({ public_token_hash: hashToken(token) })
-    .eq("id", order.id);
+    .eq("id", order.id)
+    .eq("tenant_id", tenantId);
   if (tokenError) {
     return { ok: false, error: "Pedido criado, mas houve falha ao gerar o link de acesso. Fale no WhatsApp." };
   }
@@ -215,7 +218,7 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
   });
   // Melhor esforço: nunca falha o pedido por causa do e-mail (send.ts já
   // engole os próprios erros e registra no outbox).
-  await sendOrderEmail({
+  await sendOrderEmail(tenantId, {
     orderId: order.id,
     type: "order_confirmed",
     toEmail: input.buyerEmail || null,

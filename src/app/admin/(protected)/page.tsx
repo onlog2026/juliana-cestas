@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AlertTriangle, ShoppingBag, Receipt, TrendingUp } from "lucide-react";
 import { getSalesSummary, getSalesByDay, getTopProducts, getLowStockProducts } from "@/modules/sales/service";
+import { requireStaff } from "@/lib/auth/require-staff";
 import { SalesBarChart } from "@/components/admin/sales-bar-chart";
 import { formatCents } from "@/lib/money";
 import { saoPauloDateStr, addDaysToDateStr } from "@/lib/time/sao-paulo";
@@ -12,16 +13,17 @@ const PERIODS = [
 ];
 
 export default async function AdminDashboardPage(props: PageProps<"/admin">) {
+  const staff = await requireStaff();
   const params = await props.searchParams;
   const periodDays = Number(params?.dias) || 30;
   const to = saoPauloDateStr();
   const from = addDaysToDateStr(to, -(periodDays - 1));
 
   const [summary, byDay, topProducts, lowStock] = await Promise.all([
-    getSalesSummary(from, to),
-    getSalesByDay(from, to),
-    getTopProducts(from, to),
-    getLowStockProducts(),
+    getSalesSummary(staff.tenantId, from, to),
+    getSalesByDay(staff.tenantId, from, to),
+    getTopProducts(staff.tenantId, from, to),
+    getLowStockProducts(staff.tenantId),
   ]);
 
   return (

@@ -9,9 +9,10 @@ import { Benefits } from "@/components/loja/benefits";
 import { Faq } from "@/components/loja/faq";
 import { WhatsappCta } from "@/components/loja/whatsapp-cta";
 import { Reveal } from "@/components/loja/reveal";
+import { getTenantId } from "@/lib/tenant/context";
 
 export default async function Home() {
-  const banners = await getActiveBanners();
+  const banners = await getActiveBanners(await getTenantId());
 
   return (
     <>

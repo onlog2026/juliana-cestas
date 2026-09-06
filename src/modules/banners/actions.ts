@@ -3,7 +3,6 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { BANNER_TEXT_MAX_LENGTH } from "@/modules/banners/constants";
 
@@ -38,7 +37,7 @@ function slugify(raw: string): string {
 export async function upsertBanner(
   input: BannerInput
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   if (!input.image) return { ok: false, error: "Envie uma imagem para o banner." };
   if (!input.text.trim()) return { ok: false, error: "Escreva o texto do banner." };
@@ -51,7 +50,7 @@ export async function upsertBanner(
   const slug = slugify(input.slug || input.text).slice(0, 60) || crypto.randomUUID().slice(0, 8);
 
   const row = {
-    tenant_id: TENANT_ID,
+    tenant_id: staff.tenantId,
     slug,
     image_url: input.image,
     mobile_image_url: input.mobileImage,
@@ -68,10 +67,10 @@ export async function upsertBanner(
   };
 
   const query = input.id
-    ? admin.from("banners").update(row).eq("id", input.id).eq("tenant_id", TENANT_ID)
+    ? admin.from("banners").update(row).eq("id", input.id).eq("tenant_id", staff.tenantId)
     : admin.from("banners").insert({
         ...row,
-        sort_order: await nextSortOrder(admin),
+        sort_order: await nextSortOrder(staff.tenantId, admin),
       });
 
   const { error } = await query;
@@ -82,11 +81,14 @@ export async function upsertBanner(
   return { ok: true };
 }
 
-async function nextSortOrder(admin: ReturnType<typeof createAdminClient>): Promise<number> {
+async function nextSortOrder(
+  tenantId: string,
+  admin: ReturnType<typeof createAdminClient>
+): Promise<number> {
   const { data } = await admin
     .from("banners")
     .select("sort_order")
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .order("sort_order", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -94,10 +96,10 @@ async function nextSortOrder(admin: ReturnType<typeof createAdminClient>): Promi
 }
 
 export async function deleteBanner(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   const admin = createAdminClient();
-  const { error } = await admin.from("banners").delete().eq("id", id).eq("tenant_id", TENANT_ID);
+  const { error } = await admin.from("banners").delete().eq("id", id).eq("tenant_id", staff.tenantId);
   if (error) return { ok: false, error: "Não foi possível excluir." };
 
   revalidatePath("/");
@@ -108,12 +110,12 @@ export async function deleteBanner(id: string): Promise<{ ok: true } | { ok: fal
 export async function reorderBanners(
   orderedIds: string[]
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   const admin = createAdminClient();
   const results = await Promise.all(
     orderedIds.map((id, index) =>
-      admin.from("banners").update({ sort_order: index }).eq("id", id).eq("tenant_id", TENANT_ID)
+      admin.from("banners").update({ sort_order: index }).eq("id", id).eq("tenant_id", staff.tenantId)
     )
   );
   if (results.some((r) => r.error)) return { ok: false, error: "Não foi possível reordenar." };

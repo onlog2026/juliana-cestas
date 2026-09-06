@@ -1,9 +1,10 @@
+import { getTenantId } from "@/lib/tenant/context";
 import { getAllProducts } from "@/modules/catalog/service";
 import { ProductCard } from "./product-card";
 import { Reveal } from "./reveal";
 
 export async function FeaturedProducts() {
-  const featuredProducts = await getAllProducts();
+  const featuredProducts = await getAllProducts(await getTenantId());
   return (
     <section
       id="mais-pedidas"

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTenantId } from "@/lib/tenant/context";
 import { getSocialLinks } from "@/modules/settings/social-links";
 import { getSiteSettings } from "@/modules/settings/site-settings";
 import { getStoreProfile, formatStoreAddress } from "@/modules/settings/store-profile";
@@ -22,10 +23,12 @@ const columns = [
 ];
 
 export async function SiteFooter() {
+  // A loja vem do endereço acessado (visitante anônimo, sem login).
+  const tenantId = await getTenantId();
   const [socialLinks, siteSettings, storeProfile] = await Promise.all([
-    getSocialLinks(),
-    getSiteSettings(),
-    getStoreProfile(),
+    getSocialLinks(tenantId),
+    getSiteSettings(tenantId),
+    getStoreProfile(tenantId),
   ]);
   const address = formatStoreAddress(storeProfile);
 

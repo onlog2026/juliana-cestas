@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCustomerOrders } from "@/modules/customers/service";
+import { getTenantId } from "@/lib/tenant/context";
 import { NewTicketForm } from "@/components/support/new-ticket-form";
 
 export const metadata = { title: "Novo chamado" };
@@ -13,7 +14,8 @@ export default async function NovoChamadoPage() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const orders = await getCustomerOrders(user.id, user.email ?? null);
+  const tenantId = await getTenantId();
+  const orders = await getCustomerOrders(tenantId, user.id, user.email ?? null);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">

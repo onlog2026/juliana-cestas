@@ -33,6 +33,7 @@ export type OrderWithItems = {
 };
 
 export async function getOrderByToken(
+  tenantId: string,
   orderId: string,
   token: string
 ): Promise<OrderWithItems | null> {
@@ -44,6 +45,8 @@ export async function getOrderByToken(
       "id, number, status, payment_status, public_token_hash, recipient_name, delivery_type, street, address_number, complement, neighborhood, city, state, zone_name, delivery_date, delivery_slot_start, delivery_slot_end, card_template, card_recipient, card_sender, card_message, notes, subtotal_cents, addons_cents, delivery_fee_cents, total_cents, buyer_name"
     )
     .eq("id", orderId)
+    // Sem este filtro, um id + token de OUTRA loja abriria o pedido aqui.
+    .eq("tenant_id", tenantId)
     .maybeSingle();
 
   if (error || !order) return null;
@@ -52,7 +55,8 @@ export async function getOrderByToken(
   const { data: items } = await supabase
     .from("order_items")
     .select("name, unit_price_cents, qty")
-    .eq("order_id", orderId);
+    .eq("order_id", orderId)
+    .eq("tenant_id", tenantId);
 
   const { public_token_hash: _hash, ...rest } = order;
   return { ...rest, items: items ?? [] };

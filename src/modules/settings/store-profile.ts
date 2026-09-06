@@ -1,6 +1,5 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 
 export type StoreProfile = {
   businessName: string | null;
@@ -30,14 +29,14 @@ const EMPTY: StoreProfile = {
   state: null,
 };
 
-export async function getStoreProfile(): Promise<StoreProfile> {
+export async function getStoreProfile(tenantId: string): Promise<StoreProfile> {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("store_profile")
     .select(
       "business_name, document, email, phone, cep, street, address_number, complement, neighborhood, city, state"
     )
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .maybeSingle();
 
   if (error || !data) return EMPTY;

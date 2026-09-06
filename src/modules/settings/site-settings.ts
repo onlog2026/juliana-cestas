@@ -1,6 +1,5 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 
 export type SiteSettings = {
   logoHeaderUrl: string | null;
@@ -10,12 +9,12 @@ export type SiteSettings = {
 
 const EMPTY: SiteSettings = { logoHeaderUrl: null, logoFooterUrl: null, faviconUrl: null };
 
-export async function getSiteSettings(): Promise<SiteSettings> {
+export async function getSiteSettings(tenantId: string): Promise<SiteSettings> {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("site_settings")
     .select("logo_header_url, logo_footer_url, favicon_url")
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .maybeSingle();
 
   if (error || !data) return EMPTY;

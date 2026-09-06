@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { getAllProductsAdmin, getUpsellProductIds } from "@/modules/catalog/service";
+import { requireStaff } from "@/lib/auth/require-staff";
 import { getAllCategoriesAdmin } from "@/modules/catalog/categories";
 import { ProductDetailsForm } from "@/components/admin/product-details-form";
 import { ProductDeliveryForm } from "@/components/admin/product-delivery-form";
@@ -9,14 +10,15 @@ import { ProductUpsellsForm } from "@/components/admin/product-upsells-form";
 import { DeleteProductButton } from "@/components/admin/delete-product-button";
 
 export default async function AdminProdutoPage(props: PageProps<"/admin/produtos/[id]">) {
+  const staff = await requireStaff();
   const { id } = await props.params;
-  const products = await getAllProductsAdmin();
+  const products = await getAllProductsAdmin(staff.tenantId);
   const product = products.find((p) => p.id === id);
   if (!product) notFound();
 
   const [upsellIds, categories] = await Promise.all([
-    getUpsellProductIds(product.id),
-    getAllCategoriesAdmin(),
+    getUpsellProductIds(staff.tenantId, product.id),
+    getAllCategoriesAdmin(staff.tenantId),
   ]);
   const otherProducts = products.filter((p) => p.id !== product.id);
 

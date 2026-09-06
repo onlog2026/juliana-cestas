@@ -6,6 +6,7 @@ import { getCustomerTicketDetail } from "@/modules/support/service";
 import { replyAsCustomer } from "@/modules/support/actions";
 import { TicketStatusBadge, categoryLabel } from "@/components/support/ticket-status-badge";
 import { TicketThread } from "@/components/support/ticket-thread";
+import { getTenantId } from "@/lib/tenant/context";
 
 export const metadata = { title: "Meu chamado" };
 
@@ -17,7 +18,7 @@ export default async function ContaChamadoPage(props: PageProps<"/conta/atendime
   } = await supabase.auth.getUser();
   if (!user) notFound();
 
-  const detail = await getCustomerTicketDetail(user.id, user.email ?? null, id);
+  const detail = await getCustomerTicketDetail(await getTenantId(), user.id, user.email ?? null, id);
   if (!detail) notFound();
   const { ticket, messages } = detail;
 

@@ -1,6 +1,5 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 
 export type Coupon = {
   id: string;
@@ -48,20 +47,20 @@ function mapCoupon(row: {
 }
 
 /** Todos os cupons do tenant, pro painel admin (inclui inativos). */
-export async function getAllCouponsAdmin(): Promise<Coupon[]> {
+export async function getAllCouponsAdmin(tenantId: string): Promise<Coupon[]> {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("coupons")
     .select(COUPON_COLUMNS)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
   return (data ?? []).map(mapCoupon);
 }
 
 /** Quantas vezes um cupom já foi usado no total -- pro painel mostrar. */
-export async function getCouponRedemptionCounts(): Promise<Record<string, number>> {
+export async function getCouponRedemptionCounts(tenantId: string): Promise<Record<string, number>> {
   const supabase = createAdminClient();
-  const { data } = await supabase.from("coupon_redemptions").select("coupon_id").eq("tenant_id", TENANT_ID);
+  const { data } = await supabase.from("coupon_redemptions").select("coupon_id").eq("tenant_id", tenantId);
   const counts: Record<string, number> = {};
   for (const row of data ?? []) {
     counts[row.coupon_id] = (counts[row.coupon_id] ?? 0) + 1;

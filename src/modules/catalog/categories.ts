@@ -1,6 +1,5 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 
 export type Category = {
   id: string;
@@ -37,34 +36,34 @@ function mapCategory(row: CategoryRow): Category {
 }
 
 /** Categorias visíveis no site, na ordem certa. */
-export async function getActiveCategories(): Promise<Category[]> {
+export async function getActiveCategories(tenantId: string): Promise<Category[]> {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("categories")
     .select(CATEGORY_COLUMNS)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .eq("active", true)
     .order("sort_order", { ascending: true });
   return (data ?? []).map(mapCategory);
 }
 
 /** Todas as categorias (inclui inativas) -- pro painel admin gerenciar. */
-export async function getAllCategoriesAdmin(): Promise<Category[]> {
+export async function getAllCategoriesAdmin(tenantId: string): Promise<Category[]> {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("categories")
     .select(CATEGORY_COLUMNS)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .order("sort_order", { ascending: true });
   return (data ?? []).map(mapCategory);
 }
 
-export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+export async function getCategoryBySlug(tenantId: string, slug: string): Promise<Category | null> {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("categories")
     .select(CATEGORY_COLUMNS)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .eq("slug", slug)
     .eq("active", true)
     .maybeSingle();

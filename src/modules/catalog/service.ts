@@ -1,6 +1,5 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 import type { Product } from "@/lib/mock-content";
 
 export type DbProduct = {
@@ -80,13 +79,13 @@ function mapPublicProduct(p: {
 }
 
 /** Catálogo público (home, categoria, página de produto) — vem sempre do banco. */
-export async function getAllProducts(): Promise<Product[]> {
+export async function getAllProducts(tenantId: string): Promise<Product[]> {
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from("products")
     .select(PUBLIC_PRODUCT_COLUMNS)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .eq("active", true)
     .order("sort_order", { ascending: true });
 
@@ -95,13 +94,13 @@ export async function getAllProducts(): Promise<Product[]> {
 }
 
 /** Produtos ativos de UMA categoria — usado pela página /categoria/[slug]. */
-export async function getProductsByCategoryId(categoryId: string): Promise<Product[]> {
+export async function getProductsByCategoryId(tenantId: string, categoryId: string): Promise<Product[]> {
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from("products")
     .select(PUBLIC_PRODUCT_COLUMNS)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .eq("category_id", categoryId)
     .eq("active", true)
     .order("sort_order", { ascending: true });
@@ -110,18 +109,18 @@ export async function getProductsByCategoryId(categoryId: string): Promise<Produ
   return data.map(mapPublicProduct);
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const products = await getAllProducts();
+export async function getProductBySlug(tenantId: string, slug: string): Promise<Product | null> {
+  const products = await getAllProducts(tenantId);
   return products.find((p) => p.slug === slug) ?? null;
 }
 
-export async function getProductForCheckout(slug: string) {
+export async function getProductForCheckout(tenantId: string, slug: string) {
   const supabase = createAdminClient();
 
   const { data: product, error } = await supabase
     .from("products")
     .select(ADMIN_PRODUCT_COLUMNS)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .eq("slug", slug)
     .eq("active", true)
     .maybeSingle();
@@ -131,6 +130,7 @@ export async function getProductForCheckout(slug: string) {
   const { data: addons } = await supabase
     .from("product_addons")
     .select("id, slug, name, price_cents")
+    .eq("tenant_id", tenantId)
     .eq("product_id", product.id)
     .eq("active", true);
 
@@ -141,33 +141,35 @@ export async function getProductForCheckout(slug: string) {
 }
 
 /** Todos os produtos do tenant, para o painel admin (inclui inativos). */
-export async function getAllProductsAdmin(): Promise<DbProduct[]> {
+export async function getAllProductsAdmin(tenantId: string): Promise<DbProduct[]> {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("products")
     .select(ADMIN_PRODUCT_COLUMNS)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .order("sort_order", { ascending: true });
   return (data ?? []) as DbProduct[];
 }
 
 /** Ids dos produtos já marcados como upsell de um produto (pro checkbox do admin). */
-export async function getUpsellProductIds(productId: string): Promise<string[]> {
+export async function getUpsellProductIds(tenantId: string, productId: string): Promise<string[]> {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("product_upsells")
     .select("upsell_product_id")
+    .eq("tenant_id", tenantId)
     .eq("product_id", productId);
   return (data ?? []).map((row) => row.upsell_product_id);
 }
 
 /** Upsells cadastrados pro produto (cross-sell mostrado no checkout). */
-export async function getUpsellsForProduct(productId: string): Promise<UpsellProduct[]> {
+export async function getUpsellsForProduct(tenantId: string, productId: string): Promise<UpsellProduct[]> {
   const supabase = createAdminClient();
 
   const { data: links } = await supabase
     .from("product_upsells")
     .select("upsell_product_id, sort_order")
+    .eq("tenant_id", tenantId)
     .eq("product_id", productId)
     .order("sort_order", { ascending: true });
 
@@ -176,6 +178,7 @@ export async function getUpsellsForProduct(productId: string): Promise<UpsellPro
   const { data: products } = await supabase
     .from("products")
     .select("id, slug, name, price_cents, image_url")
+    .eq("tenant_id", tenantId)
     .in("id", links.map((l) => l.upsell_product_id))
     .eq("active", true);
 

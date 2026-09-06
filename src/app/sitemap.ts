@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getAllProducts } from "@/modules/catalog/service";
+import { getTenantId } from "@/lib/tenant/context";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://juliana-cestas-loja.vercel.app";
 
@@ -13,7 +14,7 @@ const STATIC_PAGES = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const products = await getAllProducts();
+  const products = await getAllProducts(await getTenantId());
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_PAGES.map((path) => ({
     url: `${SITE_URL}${path}`,

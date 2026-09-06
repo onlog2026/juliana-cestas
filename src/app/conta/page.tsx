@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Package, Headset } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCustomerOrders } from "@/modules/customers/service";
+import { getTenantId } from "@/lib/tenant/context";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { formatCents } from "@/lib/money";
 import { LogoutButton } from "@/components/conta/logout-button";
@@ -17,7 +18,8 @@ export default async function ContaPage() {
   // proxy.ts já redireciona quem não está logado, mas o TS não sabe disso.
   if (!user) return null;
 
-  const orders = await getCustomerOrders(user.id, user.email ?? null);
+  const tenantId = await getTenantId();
+  const orders = await getCustomerOrders(tenantId, user.id, user.email ?? null);
   const displayName = (user.user_metadata?.name as string | undefined) || user.email || "";
 
   return (

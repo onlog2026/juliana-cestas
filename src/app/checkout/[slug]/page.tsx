@@ -5,6 +5,7 @@ import { ChevronRight } from "lucide-react";
 import { getProductForCheckout, getUpsellsForProduct } from "@/modules/catalog/service";
 import { getDeliverySettings, getDeliveryZones } from "@/modules/delivery/settings";
 import { CheckoutForm } from "@/components/loja/checkout/checkout-form";
+import { getTenantId } from "@/lib/tenant/context";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,8 @@ export async function generateMetadata(
   props: PageProps<"/checkout/[slug]">
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const found = await getProductForCheckout(slug);
+  const tenantId = await getTenantId();
+  const found = await getProductForCheckout(tenantId, slug);
   if (!found) return {};
   return { title: `Comprar ${found.product.name}` };
 }
@@ -20,13 +22,14 @@ export async function generateMetadata(
 export default async function CheckoutPage(props: PageProps<"/checkout/[slug]">) {
   const { slug } = await props.params;
 
-  const found = await getProductForCheckout(slug);
+  const tenantId = await getTenantId();
+  const found = await getProductForCheckout(tenantId, slug);
   if (!found) notFound();
 
   const [settings, zones, upsells] = await Promise.all([
-    getDeliverySettings(),
-    getDeliveryZones(),
-    getUpsellsForProduct(found.product.id),
+    getDeliverySettings(tenantId),
+    getDeliveryZones(tenantId),
+    getUpsellsForProduct(tenantId, found.product.id),
   ]);
 
   if (!settings) notFound();

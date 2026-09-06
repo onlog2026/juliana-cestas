@@ -8,6 +8,8 @@ import { ProductGallery } from "@/components/loja/product-gallery";
 import { CartaozinhoSignature } from "@/components/loja/cartaozinho-signature";
 import { Reveal } from "@/components/loja/reveal";
 import { ProductJsonLd } from "@/components/loja/json-ld";
+import { getTenantId } from "@/lib/tenant/context";
+import { LEGACY_TENANT_ID } from "@/lib/tenant/legacy";
 
 export const revalidate = 300;
 
@@ -19,7 +21,10 @@ const currency = new Intl.NumberFormat("pt-BR", {
 });
 
 export async function generateStaticParams() {
-  const products = await getAllProducts();
+  // Roda em tempo de BUILD, quando não existe requisição -- por isso usa a
+  // loja padrão explicitamente, em vez de getTenantId() (que depende do
+  // endereço acessado). Lojas de outros tenants são geradas sob demanda.
+  const products = await getAllProducts(LEGACY_TENANT_ID);
   return products.map((product) => ({ slug: product.slug }));
 }
 
@@ -27,7 +32,7 @@ export async function generateMetadata(
   props: PageProps<"/produto/[slug]">
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const product = await getProductBySlug(slug);
+  const product = await getProductBySlug(await getTenantId(), slug);
   if (!product) return {};
 
   return {
@@ -40,13 +45,14 @@ export default async function ProdutoPage(
   props: PageProps<"/produto/[slug]">
 ) {
   const { slug } = await props.params;
-  const product = await getProductBySlug(slug);
+  const tenantId = await getTenantId();
+  const product = await getProductBySlug(tenantId, slug);
   if (!product) notFound();
 
   const whatsappMessage = encodeURIComponent(
     `Olá! Quero encomendar a ${product.name} (${currency.format(product.price)}).`
   );
-  const allProducts = await getAllProducts();
+  const allProducts = await getAllProducts(tenantId);
   const outrasCestas = allProducts.filter((item) => item.id !== product.id);
 
   return (

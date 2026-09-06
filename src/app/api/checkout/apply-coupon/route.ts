@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { quoteCheckout } from "@/modules/checkout/quote";
 import { checkRateLimit, clientIp } from "@/lib/security/rate-limit";
+import { getTenantId } from "@/lib/tenant/context";
 
 const schema = z.object({
   productSlug: z.string().min(1),
@@ -32,7 +33,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Dados inválidos." }, { status: 422 });
   }
 
-  const result = await quoteCheckout({
+  const tenantId = await getTenantId();
+  const result = await quoteCheckout(tenantId, {
     productSlug: parsed.data.productSlug,
     addonSlugs: parsed.data.addonSlugs,
     upsellSlugs: parsed.data.upsellSlugs,

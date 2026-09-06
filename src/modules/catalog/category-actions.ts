@@ -3,7 +3,6 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 import { requireStaff } from "@/lib/auth/require-staff";
 
 export type CategoryInput = {
@@ -27,7 +26,7 @@ function slugify(raw: string): string {
 export async function upsertCategory(
   input: CategoryInput
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   if (!input.name.trim()) return { ok: false, error: "Dê um nome para a categoria." };
 
@@ -35,7 +34,7 @@ export async function upsertCategory(
   const slug = slugify(input.slug || input.name).slice(0, 60) || crypto.randomUUID().slice(0, 8);
 
   const row = {
-    tenant_id: TENANT_ID,
+    tenant_id: staff.tenantId,
     slug,
     name: input.name.trim(),
     description: input.description.trim() || null,
@@ -45,8 +44,8 @@ export async function upsertCategory(
   };
 
   const query = input.id
-    ? admin.from("categories").update(row).eq("id", input.id).eq("tenant_id", TENANT_ID)
-    : admin.from("categories").insert({ ...row, sort_order: await nextSortOrder(admin) });
+    ? admin.from("categories").update(row).eq("id", input.id).eq("tenant_id", staff.tenantId)
+    : admin.from("categories").insert({ ...row, sort_order: await nextSortOrder(admin, staff.tenantId) });
 
   const { error } = await query;
   if (error) {
@@ -60,11 +59,14 @@ export async function upsertCategory(
   return { ok: true };
 }
 
-async function nextSortOrder(admin: ReturnType<typeof createAdminClient>): Promise<number> {
+async function nextSortOrder(
+  admin: ReturnType<typeof createAdminClient>,
+  tenantId: string
+): Promise<number> {
   const { data } = await admin
     .from("categories")
     .select("sort_order")
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .order("sort_order", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -72,10 +74,10 @@ async function nextSortOrder(admin: ReturnType<typeof createAdminClient>): Promi
 }
 
 export async function deleteCategory(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   const admin = createAdminClient();
-  const { error } = await admin.from("categories").delete().eq("id", id).eq("tenant_id", TENANT_ID);
+  const { error } = await admin.from("categories").delete().eq("id", id).eq("tenant_id", staff.tenantId);
   if (error) {
     // FK de products.category_id é RESTRICT de propósito: apagar uma
     // categoria com cesta vinculada apagaria silenciosamente o vínculo.
@@ -93,12 +95,12 @@ export async function deleteCategory(id: string): Promise<{ ok: true } | { ok: f
 export async function reorderCategories(
   orderedIds: string[]
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   const admin = createAdminClient();
   const results = await Promise.all(
     orderedIds.map((id, index) =>
-      admin.from("categories").update({ sort_order: index }).eq("id", id).eq("tenant_id", TENANT_ID)
+      admin.from("categories").update({ sort_order: index }).eq("id", id).eq("tenant_id", staff.tenantId)
     )
   );
   if (results.some((r) => r.error)) return { ok: false, error: "Não foi possível reordenar." };

@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { getAllProductsAdmin } from "@/modules/catalog/service";
+import { requireStaff } from "@/lib/auth/require-staff";
 import { formatCents } from "@/lib/money";
 import { NewProductButton } from "@/components/admin/new-product-button";
 import { ProductThumbnail } from "@/components/admin/product-thumbnail";
 
 export default async function AdminProdutosPage() {
-  const products = await getAllProductsAdmin();
+  const staff = await requireStaff();
+  const products = await getAllProductsAdmin(staff.tenantId);
 
   return (
     <div className="max-w-[1400px]">

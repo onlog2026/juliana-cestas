@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { AdvanceStatusButton } from "@/components/admin/advance-status-button";
@@ -9,7 +8,7 @@ import { saoPauloDateStr } from "@/lib/time/sao-paulo";
 export default async function AdminEntregasPage(props: {
   searchParams: Promise<{ data?: string }>;
 }) {
-  await requireStaff();
+  const staff = await requireStaff();
   const { data: dateParam } = await props.searchParams;
   const date = dateParam ?? saoPauloDateStr();
 
@@ -17,7 +16,7 @@ export default async function AdminEntregasPage(props: {
   const { data: orders } = await admin
     .from("orders")
     .select("id, number, status, recipient_name, delivery_type, delivery_slot_start, delivery_slot_end, street, address_number, neighborhood, zone_name")
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", staff.tenantId)
     .eq("delivery_date", date)
     .in("status", ["pronto", "saiu_para_entrega", "entregue"])
     .order("delivery_slot_start", { ascending: true });

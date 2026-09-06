@@ -3,7 +3,6 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 import { requireStaff } from "@/lib/auth/require-staff";
 
 function normalizeUrl(raw: string): string | null {
@@ -18,14 +17,14 @@ export async function updateSocialLinks(input: {
   youtube: string;
   linkedin: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   const admin = createAdminClient();
   const { error } = await admin
     .from("social_links")
     .upsert(
       {
-        tenant_id: TENANT_ID,
+        tenant_id: staff.tenantId,
         instagram: normalizeUrl(input.instagram),
         facebook: normalizeUrl(input.facebook),
         x: normalizeUrl(input.x),
@@ -56,14 +55,14 @@ export async function updateStoreProfile(input: {
   city: string;
   state: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   const admin = createAdminClient();
   const { error } = await admin
     .from("store_profile")
     .upsert(
       {
-        tenant_id: TENANT_ID,
+        tenant_id: staff.tenantId,
         business_name: input.businessName.trim() || null,
         document: input.document.trim() || null,
         email: input.email.trim() || null,
@@ -92,14 +91,14 @@ export async function updateSiteSettings(input: {
   logoFooterUrl: string;
   faviconUrl: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   const admin = createAdminClient();
   const { error } = await admin
     .from("site_settings")
     .upsert(
       {
-        tenant_id: TENANT_ID,
+        tenant_id: staff.tenantId,
         logo_header_url: normalizeUrl(input.logoHeaderUrl),
         logo_footer_url: normalizeUrl(input.logoFooterUrl),
         favicon_url: normalizeUrl(input.faviconUrl),

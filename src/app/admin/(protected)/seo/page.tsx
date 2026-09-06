@@ -1,8 +1,10 @@
+import { requireStaff } from "@/lib/auth/require-staff";
 import { getSeoSettings } from "@/modules/seo/service";
 import { SeoForm } from "@/components/admin/seo-form";
 
 export default async function AdminSeoPage() {
-  const settings = await getSeoSettings();
+  const staff = await requireStaff();
+  const settings = await getSeoSettings(staff.tenantId);
 
   return (
     <div className="max-w-2xl">

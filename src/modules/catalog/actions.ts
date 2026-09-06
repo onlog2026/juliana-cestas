@@ -3,7 +3,6 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 import { requireStaff } from "@/lib/auth/require-staff";
 
 function slugify(raw: string): string {
@@ -43,14 +42,14 @@ export type ProductDetailsInput = {
 export async function createProduct(): Promise<
   { ok: true; id: string } | { ok: false; error: string }
 > {
-  await requireStaff();
+  const staff = await requireStaff();
 
   const admin = createAdminClient();
   const slug = `nova-cesta-${Date.now().toString(36)}`;
   const { data, error } = await admin
     .from("products")
     .insert({
-      tenant_id: TENANT_ID,
+      tenant_id: staff.tenantId,
       slug,
       name: "Nova cesta",
       price_cents: 500,
@@ -68,7 +67,7 @@ export async function createProduct(): Promise<
 export async function updateProductDetails(
   input: ProductDetailsInput
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   if (!input.name.trim()) return { ok: false, error: "Dê um nome para a cesta." };
   if (!Number.isInteger(input.priceCents) || input.priceCents < 500) {
@@ -119,7 +118,7 @@ export async function updateProductDetails(
       updated_at: new Date().toISOString(),
     })
     .eq("id", input.id)
-    .eq("tenant_id", TENANT_ID);
+    .eq("tenant_id", staff.tenantId);
 
   if (error) {
     if (error.code === "23505") return { ok: false, error: "Já existe uma cesta com esse link (slug)." };
@@ -134,7 +133,7 @@ export async function updateProductDetails(
 }
 
 export async function deleteProduct(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   const admin = createAdminClient();
   // Soft delete: pedidos antigos referenciam product_id, apagar de vez
@@ -143,7 +142,7 @@ export async function deleteProduct(id: string): Promise<{ ok: true } | { ok: fa
     .from("products")
     .update({ active: false })
     .eq("id", id)
-    .eq("tenant_id", TENANT_ID);
+    .eq("tenant_id", staff.tenantId);
 
   if (error) return { ok: false, error: "Não foi possível remover." };
 
@@ -156,7 +155,7 @@ export async function updateProductDelivery(input: {
   productId: string;
   deliveryFeeCents: number;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   if (!Number.isInteger(input.deliveryFeeCents) || input.deliveryFeeCents < 0) {
     return { ok: false, error: "Valor de entrega inválido." };
@@ -167,7 +166,7 @@ export async function updateProductDelivery(input: {
     .from("products")
     .update({ delivery_fee_cents: input.deliveryFeeCents })
     .eq("id", input.productId)
-    .eq("tenant_id", TENANT_ID);
+    .eq("tenant_id", staff.tenantId);
 
   if (error) return { ok: false, error: "Não foi possível salvar." };
 
@@ -180,23 +179,49 @@ export async function updateProductUpsells(input: {
   productId: string;
   upsellProductIds: string[];
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   const admin = createAdminClient();
+
+  // O produto que recebe os upsells precisa ser DESTA loja -- o id vem do
+  // navegador e sem esta checagem um admin poderia editar produto alheio.
+  const { data: target } = await admin
+    .from("products")
+    .select("id")
+    .eq("id", input.productId)
+    .eq("tenant_id", staff.tenantId)
+    .maybeSingle();
+  if (!target) return { ok: false, error: "Produto não encontrado nesta loja." };
 
   // Substitui a lista inteira: apaga o que existia e insere de novo --
   // mais simples e seguro do que calcular diff, e a tabela é pequena.
   const { error: deleteError } = await admin
     .from("product_upsells")
     .delete()
+    .eq("tenant_id", staff.tenantId)
     .eq("product_id", input.productId);
   if (deleteError) return { ok: false, error: "Não foi possível salvar." };
 
-  const ids = input.upsellProductIds.filter((id) => id !== input.productId);
+  const requested = input.upsellProductIds.filter((id) => id !== input.productId);
+
+  // Os ids dos upsells também vêm do navegador: só entram os que realmente
+  // pertencem a esta loja. Id de outra loja é descartado em silêncio (a tela
+  // só oferece produtos próprios -- quem manda outro está forçando a barra).
+  let ids: string[] = [];
+  if (requested.length > 0) {
+    const { data: owned } = await admin
+      .from("products")
+      .select("id")
+      .eq("tenant_id", staff.tenantId)
+      .in("id", requested);
+    const ownedIds = new Set((owned ?? []).map((p) => p.id));
+    ids = requested.filter((id) => ownedIds.has(id));
+  }
+
   if (ids.length > 0) {
     const { error: insertError } = await admin.from("product_upsells").insert(
       ids.map((upsellProductId, index) => ({
-        tenant_id: TENANT_ID,
+        tenant_id: staff.tenantId,
         product_id: input.productId,
         upsell_product_id: upsellProductId,
         sort_order: index,

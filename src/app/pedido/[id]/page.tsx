@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Check, Clock, MessageCircle, Package } from "lucide-react";
 import { getOrderByToken } from "@/modules/orders/service";
+import { getTenantId } from "@/lib/tenant/context";
 import { getCardTemplate } from "@/modules/cards/templates";
 import { CardPattern } from "@/components/loja/checkout/card-pattern";
 import { formatCents } from "@/lib/money";
@@ -32,7 +33,8 @@ export default async function PedidoPage(
   const { t } = await props.searchParams;
 
   if (!t) notFound();
-  const order = await getOrderByToken(id, t);
+  const tenantId = await getTenantId();
+  const order = await getOrderByToken(tenantId, id, t);
   if (!order) notFound();
 
   const template = getCardTemplate(order.card_template);

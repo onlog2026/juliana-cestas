@@ -1,6 +1,5 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 
 export type Banner = {
   id: string;
@@ -62,24 +61,24 @@ function mapBanner(row: BannerRow): Banner {
 }
 
 /** Banners ativos, na ordem certa -- é o que o carrossel da home usa. */
-export async function getActiveBanners(): Promise<Banner[]> {
+export async function getActiveBanners(tenantId: string): Promise<Banner[]> {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("banners")
     .select(BANNER_COLUMNS)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .eq("active", true)
     .order("sort_order", { ascending: true });
   return (data ?? []).map(mapBanner);
 }
 
 /** Todos os banners (inclui inativos) -- pro painel admin gerenciar. */
-export async function getAllBannersAdmin(): Promise<Banner[]> {
+export async function getAllBannersAdmin(tenantId: string): Promise<Banner[]> {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("banners")
     .select(BANNER_COLUMNS)
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .order("sort_order", { ascending: true });
   return (data ?? []).map(mapBanner);
 }

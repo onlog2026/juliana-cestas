@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { User } from "lucide-react";
+import { getTenantId } from "@/lib/tenant/context";
 import { getAllProducts } from "@/modules/catalog/service";
 import { getSocialLinks } from "@/modules/settings/social-links";
 import { getSiteSettings } from "@/modules/settings/site-settings";
@@ -8,10 +9,12 @@ import { HeaderNavMenu } from "@/components/loja/header-nav-menu";
 import { SocialIcons } from "@/components/loja/social-icons";
 
 export async function SiteHeader() {
+  // A loja vem do endereço acessado (visitante anônimo, sem login).
+  const tenantId = await getTenantId();
   const [products, socialLinks, siteSettings] = await Promise.all([
-    getAllProducts(),
-    getSocialLinks(),
-    getSiteSettings(),
+    getAllProducts(tenantId),
+    getSocialLinks(tenantId),
+    getSiteSettings(tenantId),
   ]);
   const hasSocialLinks = Object.values(socialLinks).some(Boolean);
 

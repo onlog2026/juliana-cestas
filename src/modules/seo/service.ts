@@ -1,6 +1,5 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 
 export type SeoSettings = {
   siteTitle: string;
@@ -17,12 +16,12 @@ const FALLBACK: SeoSettings = {
   ogImageUrl: null,
 };
 
-export async function getSeoSettings(): Promise<SeoSettings> {
+export async function getSeoSettings(tenantId: string): Promise<SeoSettings> {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("seo_settings")
     .select("site_title, site_description, keywords, og_image_url")
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .maybeSingle();
 
   if (error || !data) return FALLBACK;

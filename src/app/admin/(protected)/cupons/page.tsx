@@ -1,10 +1,12 @@
+import { requireStaff } from "@/lib/auth/require-staff";
 import { getAllCouponsAdmin, getCouponRedemptionCounts } from "@/modules/coupons/service";
 import { CouponsManager } from "@/components/admin/coupons-manager";
 
 export default async function AdminCuponsPage() {
+  const staff = await requireStaff();
   const [coupons, redemptionCounts] = await Promise.all([
-    getAllCouponsAdmin(),
-    getCouponRedemptionCounts(),
+    getAllCouponsAdmin(staff.tenantId),
+    getCouponRedemptionCounts(staff.tenantId),
   ]);
 
   return (

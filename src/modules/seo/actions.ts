@@ -3,7 +3,6 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 import { requireStaff } from "@/lib/auth/require-staff";
 
 export async function updateSeoSettings(input: {
@@ -12,7 +11,7 @@ export async function updateSeoSettings(input: {
   keywords: string;
   ogImageUrl: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   const admin = createAdminClient();
   const keywords = input.keywords
@@ -24,7 +23,7 @@ export async function updateSeoSettings(input: {
     .from("seo_settings")
     .upsert(
       {
-        tenant_id: TENANT_ID,
+        tenant_id: staff.tenantId,
         site_title: input.siteTitle,
         site_description: input.siteDescription,
         keywords,

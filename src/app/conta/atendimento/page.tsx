@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus, Headset } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCustomerTickets } from "@/modules/support/service";
+import { getTenantId } from "@/lib/tenant/context";
 import { TicketStatusBadge, categoryLabel } from "@/components/support/ticket-status-badge";
 
 export const metadata = { title: "Atendimento" };
@@ -13,7 +14,7 @@ export default async function ContaAtendimentoPage() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const tickets = await getCustomerTickets(user.id, user.email ?? null);
+  const tickets = await getCustomerTickets(await getTenantId(), user.id, user.email ?? null);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">

@@ -1,6 +1,5 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 
 export type SalesSummary = {
   revenueCents: number;
@@ -28,10 +27,10 @@ export type LowStockProduct = {
 };
 
 /** from/to em "YYYY-MM-DD", ambos inclusive, no calendário de Brasília. */
-export async function getSalesSummary(from: string, to: string): Promise<SalesSummary> {
+export async function getSalesSummary(tenantId: string, from: string, to: string): Promise<SalesSummary> {
   const supabase = createAdminClient();
   const { data } = await supabase
-    .rpc("sales_summary", { p_tenant: TENANT_ID, p_from: from, p_to: to })
+    .rpc("sales_summary", { p_tenant: tenantId, p_from: from, p_to: to })
     .single();
   const row = data as { revenue_cents: number; orders_count: number } | null;
 
@@ -44,9 +43,9 @@ export async function getSalesSummary(from: string, to: string): Promise<SalesSu
   };
 }
 
-export async function getSalesByDay(from: string, to: string): Promise<SalesDay[]> {
+export async function getSalesByDay(tenantId: string, from: string, to: string): Promise<SalesDay[]> {
   const supabase = createAdminClient();
-  const { data } = await supabase.rpc("sales_by_day", { p_tenant: TENANT_ID, p_from: from, p_to: to });
+  const { data } = await supabase.rpc("sales_by_day", { p_tenant: tenantId, p_from: from, p_to: to });
   return (data ?? []).map((row: { day: string; revenue_cents: number; orders_count: number }) => ({
     day: row.day,
     revenueCents: Number(row.revenue_cents),
@@ -54,10 +53,10 @@ export async function getSalesByDay(from: string, to: string): Promise<SalesDay[
   }));
 }
 
-export async function getTopProducts(from: string, to: string, limit = 5): Promise<TopProduct[]> {
+export async function getTopProducts(tenantId: string, from: string, to: string, limit = 5): Promise<TopProduct[]> {
   const supabase = createAdminClient();
   const { data } = await supabase.rpc("sales_top_products", {
-    p_tenant: TENANT_ID,
+    p_tenant: tenantId,
     p_from: from,
     p_to: to,
     p_limit: limit,
@@ -69,12 +68,12 @@ export async function getTopProducts(from: string, to: string, limit = 5): Promi
   }));
 }
 
-export async function getLowStockProducts(): Promise<LowStockProduct[]> {
+export async function getLowStockProducts(tenantId: string): Promise<LowStockProduct[]> {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("products")
     .select("id, name, stock_quantity, low_stock_threshold")
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .eq("active", true)
     .not("stock_quantity", "is", null)
     .not("low_stock_threshold", "is", null);

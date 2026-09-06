@@ -1,6 +1,5 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TENANT_ID } from "@/lib/tenant";
 
 export type SocialLinks = {
   instagram: string | null;
@@ -12,12 +11,12 @@ export type SocialLinks = {
 
 const EMPTY: SocialLinks = { instagram: null, facebook: null, x: null, youtube: null, linkedin: null };
 
-export async function getSocialLinks(): Promise<SocialLinks> {
+export async function getSocialLinks(tenantId: string): Promise<SocialLinks> {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("social_links")
     .select("instagram, facebook, x, youtube, linkedin")
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .maybeSingle();
 
   if (error || !data) return EMPTY;
