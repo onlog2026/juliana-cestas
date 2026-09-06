@@ -3,29 +3,25 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, LayoutDashboard, Store, ScrollText } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { LogoutButton } from "@/components/admin/logout-button";
-import type { LucideIcon } from "lucide-react";
+import { superNavIcon } from "@/components/platform/super-nav-icons";
 
 // Mesma armadilha do drawer do painel da loja: um ícone (função React) NÃO
 // atravessa a fronteira Server -> Client como prop. Passar o componente direto
 // funciona no `npm run dev` e quebra a página inteira em produção -- nem o
 // build nem o `tsc` pegam, porque é erro de serialização em tempo de execução.
 // Por isso o layout manda só o NOME (string) e a resolução acontece aqui, que
-// já é código de cliente.
-const ICONS: Record<string, LucideIcon> = {
-  LayoutDashboard,
-  Store,
-  ScrollText,
-};
+// já é código de cliente (ver `super-nav-icons.ts`).
 
-type NavItem = { href: string; label: string; iconName: string };
+type NavItem = { href: string; label: string; iconName: string; external: boolean };
+type NavGroup = { label: string; items: NavItem[] };
 
 export function SuperNavDrawer({
-  items,
+  groups,
   adminEmail,
 }: {
-  items: NavItem[];
+  groups: NavGroup[];
   // Este componente é client e não lê o banco: o e-mail vem pronto do layout,
   // que já confirmou no servidor quem está logado.
   adminEmail: string | null;
@@ -58,7 +54,7 @@ export function SuperNavDrawer({
             className="absolute inset-0 bg-black/50"
           />
           <nav className="jc-pop absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-primary px-4 py-6 text-primary-foreground shadow-lg">
-            <div className="flex items-center justify-between">
+            <div className="flex shrink-0 items-center justify-between">
               <div>
                 <span className="font-display text-lg text-primary-foreground">Plataforma</span>
                 <p className="text-xs text-primary-foreground/70">Administração das lojas</p>
@@ -73,27 +69,41 @@ export function SuperNavDrawer({
               </button>
             </div>
 
-            <div className="mt-6 flex flex-col gap-1">
-              {items.map((item) => {
-                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-                const Icon = ICONS[item.iconName] ?? LayoutDashboard;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-medium ${
-                      active
-                        ? "bg-primary-foreground/20 text-primary-foreground"
-                        : "text-primary-foreground/85 hover:bg-primary-foreground/10"
-                    }`}
-                  >
-                    <Icon className="size-5" /> {item.label}
-                  </Link>
-                );
-              })}
+            {/* Rola por dentro: são ~14 telas, não cabem na altura do celular. */}
+            <div className="mt-5 min-h-0 flex-1 overflow-y-auto">
+              {groups.map((group) => (
+                <div key={group.label} className="mb-4">
+                  <p className="px-3.5 pb-1 text-[10px] font-semibold tracking-widest text-primary-foreground/50 uppercase">
+                    {group.label}
+                  </p>
+                  <div className="flex flex-col gap-0.5">
+                    {group.items.map((item) => {
+                      const active =
+                        !item.external &&
+                        (pathname === item.href || pathname.startsWith(`${item.href}/`));
+                      const Icon = superNavIcon(item.iconName);
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          {...(item.external ? { target: "_blank", rel: "noreferrer" } : {})}
+                          className={`flex min-h-11 items-center gap-3 rounded-[10px] px-3.5 py-2.5 text-sm font-medium ${
+                            active
+                              ? "bg-primary-foreground/20 text-primary-foreground"
+                              : "text-primary-foreground/85 hover:bg-primary-foreground/10"
+                          }`}
+                        >
+                          <Icon className="size-5 shrink-0" />
+                          <span className="truncate">{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="mt-auto rounded-[10px] bg-card px-3 py-2.5">
+            <div className="mt-2 shrink-0 rounded-[10px] bg-card px-3 py-2.5">
               {adminEmail ? <p className="truncate text-xs text-muted-foreground">{adminEmail}</p> : null}
               <LogoutButton />
             </div>

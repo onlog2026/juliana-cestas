@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   Menu,
   X,
+  CreditCard,
   Package,
   Truck,
   Search,
@@ -26,6 +27,7 @@ import type { LucideIcon } from "lucide-react";
 // tipo). Em vez disso, passa só o NOME (string, serializável) e resolve o
 // componente aqui dentro, que já é client.
 const ICONS: Record<string, LucideIcon> = {
+  CreditCard,
   Package,
   Truck,
   Search,

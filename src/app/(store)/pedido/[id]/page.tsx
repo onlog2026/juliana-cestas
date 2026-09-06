@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Check, Clock, MessageCircle, Package } from "lucide-react";
+import { Check, Clock, Package } from "lucide-react";
 import { getOrderByToken } from "@/modules/orders/service";
+import { getOrderPaymentStatus } from "@/modules/payments/service";
+import { PaymentPanel } from "@/components/loja/checkout/payment-panel";
 import { getTenantId } from "@/lib/tenant/context";
 import { getStoreProfile } from "@/modules/settings/store-profile";
 import { getCardTemplate } from "@/modules/cards/templates";
@@ -44,6 +46,13 @@ export default async function PedidoPage(
   const whatsappMessage = encodeURIComponent(
     `Olá! Quero finalizar o pagamento do meu pedido #${order.number}.`
   );
+  const whatsappHref = `https://wa.me/${whatsapp}?text=${whatsappMessage}`;
+
+  // A situação do pagamento é lida NO SERVIDOR, com o mesmo token que já
+  // autoriza ver o pedido. Se a loja não conectou conta de recebimento,
+  // `paymentEnabled` volta false e o painel mostra exatamente o que mostrava
+  // antes: o botão do WhatsApp. Nada regride para quem não conectou.
+  const pagamento = await getOrderPaymentStatus(tenantId, id, t);
 
   const addressLine = order.delivery_type === "pickup"
     ? "Retirada na loja"
@@ -114,21 +123,15 @@ export default async function PedidoPage(
         <p className="relative mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">{storeName}</p>
       </div>
 
-      <div className="mt-6 rounded-card border border-primary/30 bg-accent p-5">
-        <p className="text-sm text-foreground">
-          O pagamento online ainda está sendo ligado. Por enquanto, finalize direto pelo WhatsApp —
-          é só confirmar o número do pedido.
-        </p>
-        <a
-          href={`https://wa.me/${whatsapp}?text=${whatsappMessage}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="jc-shine-cta mt-4 inline-flex h-12 items-center gap-2 rounded-full bg-[var(--jc-whatsapp)] px-7 text-base font-semibold text-white transition-transform active:scale-[0.98]"
-        >
-          <MessageCircle className="size-5" />
-          Finalizar pagamento pelo WhatsApp
-        </a>
-      </div>
+      <PaymentPanel
+        orderId={id}
+        token={t}
+        pagamentoLigado={pagamento?.paymentEnabled ?? false}
+        pagoInicial={pagamento?.paid ?? false}
+        cobrancaInicial={pagamento?.payment ?? null}
+        whatsappHref={whatsappHref}
+        totalCents={order.total_cents}
+      />
 
       <p className="mt-6 flex items-start gap-2 text-xs text-muted-foreground">
         <Check className="mt-0.5 size-3.5 shrink-0" />
