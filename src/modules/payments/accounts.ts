@@ -73,6 +73,27 @@ export async function getAccountStatus(tenantId: string): Promise<AccountStatus>
   // Erro de leitura NÃO vira "não conectado" caladamente — isso esconderia uma
   // conta ativa e faria a tela mentir.
   if (error) {
+    // 42P01 = a TABELA não existe. É um caso à parte, e o mais provável de
+    // acontecer: o código foi publicado e a migração 0028 ainda não rodou.
+    // Dizer "recarregue a página" aqui mandaria a lojista tentar de novo para
+    // sempre. A mensagem tem que nomear o que falta e quem resolve.
+    if ((error as { code?: string }).code === "42P01") {
+      return {
+        connected: false,
+        environment: null,
+        keyLast4: null,
+        status: "error",
+        accountName: null,
+        accountEmail: null,
+        webhookRegistered: false,
+        webhookUrl: null,
+        connectedAt: null,
+        lastError:
+          "O recebimento pelo site ainda está sendo preparado — falta um ajuste no banco de dados. Enquanto isso, seus pedidos continuam sendo combinados pelo WhatsApp, normalmente. Avise o suporte se esta mensagem continuar aparecendo.",
+        cryptoReady,
+      };
+    }
+
     return {
       connected: false,
       environment: null,
