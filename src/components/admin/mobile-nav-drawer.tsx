@@ -39,7 +39,17 @@ const ICONS: Record<string, LucideIcon> = {
 
 type NavItem = { href: string; label: string; iconName: string };
 
-export function MobileNavDrawer({ items, staffEmail }: { items: NavItem[]; staffEmail: string | null }) {
+export function MobileNavDrawer({
+  items,
+  staffEmail,
+  storeName,
+}: {
+  items: NavItem[];
+  staffEmail: string | null;
+  // Este componente é client e não pode ler o banco -- o nome da loja vem
+  // pronto do layout (server), que já sabe qual loja é a de quem está logado.
+  storeName: string;
+}) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -69,7 +79,7 @@ export function MobileNavDrawer({ items, staffEmail }: { items: NavItem[]; staff
           />
           <nav className="jc-pop absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-card px-4 py-6 shadow-lg">
             <div className="flex items-center justify-between">
-              <span className="font-display text-lg text-primary">Juliana Cestas</span>
+              <span className="font-display text-lg text-primary">{storeName || "Painel de gestão"}</span>
               <button
                 type="button"
                 onClick={() => setOpen(false)}

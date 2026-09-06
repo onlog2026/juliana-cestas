@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Product } from "@/lib/mock-content";
+import type { Product } from "@/modules/catalog/product";
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",

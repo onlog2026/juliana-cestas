@@ -16,7 +16,7 @@ const columns = [
   {
     title: "Institucional",
     links: [
-      { href: "/sobre", label: "Sobre a Juliana Cestas" },
+      { href: "/sobre", label: "Sobre a loja" },
       { href: "/trocas-e-devolucoes", label: "Trocas e entregas" },
     ],
   },
@@ -31,6 +31,7 @@ export async function SiteFooter() {
     getStoreProfile(tenantId),
   ]);
   const address = formatStoreAddress(storeProfile);
+  const storeName = storeProfile.businessName?.trim() || "";
 
   return (
     <footer className="border-t border-border bg-secondary/60">
@@ -40,7 +41,7 @@ export async function SiteFooter() {
             // eslint-disable-next-line @next/next/no-img-element -- pode ser GIF animado
             <img src={siteSettings.logoFooterUrl} alt="" className="h-9 w-auto object-contain" />
           ) : (
-            <p className="font-display text-2xl text-primary">Juliana Cestas</p>
+            <p className="font-display text-2xl text-primary">{storeName}</p>
           )}
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
             Cestas de café da manhã e presentes afetivos, feitos e entregues
@@ -97,7 +98,7 @@ export async function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-border px-4 py-5 text-center text-xs text-muted-foreground sm:px-6 lg:px-8">
-        © {new Date().getFullYear()} {storeProfile.businessName || "Juliana Cestas"}. Brasília, DF.
+        © {new Date().getFullYear()}{storeName ? ` ${storeName}` : ""}. Brasília, DF.
       </div>
     </footer>
   );

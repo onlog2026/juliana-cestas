@@ -21,6 +21,8 @@ type Props = {
   upsells: UpsellProduct[];
   zones: DeliveryZone[];
   cardMaxWords: number;
+  /** Nome da loja atual -- vem do servidor porque este componente e client. */
+  storeName?: string;
 };
 
 const DRAFT_VERSION = 1;
@@ -52,7 +54,7 @@ function formatDayOnlyLabel(dateStr: string, weekday: number) {
   return `${weekdayNames[weekday]} ${d}`;
 }
 
-export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords }: Props) {
+export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, storeName = "" }: Props) {
   const router = useRouter();
   const key = draftKey(product.slug);
 
@@ -620,7 +622,7 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords }: 
                 Para {cardRecipient || "quem você ama"}
                 {cardSender ? `, de ${cardSender}` : ""}.
               </p>
-              <p className="relative mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">Juliana Cestas</p>
+              <p className="relative mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">{storeName}</p>
             </div>
           </div>
         </section>

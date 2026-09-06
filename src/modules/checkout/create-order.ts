@@ -11,7 +11,7 @@ import {
 import { generateSlots, isSlotStillAvailable } from "@/modules/delivery/slots";
 import { countWords } from "@/modules/cards/templates";
 import type { CheckoutInput } from "@/modules/checkout/schemas";
-import { sendOrderEmail } from "@/modules/notifications/send";
+import { sendOrderEmail, getEmailBrand } from "@/modules/notifications/send";
 import { orderConfirmedEmail } from "@/modules/notifications/templates/order-confirmed";
 import { weekdayOfDateStr } from "@/lib/time/sao-paulo";
 
@@ -207,6 +207,7 @@ export async function createOrder(
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  const brand = await getEmailBrand(tenantId);
   const { subject, html } = orderConfirmedEmail({
     orderNumber: order.number,
     buyerName: input.buyerName,
@@ -215,7 +216,7 @@ export async function createOrder(
     slotLabel: `${slot.start} e ${slot.end}`,
     totalCents: quote.totalCents,
     orderUrl: `${siteUrl}/pedido/${order.id}?t=${token}`,
-  });
+  }, brand);
   // Melhor esforço: nunca falha o pedido por causa do e-mail (send.ts já
   // engole os próprios erros e registra no outbox).
   await sendOrderEmail(tenantId, {

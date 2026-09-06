@@ -2,7 +2,21 @@
 
 import { useState } from "react";
 
-export function CartaozinhoSignature() {
+/**
+ * Preview interativo do cartão. É componente de CLIENTE (o cartão muda
+ * enquanto a pessoa digita), então não pode ler o banco -- o texto e o nome da
+ * loja chegam por prop do componente de servidor que o envolve
+ * (`cartaozinho-section.tsx`).
+ */
+export function CartaozinhoSignature({
+  title,
+  body,
+  storeName,
+}: {
+  title: string;
+  body: string;
+  storeName: string;
+}) {
   const [name, setName] = useState("Marina");
   const [message, setMessage] = useState(
     "Que seu dia comece tão doce quanto esse café."
@@ -12,13 +26,8 @@ export function CartaozinhoSignature() {
     <section className="bg-secondary/40">
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:px-8">
         <div>
-          <h2 className="font-display text-3xl text-foreground">
-            Monte o cartãozinho da sua cesta
-          </h2>
-          <p className="mt-3 max-w-md text-muted-foreground">
-            Toda cesta Juliana Cestas vai com um cartão de mensagem. Escreva
-            para quem vai receber e veja o cartão ganhar forma, ali na tela.
-          </p>
+          <h2 className="font-display text-3xl text-foreground">{title}</h2>
+          <p className="mt-3 max-w-md text-muted-foreground">{body}</p>
 
           <div className="mt-6 space-y-4">
             <label className="block">
@@ -62,7 +71,7 @@ export function CartaozinhoSignature() {
               Para {name || "quem você ama"}, com carinho.
             </p>
             <p className="mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">
-              Juliana Cestas
+              {storeName}
             </p>
           </div>
         </div>

@@ -6,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { getTenantId } from "@/lib/tenant/context";
-import { sendTicketEmail } from "@/modules/notifications/send";
+import { sendTicketEmail, getEmailBrand } from "@/modules/notifications/send";
 import { ticketCreatedEmail } from "@/modules/notifications/templates/ticket-created";
 import { ticketReplyEmail } from "@/modules/notifications/templates/ticket-reply";
 import type { TicketCategory } from "@/modules/support/service";
@@ -74,7 +74,7 @@ export async function createTicket(input: {
     buyerName,
     subject: input.subject.trim(),
     ticketUrl: `${siteUrl()}/conta/atendimento/${ticket.id}`,
-  });
+  }, await getEmailBrand(tenantId));
   await sendTicketEmail(tenantId, {
     ticketId: ticket.id,
     type: "ticket_created",
@@ -159,7 +159,9 @@ export async function replyAsStaff(input: {
     tenant_id: staff.tenantId,
     ticket_id: ticket.id,
     sender: "staff",
-    sender_name: staff.name ?? "Juliana Cestas",
+    // Sem nome cadastrado, mostra o papel -- nunca a marca de uma loja
+    // específica (isso vazaria para os chamados de outras lojas).
+    sender_name: staff.name ?? "Atendimento",
     body: input.body.trim(),
     attachment_url: input.attachmentUrl || null,
   });
@@ -178,7 +180,7 @@ export async function replyAsStaff(input: {
     subject: ticket.subject,
     replyBody: input.body.trim(),
     ticketUrl: `${siteUrl()}/conta/atendimento/${ticket.id}`,
-  });
+  }, await getEmailBrand(staff.tenantId));
   await sendTicketEmail(staff.tenantId, {
     ticketId: ticket.id,
     type: "ticket_reply",

@@ -77,7 +77,7 @@ export default function ContaEntrarPage() {
 
   return (
     <div className="mx-auto flex min-h-[70dvh] max-w-sm flex-col justify-center px-4 py-10 sm:px-6">
-      <p className="font-display text-2xl text-primary">Juliana Cestas</p>
+      <p className="font-display text-2xl text-primary">Minha conta</p>
       <h1 className="mt-1 text-lg font-semibold text-foreground">
         {mode === "entrar" ? "Entrar na sua conta" : "Criar conta"}
       </h1>

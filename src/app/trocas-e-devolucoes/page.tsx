@@ -2,33 +2,35 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { WhatsappCta } from "@/components/loja/whatsapp-cta";
+import { getContent } from "@/modules/content/service";
+import { getTenantId } from "@/lib/tenant/context";
 
-export const metadata: Metadata = {
-  title: "Trocas e entregas",
-  description:
-    "Como funciona a substituição de itens e a entrega das cestas Juliana Cestas.",
-};
+/** Primeiros ~160 caracteres do texto, sem cortar palavra no meio. */
+function metaDescription(blocks: { title?: string; text: string }[]): string | undefined {
+  const full = blocks
+    .map((b) => b.text)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!full) return undefined;
+  if (full.length <= 160) return full;
+  const cut = full.slice(0, 160);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${(lastSpace > 80 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+}
 
-const regras = [
-  {
-    title: "Item indisponível",
-    text: "Todas as cestas são produzidas artesanalmente por encomenda. Se algum item estiver indisponível no dia, ele é substituído por outro de valor equivalente, mantendo o padrão da cesta.",
-  },
-  {
-    title: "Entrega agendada",
-    text: "As entregas são feitas por motoristas terceirizados ou Uber, de forma agendada. Pode haver variação de até 20 minutos por fatores fora do nosso controle (trânsito, clima).",
-  },
-  {
-    title: "Reentrega",
-    text: "Se não houver quem receba a cesta no horário combinado, uma nova tentativa de entrega tem taxa de reentrega.",
-  },
-  {
-    title: "Pagamento",
-    text: "Pix ou cartão de crédito, via link de pagamento. O pedido é confirmado após o pagamento integral.",
-  },
-];
+export async function generateMetadata(): Promise<Metadata> {
+  const returns = await getContent(await getTenantId(), "returns");
+  return {
+    title: returns.title,
+    description: metaDescription(returns.blocks),
+  };
+}
 
-export default function TrocasEDevolucoesPage() {
+export default async function TrocasEDevolucoesPage() {
+  const returns = await getContent(await getTenantId(), "returns");
+  const [lead, ...rest] = returns.blocks;
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
       <nav
@@ -39,34 +41,28 @@ export default function TrocasEDevolucoesPage() {
           Início
         </Link>
         <ChevronRight className="size-3.5" />
-        <span className="text-foreground">Trocas e entregas</span>
+        <span className="text-foreground">{returns.title}</span>
       </nav>
 
       <h1 className="mt-4 font-display text-3xl text-foreground md:text-4xl">
-        Trocas e entregas
+        {returns.title}
       </h1>
-      <p className="mt-4 text-muted-foreground">
-        Como cada cesta é feita à mão, por encomenda, nossas regras de troca
-        e entrega são estas:
-      </p>
+      {lead ? <p className="mt-4 text-muted-foreground">{lead.text}</p> : null}
 
-      <div className="mt-6 space-y-6">
-        {regras.map((regra) => (
-          <div key={regra.title}>
-            <p className="text-sm font-semibold text-foreground">
-              {regra.title}
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">{regra.text}</p>
-          </div>
-        ))}
-      </div>
+      {rest.length > 0 ? (
+        <div className="mt-6 space-y-6">
+          {rest.map((block, index) => (
+            <div key={index}>
+              {block.title ? (
+                <p className="font-semibold text-foreground">{block.title}</p>
+              ) : null}
+              <p className="text-sm text-muted-foreground">{block.text}</p>
+            </div>
+          ))}
+        </div>
+      ) : null}
 
-      <p className="mt-8 text-sm text-muted-foreground">
-        Situação diferente das acima? Fala com a gente pelo WhatsApp que a
-        gente resolve.
-      </p>
-
-      <div className="mt-6">
+      <div className="mt-8">
         <WhatsappCta />
       </div>
     </div>

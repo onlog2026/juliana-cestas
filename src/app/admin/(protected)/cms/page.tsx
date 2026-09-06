@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { getSocialLinks } from "@/modules/settings/social-links";
 import { getAllBannersAdmin } from "@/modules/banners/service";
@@ -54,6 +56,21 @@ export default async function AdminCmsPage() {
             <div className="mt-4">
               <SiteBrandingForm settings={siteSettings} />
             </div>
+          </section>
+
+          <section className="rounded-card border border-border bg-card p-5">
+            <h2 className="font-display text-lg text-foreground">Textos do site</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Benefícios, perguntas frequentes, chamada do WhatsApp, páginas &ldquo;Sobre&rdquo; e
+              &ldquo;Trocas e entregas&rdquo; e os dados do negócio que o Google usa.
+            </p>
+            <Link
+              href="/admin/cms/textos"
+              className="jc-nav-hover mt-4 flex h-11 items-center justify-between rounded-[10px] border border-border px-4 text-sm font-medium text-foreground"
+            >
+              Editar textos do site
+              <ChevronRight className="size-4" />
+            </Link>
           </section>
 
           <section className="rounded-card border border-border bg-card p-5">

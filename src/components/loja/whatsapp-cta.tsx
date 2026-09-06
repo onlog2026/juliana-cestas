@@ -1,15 +1,20 @@
 import { MessageCircle } from "lucide-react";
+import { getTenantId } from "@/lib/tenant/context";
+import { getContent } from "@/modules/content/service";
 
+// TODO F2: telefone virá de tenants.whatsapp
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
 
-export function WhatsappCta() {
+export async function WhatsappCta() {
+  const content = await getContent(await getTenantId(), "whatsapp_cta");
+
   return (
     <section className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
       <div className="flex flex-col items-center gap-4 rounded-card bg-primary px-6 py-10 text-center text-primary-foreground sm:flex-row sm:justify-between sm:text-left">
         <div>
-          <p className="font-display text-2xl">Prefere combinar por WhatsApp?</p>
+          <p className="font-display text-2xl">{content.title}</p>
           <p className="mt-1 text-sm text-primary-foreground/85">
-            A gente monta a cesta ideal com você, direto na conversa.
+            {content.body}
           </p>
         </div>
         <a
@@ -19,7 +24,7 @@ export function WhatsappCta() {
           className="jc-shine-cta inline-flex h-12 shrink-0 items-center gap-2 rounded-full bg-[var(--jc-whatsapp)] px-6 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
         >
           <MessageCircle className="size-5" />
-          Chamar no WhatsApp
+          {content.buttonLabel}
         </a>
       </div>
     </section>

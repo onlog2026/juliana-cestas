@@ -11,6 +11,7 @@ import {
   Headset,
 } from "lucide-react";
 import { requireStaff } from "@/lib/auth/require-staff";
+import { getStoreProfile } from "@/modules/settings/store-profile";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { MobileNavDrawer } from "@/components/admin/mobile-nav-drawer";
 
@@ -28,6 +29,10 @@ const NAV_ITEMS = [
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const staff = await requireStaff();
+  // O nome que aparece no painel é o da loja de quem está logado -- nunca um
+  // nome fixo. Se a loja ainda não preencheu o cadastro, usa texto neutro.
+  const profile = await getStoreProfile(staff.tenantId);
+  const storeName = profile.businessName?.trim() || "";
 
   return (
     <div className="flex min-h-dvh flex-col bg-secondary/30 md:flex-row">
@@ -36,20 +41,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           linha horizontal. */}
       <div className="flex items-center justify-between border-b border-border bg-card px-4 py-3 md:hidden">
         <Link href="/admin" className="font-display text-lg text-primary">
-          Juliana Cestas
+          {storeName || "Painel de gestão"}
         </Link>
         <MobileNavDrawer
           items={NAV_ITEMS.map(({ href, label, iconName }) => ({ href, label, iconName }))}
           staffEmail={staff.email}
+          storeName={storeName}
         />
       </div>
 
       <aside className="hidden shrink-0 md:flex md:w-56 md:flex-col md:border-r md:border-border md:bg-card md:px-4 md:py-6">
         <div>
           <Link href="/admin" className="font-display text-lg text-primary">
-            Juliana Cestas
+            {storeName || "Painel de gestão"}
           </Link>
-          <p className="text-xs text-muted-foreground">Painel de gestão</p>
+          {storeName ? <p className="text-xs text-muted-foreground">Painel de gestão</p> : null}
         </div>
 
         <nav className="mt-8 flex flex-col gap-1">

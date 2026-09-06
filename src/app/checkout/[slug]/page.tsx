@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { getProductForCheckout, getUpsellsForProduct } from "@/modules/catalog/service";
 import { getDeliverySettings, getDeliveryZones } from "@/modules/delivery/settings";
+import { getStoreProfile } from "@/modules/settings/store-profile";
 import { CheckoutForm } from "@/components/loja/checkout/checkout-form";
 import { getTenantId } from "@/lib/tenant/context";
 
@@ -26,10 +27,11 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[slug]">)
   const found = await getProductForCheckout(tenantId, slug);
   if (!found) notFound();
 
-  const [settings, zones, upsells] = await Promise.all([
+  const [settings, zones, upsells, storeProfile] = await Promise.all([
     getDeliverySettings(tenantId),
     getDeliveryZones(tenantId),
     getUpsellsForProduct(tenantId, found.product.id),
+    getStoreProfile(tenantId),
   ]);
 
   if (!settings) notFound();
@@ -59,6 +61,7 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[slug]">)
           upsells={upsells}
           zones={zones}
           cardMaxWords={settings.cardMaxWords}
+          storeName={storeProfile.businessName?.trim() || ""}
         />
       </div>
     </div>

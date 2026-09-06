@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCustomerOrders } from "@/modules/customers/service";
 import { getTenantId } from "@/lib/tenant/context";
+import { getStoreProfile } from "@/modules/settings/store-profile";
 import { NewTicketForm } from "@/components/support/new-ticket-form";
 
 export const metadata = { title: "Novo chamado" };
@@ -16,6 +17,7 @@ export default async function NovoChamadoPage() {
 
   const tenantId = await getTenantId();
   const orders = await getCustomerOrders(tenantId, user.id, user.email ?? null);
+  const storeName = (await getStoreProfile(tenantId)).businessName?.trim() || "";
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
@@ -29,7 +31,7 @@ export default async function NovoChamadoPage() {
 
       <h1 className="mt-2 font-display text-2xl text-foreground">Novo chamado</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Conta pra gente o que aconteceu — a Juliana responde por aqui.
+        Conta pra gente o que aconteceu — {storeName ? `a ${storeName} responde` : "a gente responde"} por aqui.
       </p>
 
       <NewTicketForm orders={orders.map((o) => ({ id: o.id, number: o.number }))} />

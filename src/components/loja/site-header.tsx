@@ -4,6 +4,7 @@ import { getTenantId } from "@/lib/tenant/context";
 import { getAllProducts } from "@/modules/catalog/service";
 import { getSocialLinks } from "@/modules/settings/social-links";
 import { getSiteSettings } from "@/modules/settings/site-settings";
+import { getStoreProfile } from "@/modules/settings/store-profile";
 import { HeaderSearch } from "@/components/loja/header-search";
 import { HeaderNavMenu } from "@/components/loja/header-nav-menu";
 import { SocialIcons } from "@/components/loja/social-icons";
@@ -11,11 +12,15 @@ import { SocialIcons } from "@/components/loja/social-icons";
 export async function SiteHeader() {
   // A loja vem do endereço acessado (visitante anônimo, sem login).
   const tenantId = await getTenantId();
-  const [products, socialLinks, siteSettings] = await Promise.all([
+  const [products, socialLinks, siteSettings, storeProfile] = await Promise.all([
     getAllProducts(tenantId),
     getSocialLinks(tenantId),
     getSiteSettings(tenantId),
+    getStoreProfile(tenantId),
   ]);
+  // Nome da loja atual. Vazio enquanto o lojista nao preencher o perfil --
+  // nesse caso o link fica so com o logo, sem inventar marca nenhuma.
+  const storeName = storeProfile.businessName?.trim() || "";
   const hasSocialLinks = Object.values(socialLinks).some(Boolean);
 
   return (
@@ -42,7 +47,7 @@ export async function SiteHeader() {
             height={34}
             className="h-[34px] w-[38px] shrink-0 object-contain"
           />
-          Juliana Cestas
+          {storeName}
         </Link>
 
         <div className="hidden flex-1 justify-center md:flex">

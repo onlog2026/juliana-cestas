@@ -1,15 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, MessageCircle } from "lucide-react";
+import { getTenantId } from "@/lib/tenant/context";
+import { getStoreProfile } from "@/modules/settings/store-profile";
 
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
 
-export const metadata: Metadata = {
-  title: "Meu pedido",
-  description: "Como acompanhar o seu pedido na Juliana Cestas.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const profile = await getStoreProfile(await getTenantId());
+  const storeName = profile.businessName?.trim() || "";
+  return {
+    title: "Meu pedido",
+    description: storeName
+      ? `Como acompanhar o seu pedido na ${storeName}.`
+      : "Como acompanhar o seu pedido.",
+  };
+}
 
-export default function PedidoPage() {
+export default async function PedidoPage() {
+  const profile = await getStoreProfile(await getTenantId());
+  const storeName = profile.businessName?.trim() || "";
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
       <nav
@@ -28,7 +38,7 @@ export default function PedidoPage() {
       </h1>
       <p className="mt-4 text-muted-foreground">
         Hoje os pedidos são combinados diretamente pelo WhatsApp — assim que
-        você encomenda, a Juliana Cestas confirma tudo por lá: cesta,
+        você encomenda, {storeName ? `a ${storeName}` : "a gente"} confirma tudo por lá: cesta,
         cartão, entrega e pagamento. É por essa mesma conversa que você
         acompanha o andamento do seu pedido.
       </p>

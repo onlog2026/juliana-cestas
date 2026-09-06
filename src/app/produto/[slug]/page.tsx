@@ -5,7 +5,7 @@ import { ChevronRight, Check, MessageCircle } from "lucide-react";
 import { getAllProducts, getProductBySlug } from "@/modules/catalog/service";
 import { ProductCard } from "@/components/loja/product-card";
 import { ProductGallery } from "@/components/loja/product-gallery";
-import { CartaozinhoSignature } from "@/components/loja/cartaozinho-signature";
+import { CartaozinhoSection } from "@/components/loja/cartaozinho-section";
 import { Reveal } from "@/components/loja/reveal";
 import { ProductJsonLd } from "@/components/loja/json-ld";
 import { getTenantId } from "@/lib/tenant/context";
@@ -134,7 +134,7 @@ export default async function ProdutoPage(
       </div>
 
       <div className="mt-16 -mx-4 sm:-mx-6 lg:-mx-8">
-        <CartaozinhoSignature />
+        <CartaozinhoSection />
       </div>
 
       <div className="mt-16">

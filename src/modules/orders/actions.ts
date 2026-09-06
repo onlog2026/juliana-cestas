@@ -4,7 +4,7 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireStaff } from "@/lib/auth/require-staff";
-import { sendOrderEmail } from "@/modules/notifications/send";
+import { sendOrderEmail, getEmailBrand } from "@/modules/notifications/send";
 import { outForDeliveryEmail } from "@/modules/notifications/templates/out-for-delivery";
 import { deliveredEmail } from "@/modules/notifications/templates/delivered";
 
@@ -153,13 +153,14 @@ export async function advanceOrderStatus(
         : [order.street, order.address_number, order.complement].filter(Boolean).join(", ") +
           (order.neighborhood ? ` — ${order.neighborhood}` : "") +
           (order.zone_name ? ` (${order.zone_name})` : "");
+    const brand = await getEmailBrand(staff.tenantId);
     const { subject, html } = outForDeliveryEmail({
       orderNumber: order.number,
       buyerName: order.buyer_name,
       recipientName: order.recipient_name,
       addressLine,
       orderUrl: `${siteUrl}/pedido/${order.id}`,
-    });
+    }, brand);
     await sendOrderEmail(staff.tenantId, {
       orderId,
       type: "out_for_delivery",
@@ -168,7 +169,8 @@ export async function advanceOrderStatus(
       html,
     });
   } else if (nextStatus === "entregue") {
-    const { subject, html } = deliveredEmail({ orderNumber: order.number, buyerName: order.buyer_name });
+    const brand = await getEmailBrand(staff.tenantId);
+    const { subject, html } = deliveredEmail({ orderNumber: order.number, buyerName: order.buyer_name }, brand);
     await sendOrderEmail(staff.tenantId, {
       orderId,
       type: "delivered",

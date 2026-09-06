@@ -4,6 +4,7 @@ import { ChevronRight, Check } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCustomerOrderDetail } from "@/modules/customers/service";
 import { getTenantId } from "@/lib/tenant/context";
+import { getStoreProfile } from "@/modules/settings/store-profile";
 import { getCardTemplate } from "@/modules/cards/templates";
 import { CardPattern } from "@/components/loja/checkout/card-pattern";
 import { StatusBadge } from "@/components/admin/status-badge";
@@ -24,6 +25,7 @@ export default async function ContaPedidoPage(props: PageProps<"/conta/pedidos/[
   if (!order) notFound();
 
   const template = getCardTemplate(order.card_template);
+  const storeName = (await getStoreProfile(tenantId)).businessName?.trim() || "";
   const addressLine =
     order.delivery_type === "pickup"
       ? "Retirada na loja"
@@ -84,7 +86,7 @@ export default async function ContaPedidoPage(props: PageProps<"/conta/pedidos/[
           Para {order.card_recipient}
           {order.card_sender ? `, de ${order.card_sender}` : ""}.
         </p>
-        <p className="relative mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">Juliana Cestas</p>
+        <p className="relative mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">{storeName}</p>
       </div>
 
       <p className="mt-6 flex items-start gap-2 text-xs text-muted-foreground">

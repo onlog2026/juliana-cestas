@@ -10,6 +10,11 @@ export default defineConfig({
     passWithNoTests: false,
   },
   resolve: {
-    alias: { "@": path.resolve(__dirname, "src") },
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+      // `server-only` existe só para o compilador do Next barrar import errado.
+      // Em teste ele lança na hora do import; trocamos por um módulo vazio.
+      "server-only": path.resolve(__dirname, "tests/stubs/server-only.ts"),
+    },
   },
 });

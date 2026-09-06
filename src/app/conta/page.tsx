@@ -3,6 +3,7 @@ import { Package, Headset } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCustomerOrders } from "@/modules/customers/service";
 import { getTenantId } from "@/lib/tenant/context";
+import { getStoreProfile } from "@/modules/settings/store-profile";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { formatCents } from "@/lib/money";
 import { LogoutButton } from "@/components/conta/logout-button";
@@ -21,12 +22,13 @@ export default async function ContaPage() {
   const tenantId = await getTenantId();
   const orders = await getCustomerOrders(tenantId, user.id, user.email ?? null);
   const displayName = (user.user_metadata?.name as string | undefined) || user.email || "";
+  const storeName = (await getStoreProfile(tenantId)).businessName?.trim() || "";
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-display text-2xl text-primary">Juliana Cestas</p>
+          <p className="font-display text-2xl text-primary">{storeName}</p>
           <h1 className="mt-1 text-lg font-semibold text-foreground">Olá, {displayName}</h1>
         </div>
         <LogoutButton />

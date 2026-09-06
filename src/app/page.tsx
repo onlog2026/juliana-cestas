@@ -3,7 +3,7 @@ import { BannerCarousel } from "@/components/loja/banner-carousel";
 import { getActiveBanners } from "@/modules/banners/service";
 import { CategoryTiles } from "@/components/loja/category-tiles";
 import { FeaturedProducts } from "@/components/loja/featured-products";
-import { CartaozinhoSignature } from "@/components/loja/cartaozinho-signature";
+import { CartaozinhoSection } from "@/components/loja/cartaozinho-section";
 import { Collections } from "@/components/loja/collections";
 import { Benefits } from "@/components/loja/benefits";
 import { Faq } from "@/components/loja/faq";
@@ -34,7 +34,7 @@ export default async function Home() {
       <CategoryTiles />
       <FeaturedProducts />
       <Reveal>
-        <CartaozinhoSignature />
+        <CartaozinhoSection />
       </Reveal>
       <Collections />
       <Benefits />

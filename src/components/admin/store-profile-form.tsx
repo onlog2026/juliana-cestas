@@ -94,7 +94,7 @@ export function StoreProfileForm({ profile }: { profile: StoreProfile }) {
           <input
             value={draft.businessName}
             onChange={(e) => set("businessName", e.target.value)}
-            placeholder="Juliana Cestas"
+            placeholder="Nome da sua loja"
             className={inputClass}
           />
         </label>

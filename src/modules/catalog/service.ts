@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Product } from "@/lib/mock-content";
+import type { Product } from "@/modules/catalog/product";
 
 export type DbProduct = {
   id: string;

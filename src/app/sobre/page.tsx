@@ -1,16 +1,40 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { benefits } from "@/lib/mock-content";
 import { WhatsappCta } from "@/components/loja/whatsapp-cta";
+import { getContent } from "@/modules/content/service";
+import { getTenantId } from "@/lib/tenant/context";
 
-export const metadata: Metadata = {
-  title: "Sobre",
-  description:
-    "Cestas de café da manhã e presentes afetivos, feitos à mão em Brasília, com cartão de mensagem personalizado em cada pedido.",
-};
+/** Primeiros ~160 caracteres do texto, sem cortar palavra no meio. */
+function metaDescription(blocks: { title?: string; text: string }[]): string | undefined {
+  const full = blocks
+    .map((b) => b.text)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!full) return undefined;
+  if (full.length <= 160) return full;
+  const cut = full.slice(0, 160);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${(lastSpace > 80 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+}
 
-export default function SobrePage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const about = await getContent(await getTenantId(), "about");
+  return {
+    title: about.title,
+    description: metaDescription(about.blocks),
+  };
+}
+
+export default async function SobrePage() {
+  const tenantId = await getTenantId();
+  const [about, benefitsContent] = await Promise.all([
+    getContent(tenantId, "about"),
+    getContent(tenantId, "benefits"),
+  ]);
+  const [lead, ...rest] = about.blocks;
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
       <nav
@@ -21,24 +45,28 @@ export default function SobrePage() {
           Início
         </Link>
         <ChevronRight className="size-3.5" />
-        <span className="text-foreground">Sobre a Juliana Cestas</span>
+        <span className="text-foreground">{about.title}</span>
       </nav>
 
       <h1 className="mt-4 font-display text-3xl text-foreground md:text-4xl">
-        Sobre a Juliana Cestas
+        {about.title}
       </h1>
-      <p className="mt-4 font-display text-xl leading-relaxed text-foreground">
-        Detalhes que encantam, sabores que emocionam, amor que se celebra.
-      </p>
-      <p className="mt-4 text-muted-foreground">
-        A Juliana Cestas monta cestas de café da manhã e presentes afetivos
-        em Brasília. Cada cesta é feita à mão, por encomenda, com cartão de
-        mensagem personalizado — você escreve para quem vai receber, e a
-        cesta chega com esse cuidado junto.
-      </p>
+      {lead ? (
+        <p className="mt-4 font-display text-xl leading-relaxed text-foreground">
+          {lead.text}
+        </p>
+      ) : null}
+      {rest.map((block, index) => (
+        <div key={index} className="mt-4">
+          {block.title ? (
+            <p className="font-semibold text-foreground">{block.title}</p>
+          ) : null}
+          <p className="text-muted-foreground">{block.text}</p>
+        </div>
+      ))}
 
       <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-4">
-        {benefits.map((benefit) => (
+        {benefitsContent.items.map((benefit) => (
           <div key={benefit.title}>
             <p className="text-sm font-semibold text-foreground">
               {benefit.title}

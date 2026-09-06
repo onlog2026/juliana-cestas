@@ -23,7 +23,7 @@ function MessageBubble({ message, viewerRole }: { message: TicketMessage; viewer
           </div>
         ) : null}
         <p className={`mt-1.5 text-xs ${isMine ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-          {message.sender_name ?? (message.sender === "staff" ? "Juliana Cestas" : "Você")} ·{" "}
+          {message.sender_name ?? (message.sender === "staff" ? "Atendimento" : "Você")} ·{" "}
           {new Date(message.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
         </p>
       </div>

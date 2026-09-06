@@ -8,11 +8,16 @@ export type SeoSettings = {
   ogImageUrl: string | null;
 };
 
+/**
+ * Usado só quando a loja ainda não preencheu o SEO (loja nova, ou leitura
+ * falhou). Neutro de propósito: marca de uma loja nunca pode vazar para outra.
+ * A loja da Juliana tem os valores dela gravados em `seo_settings` desde a
+ * migration 0009 -- este padrão não a afeta.
+ */
 const FALLBACK: SeoSettings = {
-  siteTitle: "Juliana Cestas | Cestas de Café da Manhã em Brasília",
-  siteDescription:
-    "Cestas de café da manhã artesanais em Brasília, com entrega no mesmo dia e cartão de mensagem personalizado.",
-  keywords: ["cesta de café da manhã Brasília", "presente café da manhã Brasília", "Juliana Cestas"],
+  siteTitle: "",
+  siteDescription: "",
+  keywords: [],
   ogImageUrl: null,
 };
 

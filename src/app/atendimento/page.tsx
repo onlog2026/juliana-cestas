@@ -1,15 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, MessageCircle } from "lucide-react";
+import { getTenantId } from "@/lib/tenant/context";
+import { getStoreProfile } from "@/modules/settings/store-profile";
 
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
 
-export const metadata: Metadata = {
-  title: "Atendimento",
-  description: "Fale com a Juliana Cestas pelo WhatsApp para pedidos, dúvidas e acompanhamento.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const profile = await getStoreProfile(await getTenantId());
+  const storeName = profile.businessName?.trim() || "";
+  return {
+    title: "Atendimento",
+    description: storeName
+      ? `Fale com a ${storeName} pelo WhatsApp para pedidos, dúvidas e acompanhamento.`
+      : "Fale com a gente pelo WhatsApp para pedidos, dúvidas e acompanhamento.",
+  };
+}
 
-export default function AtendimentoPage() {
+export default async function AtendimentoPage() {
+  const profile = await getStoreProfile(await getTenantId());
+  const storeName = profile.businessName?.trim() || "";
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
       <nav
@@ -27,7 +37,7 @@ export default function AtendimentoPage() {
         Atendimento
       </h1>
       <p className="mt-4 text-muted-foreground">
-        Todo o atendimento da Juliana Cestas — pedido novo, dúvida sobre uma
+        Todo o atendimento{storeName ? ` da ${storeName}` : ""} — pedido novo, dúvida sobre uma
         cesta, acompanhamento de entrega — é feito diretamente pelo WhatsApp.
       </p>
 
