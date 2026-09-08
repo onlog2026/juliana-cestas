@@ -8,6 +8,7 @@ import {
   cancelarConvite,
   convidarPessoa,
   definirPessoaAtiva,
+  excluirMembro,
   reenviarConvite,
 } from "@/modules/team/actions";
 import type { LimiteEquipe, ModuloParaPermissao, TeamInvite, TeamMember, TeamRole } from "@/modules/team/service";
@@ -71,6 +72,28 @@ export function TeamManager({
         setErro(resultado.error);
         return;
       }
+      router.refresh();
+    });
+  }
+
+  function excluir(membro: TeamMember) {
+    setErro(null);
+    const nome = membro.name?.trim() || membro.email || "esta pessoa";
+    if (
+      !confirm(
+        `Excluir ${nome} da equipe? Essa ação NÃO tem volta -- ao contrário de desativar, não dá para trazer de volta depois. A pessoa perde o acesso a esta loja imediatamente.`
+      )
+    ) {
+      return;
+    }
+
+    startTransition(async () => {
+      const resultado = await excluirMembro(membro.id);
+      if (!resultado.ok) {
+        setErro(resultado.error);
+        return;
+      }
+      setMembers((atual) => atual.filter((m) => m.id !== membro.id));
       router.refresh();
     });
   }
@@ -175,6 +198,20 @@ export function TeamManager({
                   className="flex h-9 items-center rounded-full border border-border px-3 text-xs font-medium text-foreground hover:bg-accent disabled:opacity-40"
                 >
                   {pending ? <Loader2 className="size-4 animate-spin" /> : membro.active ? "Desativar" : "Reativar"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => excluir(membro)}
+                  disabled={pending || members.length <= 1}
+                  aria-label={`Excluir ${membro.name?.trim() || membro.email || "pessoa"} da equipe`}
+                  title={
+                    members.length <= 1
+                      ? "Esta é a única pessoa da equipe -- sempre precisa sobrar pelo menos uma."
+                      : "Excluir da equipe (não tem volta)"
+                  }
+                  className="flex size-9 items-center justify-center rounded-full text-destructive hover:bg-destructive/10 disabled:opacity-30"
+                >
+                  <Trash2 className="size-4" />
                 </button>
               </div>
             </div>

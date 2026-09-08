@@ -18,6 +18,7 @@ import {
   listTeamMembers,
   modulosParaPermissao,
   podeDesativarMembro,
+  podeExcluirMembro,
   podeTrocarPapel,
   type TeamRole,
 } from "@/modules/team/service";
@@ -25,15 +26,23 @@ import {
 /**
  * AÇÕES DA EQUIPE.
  *
- * Duas coisas que este arquivo NUNCA faz, e não é por preguiça:
+ * Uma coisa que este arquivo NUNCA faz, e não é por preguiça: **nunca cria
+ * conta com senha, nunca gera senha temporária, nunca mexe na senha de
+ * ninguém.** O convite é o do próprio Supabase (`auth.admin.inviteUserByEmail`):
+ * a pessoa recebe um e-mail, clica, e define a senha dela mesma, num campo que
+ * nem nós nem a lojista vemos. Senha temporária enviada por WhatsApp é como
+ * vaza acesso de painel.
  *
- *  1. **Nunca cria conta com senha, nunca gera senha temporária, nunca mexe na
- *     senha de ninguém.** O convite é o do próprio Supabase
- *     (`auth.admin.inviteUserByEmail`): a pessoa recebe um e-mail, clica, e
- *     define a senha dela mesma, num campo que nem nós nem a lojista vemos.
- *     Senha temporária enviada por WhatsApp é como vaza acesso de painel.
- *  2. **Nunca apaga uma pessoa.** Desativa. `profiles` é referenciado por
- *     histórico (quem alterou o quê); apagar a linha apaga o rastro junto.
+ * Excluir (`excluirMembro`) apaga o cadastro de vez -- ao contrário de
+ * desativar (`definirPessoaAtiva`), que é reversível. Conferido antes de
+ * habilitar: nada em `order_events`, `audit_logs` ou qualquer outra tabela
+ * tem chave estrangeira apontando para `profiles`, então apagar um cadastro
+ * não corrompe histórico nenhum -- o pior caso é um `actor_id`/e-mail antigo
+ * apontando para alguém que não existe mais, que é exatamente o que já
+ * acontece hoje quando uma conta do Supabase é removida por outro caminho.
+ * Ainda assim, a exclusão sempre passa por `podeExcluirMembro()` (nunca deixa
+ * a equipe vazia, nunca tira a última dona ativa) e a tela sempre pede
+ * confirmação antes de chamar esta função.
  *
  * Toda ação passa por `ensureModuleForAction("equipe")` -- server action é um
  * endereço HTTP como qualquer outro; sumir do menu não é trava.
@@ -243,6 +252,46 @@ export async function definirPessoaAtiva(input: { id: string; active: boolean })
   if (error || !data || data.length === 0) {
     console.error("[equipe] falha ao mudar a situação da pessoa:", error);
     return { ok: false, error: "Não foi possível mudar a situação dessa pessoa." };
+  }
+
+  revalidatePath("/admin/equipe");
+  return { ok: true };
+}
+
+/**
+ * EXCLUI o cadastro desta pessoa da equipe. Ao contrário de desativar, não
+ * tem volta -- não existe "reativar" depois disso.
+ *
+ * A TRAVA (`podeExcluirMembro`): a equipe nunca fica com zero pessoas, e a
+ * loja nunca fica sem nenhuma dona ativa. A confirmação de "tem certeza?"
+ * é responsabilidade da TELA, não desta função -- mas mesmo que alguém chame
+ * esta action direto (sem passar pela tela), a trava acima continua valendo.
+ *
+ * Não apaga a conta de login da pessoa no Supabase Auth, só o cadastro dela
+ * NESTA loja (`profiles`) -- ela deixa de aparecer na equipe e de conseguir
+ * abrir o painel desta loja, mas a conta em si (e-mail/senha) continua
+ * existindo, como qualquer conta que nunca foi convidada para lugar nenhum.
+ */
+export async function excluirMembro(id: string): Promise<Resultado> {
+  const gate = await ensureModuleForAction("equipe");
+  if (!gate.ok) return { ok: false, error: gate.mensagem };
+  const staff = gate.staff;
+
+  const membros = await listTeamMembers(staff.tenantId);
+  const regra = podeExcluirMembro(id, membros);
+  if (!regra.ok) return { ok: false, error: regra.mensagem };
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("profiles")
+    .delete()
+    .eq("id", id)
+    .eq("tenant_id", staff.tenantId)
+    .select("id");
+
+  if (error || !data || data.length === 0) {
+    console.error("[equipe] falha ao excluir a pessoa:", error);
+    return { ok: false, error: "Não foi possível excluir essa pessoa agora." };
   }
 
   revalidatePath("/admin/equipe");

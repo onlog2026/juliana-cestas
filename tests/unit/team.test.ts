@@ -8,6 +8,7 @@ import {
   modulosParaPermissao,
   pessoaPodeVerModulo,
   podeDesativarMembro,
+  podeExcluirMembro,
   podeTrocarPapel,
   type TeamMember,
 } from "@/modules/team/service";
@@ -92,6 +93,48 @@ describe("a loja nunca pode ficar sem dona ativa", () => {
   it("recusa mexer em quem não é desta loja", () => {
     const equipe = [pessoa({ id: "juliana", role: "admin" })];
     const r = podeDesativarMembro("alguem-de-outra-loja", equipe);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.mensagem).toContain("não faz parte da equipe");
+  });
+});
+
+describe("excluir pessoa: nunca zero, nunca sem dona ativa", () => {
+  it("recusa excluir a ÚNICA pessoa da equipe, com mensagem explicando o porquê", () => {
+    const equipe = [pessoa({ id: "juliana", role: "admin" })];
+    const r = podeExcluirMembro("juliana", equipe);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.mensagem).toContain("sempre precisa sobrar pelo menos uma");
+  });
+
+  it("recusa excluir a última dona ATIVA mesmo sobrando gente na equipe", () => {
+    const equipe = [
+      pessoa({ id: "juliana", role: "admin" }),
+      pessoa({ id: "ana", role: "staff" }),
+      pessoa({ id: "beto", role: "admin", active: false }), // dona, mas já desativada
+    ];
+    const r = podeExcluirMembro("juliana", equipe);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.mensagem).toContain("última pessoa com acesso de dona");
+  });
+
+  it("deixa excluir uma dona quando existe outra dona ATIVA", () => {
+    const equipe = [pessoa({ id: "juliana", role: "admin" }), pessoa({ id: "maria", role: "admin" })];
+    expect(podeExcluirMembro("juliana", equipe).ok).toBe(true);
+  });
+
+  it("deixa excluir quem não é dona, sobrando mais gente", () => {
+    const equipe = [pessoa({ id: "juliana", role: "admin" }), pessoa({ id: "ana" }), pessoa({ id: "beto" })];
+    expect(podeExcluirMembro("ana", equipe).ok).toBe(true);
+  });
+
+  it("uma pessoa desativada pode ser excluída, desde que não seja a única restante", () => {
+    const equipe = [pessoa({ id: "juliana", role: "admin" }), pessoa({ id: "ana", active: false })];
+    expect(podeExcluirMembro("ana", equipe).ok).toBe(true);
+  });
+
+  it("recusa excluir quem não é desta loja", () => {
+    const equipe = [pessoa({ id: "juliana", role: "admin" }), pessoa({ id: "ana" })];
+    const r = podeExcluirMembro("alguem-de-outra-loja", equipe);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.mensagem).toContain("não faz parte da equipe");
   });

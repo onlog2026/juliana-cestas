@@ -99,6 +99,41 @@ export type RegraResultado = { ok: true } | { ok: false; mensagem: string };
 const SEM_DONO =
   "Esta é a última pessoa com acesso de dona da loja. Se ela sair, ninguém consegue convidar alguém de volta nem mudar permissões. Promova outra pessoa a dona antes de fazer isso.";
 
+const ULTIMA_PESSOA =
+  "Esta é a única pessoa da equipe desta loja. Não é possível excluir — sempre precisa sobrar pelo menos uma.";
+
+/**
+ * Pode EXCLUIR (apagar de vez, não só desativar) esta pessoa?
+ *
+ * Duas respostas "não", nesta ordem:
+ *  1. Ela é a última pessoa da equipe, ponto -- a loja nunca pode ficar com
+ *     zero pessoas. Esta é a trava mais simples e vem antes de tudo.
+ *  2. Ela não é a última pessoa, mas é a última DONA ativa -- sobrariam
+ *     pessoas, mas nenhuma capaz de convidar alguém de volta ou gerenciar a
+ *     equipe. Mesmo raciocínio de `podeDesativarMembro`, só que aqui não tem
+ *     volta: excluir apaga o cadastro, não dá para "reativar" depois.
+ *
+ * Excluir é diferente de desativar: o cadastro em `profiles` some de vez (a
+ * pessoa deixa de aparecer em qualquer lista, relatório ou histórico futuro
+ * mostrado por nome). Por isso a ação que chama esta regra sempre pede
+ * confirmação antes -- ver `EquipeManager`.
+ */
+export function podeExcluirMembro(
+  alvoId: string,
+  membros: Pick<TeamMember, "id" | "role" | "active">[]
+): RegraResultado {
+  const alvo = membros.find((m) => m.id === alvoId);
+  if (!alvo) return { ok: false, mensagem: "Essa pessoa não faz parte da equipe desta loja." };
+  if (membros.length <= 1) return { ok: false, mensagem: ULTIMA_PESSOA };
+
+  if (alvo.active && alvo.role === "admin") {
+    const outrosDonosAtivos = membros.filter((m) => m.id !== alvoId && m.active && m.role === "admin").length;
+    if (outrosDonosAtivos === 0) return { ok: false, mensagem: SEM_DONO };
+  }
+
+  return { ok: true };
+}
+
 /**
  * Pode desativar esta pessoa?
  *
