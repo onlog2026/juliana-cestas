@@ -61,9 +61,18 @@ export default function ContaEntrarPage() {
     setError(null);
     setInfo(null);
     const supabase = createBrowserSupabaseClient();
-    await supabase.auth.resetPasswordForEmail(email, {
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/redefinir-senha`,
     });
+    // `resetPasswordForEmail` nunca devolve erro por "e-mail não cadastrado"
+    // (de propósito, pra não virar um jeito de descobrir quem tem conta) --
+    // então qualquer erro aqui é sempre um problema real de envio (ex.: limite
+    // de e-mail do Supabase excedido, que já aconteceu de verdade nesta
+    // conta). Mostrar sucesso mesmo assim engana quem clicou.
+    if (resetError) {
+      setError("Não consegui enviar o e-mail agora. Tente de novo em alguns minutos.");
+      return;
+    }
     setInfo("Se esse e-mail tiver conta, mandamos um link pra trocar a senha.");
   }
 

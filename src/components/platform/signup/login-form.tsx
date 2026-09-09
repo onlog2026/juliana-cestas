@@ -55,11 +55,20 @@ export function PlatformLoginForm() {
     setErro(null);
     setAviso(null);
     const supabase = createBrowserSupabaseClient();
-    await supabase.auth.resetPasswordForEmail(email, {
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/redefinir-senha`,
     });
     // Resposta igual existindo ou não a conta: dizer "esse e-mail não tem
     // conta" transforma o formulário num verificador de e-mails cadastrados.
+    // MAS isso só vale para a ausência de erro -- `resetPasswordForEmail`
+    // nunca devolve erro por "e-mail não cadastrado", então um erro aqui é
+    // sempre um problema real de envio (ex.: limite de e-mail do Supabase
+    // excedido, que já aconteceu de verdade nesta conta). Fingir sucesso
+    // nesse caso engana quem clicou.
+    if (resetError) {
+      setErro("Não conseguimos enviar o e-mail agora. Tente de novo em alguns minutos.");
+      return;
+    }
     setAviso("Se esse e-mail tiver conta, enviamos um link para você criar uma senha nova.");
   }
 

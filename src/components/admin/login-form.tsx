@@ -42,9 +42,21 @@ export function AdminLoginForm({ storeName }: { storeName: string }) {
     setError(null);
     setInfo(null);
     const supabase = createBrowserSupabaseClient();
-    await supabase.auth.resetPasswordForEmail(email, {
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/redefinir-senha`,
     });
+    // Antes esta função ignorava o erro e SEMPRE mostrava a mensagem de
+    // sucesso -- inclusive quando o Supabase recusa por limite de envio de
+    // e-mail (já aconteceu de verdade nesta conta: "email rate limit
+    // exceeded"). Isso enganava quem clicava: parecia que o link tinha sido
+    // mandado, e nunca chegava nada. `resetPasswordForEmail` não devolve erro
+    // por "esse e-mail não existe" (é assim de propósito, pra não virar um
+    // jeito de descobrir e-mail cadastrado) -- então qualquer erro aqui é
+    // sempre um problema real de envio, não um jeito de vazar quem tem conta.
+    if (resetError) {
+      setError("Não consegui enviar o e-mail agora. Tente de novo em alguns minutos.");
+      return;
+    }
     setInfo("Se esse e-mail tiver conta, mandamos um link pra trocar a senha.");
   }
 
