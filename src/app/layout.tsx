@@ -47,9 +47,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
-      className={`${figtree.variable} ${youngSerif.variable} ${playfairDisplay.variable} ${poppins.variable} h-full antialiased`}
+      className={`${figtree.variable} ${youngSerif.variable} ${playfairDisplay.variable} ${poppins.variable} h-full overflow-x-clip antialiased`}
     >
-      <body className="flex min-h-full flex-col overflow-x-hidden bg-background text-foreground">
+      {/* `overflow-x-clip` no <html> (não só no body) é o que de fato contém a
+          rolagem horizontal da PÁGINA no iOS Safari -- lá o guard só no body
+          não segura, e qualquer filho que role de propósito (uma faixa de
+          chips, uma tabela larga) fazia a página inteira deslizar. É `clip`,
+          não `hidden`, porque `hidden` cria um contêiner de rolagem que quebra
+          o `position: sticky` do cabeçalho da loja; `clip` corta sem isso, e
+          com o eixo Y visível a rolagem vertical/sticky da viewport continua. */}
+      <body className="flex min-h-full flex-col overflow-x-clip bg-background text-foreground">
         <noscript>
           <style>{`.jc-reveal{opacity:1!important;transform:none!important}`}</style>
         </noscript>

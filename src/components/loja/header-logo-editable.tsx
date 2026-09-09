@@ -95,10 +95,15 @@ export function HeaderLogo({
   }
 
   return (
-    <div className="relative flex shrink-0 items-center">
+    // `min-w-0` (em vez de `shrink-0`) no bloco todo: a imagem não deve
+    // espremer, mas o conjunto logo+nome precisa PODER ceder numa viewport
+    // estreita -- senão uma logo larga (até 320px) + nome longo empurram a
+    // largura da página no mobile. A <img> mantém `shrink-0`; o nome ganha
+    // `truncate`.
+    <div className="relative flex min-w-0 items-center">
       <Link
         href="/"
-        className="flex items-center gap-2.5 font-display text-2xl text-primary"
+        className="flex min-w-0 items-center gap-2.5 font-display text-2xl text-primary"
         onClick={(e) => {
           if (editing) e.preventDefault();
         }}
@@ -111,7 +116,7 @@ export function HeaderLogo({
           style={{ height: `${alturaExibida}px` }}
           className="w-auto max-w-[320px] shrink-0 object-contain"
         />
-        {storeName}
+        {storeName ? <span className="min-w-0 truncate">{storeName}</span> : null}
       </Link>
 
       {isStaff && !editing ? (

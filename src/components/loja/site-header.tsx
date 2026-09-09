@@ -25,7 +25,10 @@ export async function SiteHeader() {
   const hasSocialLinks = Object.values(socialLinks).some(Boolean);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-saturate-150">
+    // Fundo sólido, sem backdrop-filter: `backdrop-saturate` num elemento
+    // sticky causa jank de rolagem no mobile (mesma família do blur que a
+    // regra da casa proíbe em fixed/sticky).
+    <header className="sticky top-0 z-40 border-b border-border bg-background">
       {hasSocialLinks ? (
         <div className="border-b border-border/60 bg-secondary/30">
           <div className="mx-auto flex h-9 max-w-7xl items-center justify-end px-4 sm:px-6 lg:px-8">
