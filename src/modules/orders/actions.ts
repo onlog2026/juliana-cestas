@@ -8,6 +8,7 @@ import { sendOrderEmail, getEmailBrand } from "@/modules/notifications/send";
 import { outForDeliveryEmail } from "@/modules/notifications/templates/out-for-delivery";
 import { deliveredEmail } from "@/modules/notifications/templates/delivered";
 import { createReviewInvite } from "@/modules/reviews/invite";
+import { dataDeEntregaValida, podeAlterarPedido } from "@/modules/orders/rules";
 
 export type AdminOrderRow = {
   id: string;
@@ -269,12 +270,15 @@ export async function cancelOrder(
     return { ok: false, error: "Esse pedido não pode mais ser cancelado." };
   }
 
-  const { error: updateError } = await admin
+  const { data: cancelado, error: updateError } = await admin
     .from("orders")
     .update({ status: "cancelado" })
     .eq("id", orderId)
-    .eq("tenant_id", staff.tenantId);
-  if (updateError) return { ok: false, error: "Falha ao cancelar o pedido." };
+    .eq("tenant_id", staff.tenantId)
+    .select("id");
+  if (updateError || !cancelado || cancelado.length === 0) {
+    return { ok: false, error: "Falha ao cancelar o pedido." };
+  }
 
   await admin.from("order_events").insert({
     tenant_id: staff.tenantId,
@@ -290,5 +294,165 @@ export async function cancelOrder(
   revalidatePath("/admin/pedidos");
   revalidatePath(`/admin/pedidos/${orderId}`);
   revalidatePath("/admin/entregas");
+  return { ok: true };
+}
+
+/**
+ * O que dá para ALTERAR num pedido depois de criado, e o que não dá.
+ *
+ * Dá: quem recebe, telefone, endereço, data/horário de entrega, o texto do
+ * cartãozinho e as observações -- tudo o que é logística e mensagem, corrige
+ * um endereço digitado errado ou uma data que a cliente pediu para mudar.
+ *
+ * NÃO dá (de propósito, e por isso nem está no formulário): itens, quantidade,
+ * preço e total. Mudar valor de um pedido depois de criado mexe com o que já
+ * foi cobrado (ou vai ser cobrado) no Asaas e com o estoque já reservado --
+ * isso precisa de uma tela própria que recalcule tudo, não de um campo solto
+ * aqui. Também não dá para mudar nome/e-mail/CPF de quem comprou: é o registro
+ * de quem fez a compra, o mesmo motivo por que uma nota fiscal não se edita.
+ */
+export type DadosPedidoInput = {
+  id: string;
+  recipientName: string;
+  recipientPhone: string;
+  street: string;
+  addressNumber: string;
+  complement: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  deliveryDate: string;
+  deliverySlotStart: string;
+  deliverySlotEnd: string;
+  cardRecipient: string;
+  cardSender: string;
+  cardMessage: string;
+  notes: string;
+};
+
+export async function atualizarDadosPedido(
+  input: DadosPedidoInput
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const staff = await requireStaff();
+
+  if (!input.recipientName.trim()) return { ok: false, error: "Diga para quem é a entrega." };
+  if (!input.cardRecipient.trim()) return { ok: false, error: "Diga para quem é o cartãozinho." };
+  if (!input.cardMessage.trim()) return { ok: false, error: "O cartãozinho precisa ter uma mensagem." };
+  if (!dataDeEntregaValida(input.deliveryDate)) return { ok: false, error: "Data de entrega inválida." };
+
+  const admin = createAdminClient();
+
+  const { data: order, error: fetchError } = await admin
+    .from("orders")
+    .select("id, status")
+    .eq("id", input.id)
+    .eq("tenant_id", staff.tenantId)
+    .maybeSingle();
+  if (fetchError || !order) return { ok: false, error: "Pedido não encontrado." };
+  if (!podeAlterarPedido(order.status)) {
+    return {
+      ok: false,
+      error: "Esse pedido já foi encerrado (entregue, cancelado ou reembolsado) e não pode mais ser alterado.",
+    };
+  }
+
+  const { data: atualizado, error } = await admin
+    .from("orders")
+    .update({
+      recipient_name: input.recipientName.trim(),
+      recipient_phone: input.recipientPhone.trim() || null,
+      street: input.street.trim() || null,
+      address_number: input.addressNumber.trim() || null,
+      complement: input.complement.trim() || null,
+      neighborhood: input.neighborhood.trim() || null,
+      city: input.city.trim() || null,
+      state: input.state.trim() || null,
+      delivery_date: input.deliveryDate,
+      delivery_slot_start: input.deliverySlotStart,
+      delivery_slot_end: input.deliverySlotEnd,
+      card_recipient: input.cardRecipient.trim(),
+      card_sender: input.cardSender.trim() || null,
+      card_message: input.cardMessage.trim(),
+      notes: input.notes.trim() || null,
+    })
+    .eq("id", input.id)
+    .eq("tenant_id", staff.tenantId)
+    .select("id");
+
+  if (error || !atualizado || atualizado.length === 0) {
+    console.error("[pedidos] falha ao salvar as alterações:", error);
+    return { ok: false, error: "Não foi possível salvar as alterações." };
+  }
+
+  await admin.from("order_events").insert({
+    tenant_id: staff.tenantId,
+    order_id: input.id,
+    type: "dados_alterados",
+    actor: "admin",
+    actor_id: staff.id,
+    payload: {},
+  });
+
+  revalidatePath("/admin/pedidos");
+  revalidatePath(`/admin/pedidos/${input.id}`);
+  revalidatePath("/admin/entregas");
+  return { ok: true };
+}
+
+/**
+ * EXCLUI um pedido de vez -- ao contrário de cancelar, não fica registro
+ * nenhum depois (nem na lista, nem no histórico).
+ *
+ * A TRAVA aqui não é uma contagem mínima (não faz sentido dizer "sempre tem
+ * que sobrar 1 pedido" -- diferente de equipe, onde sempre precisa sobrar
+ * gente para tocar a loja). A trava é: **um pedido que já teve pagamento
+ * gerado ou já virou um chamado de suporte não pode ser excluído.**
+ *
+ * Isso não é uma regra inventada aqui -- é o próprio banco que recusa: as
+ * tabelas `payments` e `support_tickets` apontam para o pedido sem
+ * "on delete cascade", de propósito, desde que foram criadas. Excluir um
+ * pedido que já foi pago apagaria o rastro de um dinheiro que já entrou --
+ * e isso é diferente de um cadastro de pessoa, não tem "não tinha valor
+ * nenhum mesmo". Para esses casos o caminho é CANCELAR, que mantém o
+ * registro. Esta função só transforma o erro do banco (código 23503) numa
+ * frase que explica isso, em vez de estourar um erro técnico na tela.
+ */
+export async function excluirPedido(orderId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const staff = await requireStaff();
+  const admin = createAdminClient();
+
+  const { data: order, error: fetchError } = await admin
+    .from("orders")
+    .select("id")
+    .eq("id", orderId)
+    .eq("tenant_id", staff.tenantId)
+    .maybeSingle();
+  if (fetchError || !order) return { ok: false, error: "Pedido não encontrado." };
+
+  const { data: excluido, error } = await admin
+    .from("orders")
+    .delete()
+    .eq("id", orderId)
+    .eq("tenant_id", staff.tenantId)
+    .select("id");
+
+  if (error) {
+    if (error.code === "23503") {
+      return {
+        ok: false,
+        error:
+          "Este pedido já tem um pagamento gerado ou um chamado de suporte associado, então não pode ser excluído -- isso apagaria o histórico de um dinheiro que já entrou (ou pode entrar). Use \"Cancelar pedido\" em vez de excluir: o registro fica guardado, mas o pedido some da fila de trabalho.",
+      };
+    }
+    console.error("[pedidos] falha ao excluir o pedido:", error);
+    return { ok: false, error: "Não foi possível excluir esse pedido agora." };
+  }
+  if (!excluido || excluido.length === 0) {
+    return { ok: false, error: "Não foi possível excluir esse pedido agora." };
+  }
+
+  revalidatePath("/admin/pedidos");
+  revalidatePath("/admin/entregas");
+  revalidatePath("/admin");
   return { ok: true };
 }
