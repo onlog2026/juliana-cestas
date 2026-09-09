@@ -8,6 +8,7 @@ import { getStoreProfile } from "@/modules/settings/store-profile";
 import { HeaderSearch } from "@/components/loja/header-search";
 import { HeaderNavMenu } from "@/components/loja/header-nav-menu";
 import { SocialIcons } from "@/components/loja/social-icons";
+import { HeaderLogo } from "@/components/loja/header-logo-editable";
 
 export async function SiteHeader() {
   // A loja vem do endereço acessado (visitante anônimo, sem login).
@@ -33,26 +34,17 @@ export async function SiteHeader() {
         </div>
       ) : null}
 
-      <div className="mx-auto flex h-18 max-w-7xl items-center gap-8 px-4 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="flex shrink-0 items-center gap-2.5 font-display text-2xl text-primary"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element -- pode ser GIF animado; next/image reprocessaria e perderia a animação */}
-          <img
-            src={siteSettings.logoHeaderUrl ?? "/logo/juliana-present-icon.svg"}
-            alt=""
-            aria-hidden="true"
-            // Só a ALTURA é fixa; a largura acompanha (mesmo padrão do rodapé,
-            // `site-footer.tsx`). A logo de verdade da loja é um selo circular
-            // com "JULIANA CESTAS" escrito bem pequeno na base do círculo --
-            // precisa de bem mais que os 34px antigos para essa parte ficar
-            // legível. 56px é o maior que cabe com folga na barra de 72px
-            // (`h-18` no cabeçalho) sem espremer o resto do menu.
-            className="h-14 w-auto max-w-[220px] shrink-0 object-contain"
-          />
-          {storeName}
-        </Link>
+      <div className="mx-auto flex h-24 max-w-7xl items-center gap-8 px-4 sm:px-6 lg:px-8">
+        {/* A barra cresceu de 72px pra 96px (h-24) de propósito: a logo real
+            da loja é um selo circular detalhado, com "JULIANA CESTAS" escrito
+            pequeno na base do círculo -- precisava de espaço de verdade, não
+            só um número maior espremido na mesma altura de antes. */}
+        <HeaderLogo
+          logoHeaderUrl={siteSettings.logoHeaderUrl}
+          logoFooterUrl={siteSettings.logoFooterUrl}
+          faviconUrl={siteSettings.faviconUrl}
+          storeName={storeName}
+        />
 
         <div className="hidden flex-1 justify-center md:flex">
           <div className="w-full max-w-md">
