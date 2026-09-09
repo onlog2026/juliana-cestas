@@ -43,9 +43,13 @@ export async function SiteHeader() {
             src={siteSettings.logoHeaderUrl ?? "/logo/juliana-present-icon.svg"}
             alt=""
             aria-hidden="true"
-            width={38}
-            height={34}
-            className="h-[34px] w-[38px] shrink-0 object-contain"
+            // Só a ALTURA é fixa; a largura acompanha (mesmo padrão do rodapé,
+            // `site-footer.tsx`). A logo de verdade da loja é um selo circular
+            // com "JULIANA CESTAS" escrito bem pequeno na base do círculo --
+            // precisa de bem mais que os 34px antigos para essa parte ficar
+            // legível. 56px é o maior que cabe com folga na barra de 72px
+            // (`h-18` no cabeçalho) sem espremer o resto do menu.
+            className="h-14 w-auto max-w-[220px] shrink-0 object-contain"
           />
           {storeName}
         </Link>
