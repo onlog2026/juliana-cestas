@@ -6,6 +6,11 @@ import Link from "next/link";
 import { Check, Loader2, Pencil, X } from "lucide-react";
 import { checkStaffSession } from "@/lib/auth/actions";
 import { updateSiteSettings } from "@/modules/settings/actions";
+import {
+  LOGO_HEADER_HEIGHT_DEFAULT,
+  LOGO_HEADER_HEIGHT_MAX,
+  LOGO_HEADER_HEIGHT_MIN,
+} from "@/modules/settings/logo-constants";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 
 /**
@@ -14,25 +19,30 @@ import { ImageUploadField } from "@/components/admin/image-upload-field";
  * se mostra o lápis, a trava de verdade continua nas actions
  * (`updateSiteSettings` exige o módulo `cms`; `uploadMedia` exige staff).
  *
- * `updateSiteSettings` grava os TRÊS campos de marca juntos (não é um PATCH
- * parcial) -- por isso `logoFooterUrl`/`faviconUrl` chegam como props e
- * voltam inalterados no salvar, mesmo esta tela só mexendo na logo do topo.
+ * `updateSiteSettings` grava os campos de marca juntos, mas `logoHeaderHeight`
+ * só entra no que é gravado quando ESTA tela manda um valor -- ver o
+ * comentário em `settings/actions.ts`. Sem isso, salvar a logo pela tela de
+ * marca do admin (que ainda não tem esse controle) apagaria o tamanho de
+ * volta pro padrão.
  */
 export function HeaderLogo({
   logoHeaderUrl,
   logoFooterUrl,
   faviconUrl,
+  logoHeaderHeight,
   storeName,
 }: {
   logoHeaderUrl: string | null;
   logoFooterUrl: string | null;
   faviconUrl: string | null;
+  logoHeaderHeight: number | null;
   storeName: string;
 }) {
   const router = useRouter();
   const [isStaff, setIsStaff] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draftLogo, setDraftLogo] = useState(logoHeaderUrl ?? "");
+  const [draftHeight, setDraftHeight] = useState(logoHeaderHeight ?? LOGO_HEADER_HEIGHT_DEFAULT);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -47,8 +57,14 @@ export function HeaderLogo({
     };
   }, []);
 
+  // Enquanto NÃO está editando, mostra o que está salvo de verdade -- só
+  // durante a edição o slider manda no que aparece (pré-visualização ao vivo,
+  // igual o "Tamanho da fonte" do editor de banner).
+  const alturaExibida = editing ? draftHeight : logoHeaderHeight ?? LOGO_HEADER_HEIGHT_DEFAULT;
+
   function startEditing() {
     setDraftLogo(logoHeaderUrl ?? "");
+    setDraftHeight(logoHeaderHeight ?? LOGO_HEADER_HEIGHT_DEFAULT);
     setError(null);
     setEditing(true);
   }
@@ -56,6 +72,7 @@ export function HeaderLogo({
   function cancelEditing() {
     setEditing(false);
     setDraftLogo(logoHeaderUrl ?? "");
+    setDraftHeight(logoHeaderHeight ?? LOGO_HEADER_HEIGHT_DEFAULT);
     setError(null);
   }
 
@@ -66,6 +83,7 @@ export function HeaderLogo({
         logoHeaderUrl: draftLogo,
         logoFooterUrl: logoFooterUrl ?? "",
         faviconUrl: faviconUrl ?? "",
+        logoHeaderHeight: draftHeight,
       });
       if (!result.ok) {
         setError(result.error);
@@ -90,7 +108,8 @@ export function HeaderLogo({
           src={logoHeaderUrl || "/logo/juliana-present-icon.svg"}
           alt=""
           aria-hidden="true"
-          className="h-20 w-auto max-w-[260px] shrink-0 object-contain"
+          style={{ height: `${alturaExibida}px` }}
+          className="w-auto max-w-[320px] shrink-0 object-contain"
         />
         {storeName}
       </Link>
@@ -117,6 +136,21 @@ export function HeaderLogo({
             kind="logo"
             accept="image/png,image/gif,image/svg+xml,image/webp"
           />
+
+          <label className="block">
+            <span className="mb-1.5 flex items-center justify-between text-sm font-medium text-foreground">
+              Tamanho da logo <span className="text-xs font-normal text-muted-foreground">{draftHeight}px</span>
+            </span>
+            <input
+              type="range"
+              min={LOGO_HEADER_HEIGHT_MIN}
+              max={LOGO_HEADER_HEIGHT_MAX}
+              value={draftHeight}
+              onChange={(e) => setDraftHeight(Number(e.target.value))}
+              className="h-11 w-full"
+            />
+          </label>
+
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <div className="flex items-center gap-2">
             <button

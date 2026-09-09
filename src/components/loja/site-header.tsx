@@ -34,15 +34,16 @@ export async function SiteHeader() {
         </div>
       ) : null}
 
-      <div className="mx-auto flex h-24 max-w-7xl items-center gap-8 px-4 sm:px-6 lg:px-8">
-        {/* A barra cresceu de 72px pra 96px (h-24) de propósito: a logo real
-            da loja é um selo circular detalhado, com "JULIANA CESTAS" escrito
-            pequeno na base do círculo -- precisava de espaço de verdade, não
-            só um número maior espremido na mesma altura de antes. */}
+      <div className="mx-auto flex max-w-7xl items-center gap-8 px-4 py-2 sm:px-6 lg:px-8">
+        {/* Sem altura fixa de propósito: a lojista agora escolhe o tamanho da
+            logo (controle na própria home), então a barra precisa acompanhar
+            -- `py-2` reproduz exatamente a altura de antes (96px) no tamanho
+            padrão (80px), e cresce ou encolhe sozinha se ela mudar o tamanho. */}
         <HeaderLogo
           logoHeaderUrl={siteSettings.logoHeaderUrl}
           logoFooterUrl={siteSettings.logoFooterUrl}
           faviconUrl={siteSettings.faviconUrl}
+          logoHeaderHeight={siteSettings.logoHeaderHeight}
           storeName={storeName}
         />
 
