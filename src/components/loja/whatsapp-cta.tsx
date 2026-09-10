@@ -1,12 +1,15 @@
 import { MessageCircle } from "lucide-react";
 import { getTenantId } from "@/lib/tenant/context";
 import { getContent } from "@/modules/content/service";
-
-// TODO F2: telefone virá de tenants.whatsapp
-const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
+import { getStoreWhatsapp } from "@/modules/settings/store-profile";
 
 export async function WhatsappCta() {
-  const content = await getContent(await getTenantId(), "whatsapp_cta");
+  const tenantId = await getTenantId();
+  // Número do CADASTRO DA LOJA (banco), não mais do env da Vercel.
+  const [content, whatsapp] = await Promise.all([
+    getContent(tenantId, "whatsapp_cta"),
+    getStoreWhatsapp(tenantId),
+  ]);
 
   return (
     <section className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
@@ -18,7 +21,7 @@ export async function WhatsappCta() {
           </p>
         </div>
         <a
-          href={`https://wa.me/${WHATSAPP}`}
+          href={`https://wa.me/${whatsapp}`}
           target="_blank"
           rel="noopener noreferrer"
           className="jc-shine-cta inline-flex h-12 shrink-0 items-center gap-2 rounded-full bg-[var(--jc-whatsapp)] px-6 text-sm font-semibold text-white transition-transform active:scale-[0.98]"

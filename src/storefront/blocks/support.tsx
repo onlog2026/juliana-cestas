@@ -9,6 +9,7 @@ import { Faq } from "@/components/loja/faq";
 import { Reveal } from "@/components/loja/reveal";
 import { WhatsappCta } from "@/components/loja/whatsapp-cta";
 import { getContent } from "@/modules/content/service";
+import { getStoreWhatsapp } from "@/modules/settings/store-profile";
 import { iconByName, SECTION_SHELL, type BlockRenderArgs } from "@/storefront/blocks/kit";
 import type {
   BenefitsProps,
@@ -17,10 +18,6 @@ import type {
   NewsletterProps,
   PromoBarProps,
 } from "@/storefront/blocks/schemas";
-
-// Mesma fonte que `src/components/loja/whatsapp-cta.tsx` usa hoje.
-// TODO F2 (herdado): o telefone vai passar a vir de `tenants.whatsapp`.
-const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
 
 /* ──────────────────────────── benefícios ───────────────────────────────── */
 
@@ -133,10 +130,13 @@ export function PromoBarBlock({ props, variant }: BlockRenderArgs<PromoBarProps>
  * comentário do `newsletterBlock` em `schemas.ts` sobre por que aqui não tem
  * campo de e-mail.
  */
-export function NewsletterBlock({ props, variant }: BlockRenderArgs<NewsletterProps>) {
-  if (!WHATSAPP || !props.title) return null;
+export async function NewsletterBlock({ props, variant, tenantId }: BlockRenderArgs<NewsletterProps>) {
+  // Número do cadastro da loja (banco), não mais do env. Sem número, o bloco
+  // não aparece -- botão que não leva a lugar nenhum é pior que botão nenhum.
+  const whatsapp = await getStoreWhatsapp(tenantId);
+  if (!whatsapp || !props.title) return null;
 
-  const href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(
+  const href = `https://wa.me/${whatsapp}?text=${encodeURIComponent(
     "Oi! Quero ser avisado das novidades da loja."
   )}`;
 

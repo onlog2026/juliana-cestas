@@ -5,7 +5,7 @@ import { BottomNav } from "@/components/loja/bottom-nav";
 import { LocalBusinessJsonLd } from "@/components/loja/json-ld";
 import { getSeoSettings } from "@/modules/seo/service";
 import { getSiteSettings } from "@/modules/settings/site-settings";
-import { getStoreProfile } from "@/modules/settings/store-profile";
+import { getStoreProfile, getStoreWhatsapp } from "@/modules/settings/store-profile";
 import { getTenantId } from "@/lib/tenant/context";
 
 // TODO F7: a URL pública de cada loja vai vir de `tenant_domains`. Enquanto
@@ -47,14 +47,17 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function StoreLayout({ children }: LayoutProps<"/">) {
+export default async function StoreLayout({ children }: LayoutProps<"/">) {
+  // Número do WhatsApp vem do cadastro da loja (banco). A barra de baixo é
+  // client component, então o número desce por prop a partir daqui.
+  const whatsapp = await getStoreWhatsapp(await getTenantId());
   return (
     <>
       <LocalBusinessJsonLd />
       <SiteHeader />
       <main className="flex-1 pb-16 md:pb-0">{children}</main>
       <SiteFooter />
-      <BottomNav />
+      <BottomNav whatsapp={whatsapp} />
     </>
   );
 }

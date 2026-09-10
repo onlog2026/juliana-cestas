@@ -9,11 +9,10 @@ import { CartaozinhoSection } from "@/components/loja/cartaozinho-section";
 import { Reveal } from "@/components/loja/reveal";
 import { ProductJsonLd } from "@/components/loja/json-ld";
 import { getTenantId } from "@/lib/tenant/context";
+import { getStoreWhatsapp } from "@/modules/settings/store-profile";
 import { LEGACY_TENANT_ID } from "@/lib/tenant/legacy";
 
 export const revalidate = 300;
-
-const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -48,6 +47,7 @@ export default async function ProdutoPage(
 ) {
   const { slug } = await props.params;
   const tenantId = await getTenantId();
+  const whatsapp = await getStoreWhatsapp(tenantId);
   const product = await getProductBySlug(tenantId, slug);
   if (!product) notFound();
 
@@ -100,7 +100,7 @@ export default async function ProdutoPage(
               Comprar
             </Link>
             <a
-              href={`https://wa.me/${WHATSAPP}?text=${whatsappMessage}`}
+              href={`https://wa.me/${whatsapp}?text=${whatsappMessage}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[var(--jc-whatsapp)] px-7 text-base font-semibold text-[var(--jc-whatsapp)] transition-colors hover:bg-[var(--jc-whatsapp)]/10 active:scale-[0.98]"

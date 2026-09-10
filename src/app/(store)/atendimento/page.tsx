@@ -4,8 +4,6 @@ import { ChevronRight, MessageCircle } from "lucide-react";
 import { getTenantId } from "@/lib/tenant/context";
 import { getStoreProfile } from "@/modules/settings/store-profile";
 
-const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
-
 export async function generateMetadata(): Promise<Metadata> {
   const profile = await getStoreProfile(await getTenantId());
   const storeName = profile.businessName?.trim() || "";
@@ -20,6 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AtendimentoPage() {
   const profile = await getStoreProfile(await getTenantId());
   const storeName = profile.businessName?.trim() || "";
+  const whatsapp = (profile.phone ?? "").replace(/\D/g, "");
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
       <nav
@@ -42,7 +41,7 @@ export default async function AtendimentoPage() {
       </p>
 
       <a
-        href={`https://wa.me/${WHATSAPP}`}
+        href={`https://wa.me/${whatsapp}`}
         target="_blank"
         rel="noopener noreferrer"
         className="jc-shine-cta mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-[var(--jc-whatsapp)] px-7 text-base font-semibold text-white transition-transform active:scale-[0.98]"

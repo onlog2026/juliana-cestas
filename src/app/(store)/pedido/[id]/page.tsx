@@ -41,8 +41,10 @@ export default async function PedidoPage(
   if (!order) notFound();
 
   const template = getCardTemplate(order.card_template);
-  const storeName = (await getStoreProfile(tenantId)).businessName?.trim() || "";
-  const whatsapp = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
+  const profile = await getStoreProfile(tenantId);
+  const storeName = profile.businessName?.trim() || "";
+  // Número do cadastro da loja (banco), só dígitos -- não mais do env.
+  const whatsapp = (profile.phone ?? "").replace(/\D/g, "");
   const whatsappMessage = encodeURIComponent(
     `Olá! Quero finalizar o pagamento do meu pedido #${order.number}.`
   );

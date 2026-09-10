@@ -56,6 +56,25 @@ export async function getStoreProfile(tenantId: string): Promise<StoreProfile> {
   };
 }
 
+/**
+ * O WhatsApp da loja em formato `wa.me` (só dígitos, ex.: `5561999894889`),
+ * lido do CADASTRO DA LOJA no banco -- não mais de `NEXT_PUBLIC_WHATSAPP`.
+ *
+ * Por quê: a variável de ambiente é "assada" no build da Vercel, então trocar
+ * o número exigia editar a Vercel + republicar (frágil, e a lojista não tem
+ * como fazer). Vindo do banco, o número muda pelo próprio cadastro da loja e
+ * vale na hora, sem tocar em deploy. É o que o TODO "F2" espalhado pelos
+ * componentes já previa.
+ *
+ * `""` quando não há telefone cadastrado -- quem consome trata isso e não
+ * mostra botão de WhatsApp quebrado (mesmo comportamento de antes com o env
+ * vazio).
+ */
+export async function getStoreWhatsapp(tenantId: string): Promise<string> {
+  const profile = await getStoreProfile(tenantId);
+  return (profile.phone ?? "").replace(/\D/g, "");
+}
+
 /** Uma linha pronta pra exibir ("Rua X, 123 — Bairro, Cidade/UF"), ou null se não tem endereço cadastrado ainda. */
 export function formatStoreAddress(profile: StoreProfile): string | null {
   if (!profile.street) return null;

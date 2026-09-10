@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { Home, ShoppingBasket, User, MessageCircle } from "lucide-react";
 
-const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
-
 const items = [
   { href: "/", label: "Início", icon: Home },
   { href: "/categoria/cafe-da-manha", label: "Cestas", icon: ShoppingBasket },
   { href: "/conta", label: "Minha conta", icon: User },
 ];
 
-export function BottomNav() {
+// `whatsapp` (só dígitos) vem do layout da loja, que lê do cadastro no banco
+// (`getStoreWhatsapp`) -- não mais do env da Vercel.
+export function BottomNav({ whatsapp }: { whatsapp: string }) {
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-stretch border-t border-border bg-card md:hidden"
@@ -27,7 +27,7 @@ export function BottomNav() {
         </Link>
       ))}
       <a
-        href={`https://wa.me/${WHATSAPP}`}
+        href={`https://wa.me/${whatsapp}`}
         target="_blank"
         rel="noopener noreferrer"
         className="flex flex-1 flex-col items-center justify-center gap-0.5 text-[var(--jc-whatsapp)]"
