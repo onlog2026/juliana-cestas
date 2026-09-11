@@ -39,7 +39,7 @@ export async function SiteFooter() {
         <div>
           {siteSettings.logoFooterUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- pode ser GIF animado
-            <img src={siteSettings.logoFooterUrl} alt="" className="h-9 w-auto object-contain" />
+            <img src={siteSettings.logoFooterUrl} alt="" className="h-14 w-auto object-contain md:h-16" />
           ) : (
             <p className="font-display text-2xl text-primary">{storeName}</p>
           )}
