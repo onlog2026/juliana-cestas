@@ -695,9 +695,9 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
           "Ir para pagamento" nunca sumir quando o card for mais alto que a tela
           e para o overflow não cortar o glow de borda. No mobile o aside não
           tem classe lg -> bloco normal, largura cheia (cara de app). */}
-      <aside className="lg:sticky lg:top-[50dvh] lg:-translate-y-1/2 lg:self-start">
+      <aside className="lg:sticky lg:top-0 lg:flex lg:h-[100dvh] lg:items-center lg:self-start">
         <div
-          className="jc-glow-card h-fit space-y-4 rounded-2xl border border-primary/30 bg-card p-5 lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto lg:p-6"
+          className="jc-glow-card h-fit w-full space-y-4 rounded-2xl border border-primary/30 bg-card p-5 lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto lg:p-6"
           style={{ boxShadow: "var(--jc-shadow)" }}
         >
           <div className="flex gap-3">
