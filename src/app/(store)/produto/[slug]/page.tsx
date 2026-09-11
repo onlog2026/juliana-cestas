@@ -118,11 +118,15 @@ export default async function ProdutoPage(
             <h2 className="text-sm font-semibold text-foreground">
               O que vem na cesta
             </h2>
-            <ul className="mt-3 space-y-2">
+            {/* Duas colunas para os itens encaixarem lado a lado e não empurrarem
+                o resto da página pra baixo. Vale no mobile também (colunas
+                estreitas com nomes curtos); item longo quebra a linha dentro da
+                própria coluna, sem estourar. */}
+            <ul className="mt-3 grid grid-cols-2 gap-x-5 gap-y-2">
               {product.items.map((item) => (
                 <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
                   <Check className="mt-0.5 size-4 shrink-0 text-primary" />
-                  {item}
+                  <span className="min-w-0">{item}</span>
                 </li>
               ))}
             </ul>

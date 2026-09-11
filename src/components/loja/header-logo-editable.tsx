@@ -116,7 +116,13 @@ export function HeaderLogo({
           style={{ height: `${alturaExibida}px` }}
           className="w-auto max-w-[320px] shrink-0 object-contain"
         />
-        {storeName ? <span className="min-w-0 truncate">{storeName}</span> : null}
+        {/* O nome em texto só aparece quando NÃO há logo-imagem própria: a
+            logo da loja já traz o nome escrito, então repetir "Juliana Cestas"
+            ao lado seria redundante. Loja sem logo ainda mostra o nome (ao lado
+            do ícone padrão) para não ficar sem identificação. */}
+        {storeName && !logoHeaderUrl ? (
+          <span className="min-w-0 truncate">{storeName}</span>
+        ) : null}
       </Link>
 
       {isStaff && !editing ? (
