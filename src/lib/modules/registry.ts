@@ -220,7 +220,10 @@ export const MODULE_REGISTRY: readonly ModuleDefinition[] = [
     category: "vitrine",
     isCore: false,
     sortOrder: 18,
-    menu: { href: "/admin/marcas", label: "Marcas", iconName: "Tag", menuOrder: 15 },
+    // menuOrder 5.5: fica logo DEPOIS de Produtos (5) e antes de Cupons (6) --
+    // marcas são "dos produtos", então andam juntas no menu. Valor fracionário
+    // insere entre os dois sem renumerar o resto (o menu ordena por menuOrder).
+    menu: { href: "/admin/marcas", label: "Marcas", iconName: "Tag", menuOrder: 5.5 },
   },
   {
     slug: "ia",

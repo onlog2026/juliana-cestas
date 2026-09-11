@@ -399,7 +399,7 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
       onSubmit={handleSubmit(onSubmit, () =>
         setSubmitError("Falta preencher ou corrigir algum campo. Revise o formulário e tente de novo.")
       )}
-      className="grid gap-8 lg:grid-cols-[1fr_360px]"
+      className="grid gap-8 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_440px]"
     >
       <div className="min-w-0 space-y-10">
         {draftRestored ? (
@@ -687,21 +687,63 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
         ) : null}
       </div>
 
-      {/* Resumo */}
-      <aside className="h-fit space-y-4 rounded-card border border-border bg-card p-5 lg:sticky lg:top-24">
-        <div className="flex gap-3">
-          {product.image_url ? (
-            <div className="relative size-16 shrink-0 overflow-hidden rounded-[10px] bg-secondary">
-              <Image src={product.image_url} alt={product.name} fill sizes="64px" className="object-cover" />
+      {/* Resumo. O <aside> é só POSICIONAMENTO (sticky centralizado no desktop);
+          o visual do card fica no <div> interno, para o overflow-y-auto da trava
+          de altura não cortar o glow de borda. No mobile o aside não tem classe
+          nenhuma -> bloco normal, largura cheia (cara de app). */}
+      <aside className="lg:sticky lg:top-1/2 lg:-translate-y-1/2 lg:self-start lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto">
+        <div
+          className="jc-glow-card h-fit space-y-4 rounded-2xl border border-primary/30 bg-card p-5 lg:p-6"
+          style={{ boxShadow: "var(--jc-shadow)" }}
+        >
+          <div className="flex gap-3">
+            {product.image_url ? (
+              <div className="relative size-16 shrink-0 overflow-hidden rounded-[10px] bg-secondary">
+                <Image src={product.image_url} alt={product.name} fill sizes="64px" className="object-cover" />
+              </div>
+            ) : null}
+            <div>
+              <p className="text-sm font-semibold text-foreground">{product.name}</p>
+              <p className="text-xs text-muted-foreground">{product.serves}</p>
+            </div>
+          </div>
+
+          {/* Relação de produtos sugeridos (upsell) DENTRO do carrinho, logo
+              abaixo do produto. Mesmo estado (`upsellSlugs`/`toggleUpsell`) da
+              seção "Aproveite e leve também" do formulário: marcar aqui reflete
+              lá e no Total, e vice-versa. */}
+          {upsells.length > 0 ? (
+            <div className="space-y-2 border-t border-border pt-4">
+              <p className="text-xs font-medium text-muted-foreground">Você também pode adicionar</p>
+              {upsells.map((upsell) => {
+                const checked = upsellSlugs.includes(upsell.slug);
+                return (
+                  <label
+                    key={upsell.id}
+                    className={`flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[10px] border p-2 transition-colors ${
+                      checked ? "border-primary bg-accent" : "border-border bg-card hover:bg-accent/50"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleUpsell(upsell.slug)}
+                      className="size-4 shrink-0 rounded border-border"
+                    />
+                    {upsell.image_url ? (
+                      <div className="relative size-9 shrink-0 overflow-hidden rounded-[8px] bg-secondary">
+                        <Image src={upsell.image_url} alt={upsell.name} fill sizes="36px" className="object-cover" />
+                      </div>
+                    ) : null}
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{upsell.name}</span>
+                    <span className="shrink-0 text-sm text-muted-foreground">+ {formatCents(upsell.price_cents)}</span>
+                  </label>
+                );
+              })}
             </div>
           ) : null}
-          <div>
-            <p className="text-sm font-semibold text-foreground">{product.name}</p>
-            <p className="text-xs text-muted-foreground">{product.serves}</p>
-          </div>
-        </div>
 
-        {addons.length > 0 ? (
+          {addons.length > 0 ? (
           <div className="space-y-2 border-t border-border pt-4">
             {addons.map((addon) => (
               <label key={addon.id} className="flex items-center justify-between gap-2 text-sm">
@@ -717,21 +759,6 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
                 <span className="text-muted-foreground">{formatCents(addon.price_cents)}</span>
               </label>
             ))}
-          </div>
-        ) : null}
-
-        {upsellSlugs.length > 0 ? (
-          <div className="space-y-1.5 border-t border-border pt-4">
-            {upsellSlugs.map((slug) => {
-              const upsell = upsells.find((u) => u.slug === slug);
-              if (!upsell) return null;
-              return (
-                <div key={slug} className="flex items-center justify-between gap-2 text-sm">
-                  <span className="truncate text-foreground">{upsell.name}</span>
-                  <span className="shrink-0 text-muted-foreground">{formatCents(upsell.price_cents)}</span>
-                </div>
-              );
-            })}
           </div>
         ) : null}
 
@@ -801,6 +828,7 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
         <p className="text-center text-xs text-muted-foreground">
           {savedAt ? `Rascunho salvo às ${savedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}` : "Salvando rascunho…"}
         </p>
+        </div>
       </aside>
     </form>
   );
