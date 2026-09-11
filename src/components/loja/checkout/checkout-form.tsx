@@ -687,13 +687,17 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
         ) : null}
       </div>
 
-      {/* Resumo. O <aside> é só POSICIONAMENTO (sticky centralizado no desktop);
-          o visual do card fica no <div> interno, para o overflow-y-auto da trava
-          de altura não cortar o glow de borda. No mobile o aside não tem classe
-          nenhuma -> bloco normal, largura cheia (cara de app). */}
-      <aside className="lg:sticky lg:top-1/2 lg:-translate-y-1/2 lg:self-start lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto">
+      {/* Resumo. O <aside> é um contêiner sticky de ALTURA TOTAL da tela que
+          centraliza o card por flex -- assim o card fica no meio do campo de
+          visão em QUALQUER rolagem (inclusive no topo), não "travado" embaixo
+          do header como acontecia com sticky top:50%. O visual fica no <div>
+          interno; a trava de altura (max-h + overflow) mora nele, para o botão
+          "Ir para pagamento" nunca sumir quando o card for mais alto que a tela
+          e para o overflow não cortar o glow de borda. No mobile o aside não
+          tem classe lg -> bloco normal, largura cheia (cara de app). */}
+      <aside className="lg:sticky lg:top-[50dvh] lg:-translate-y-1/2 lg:self-start">
         <div
-          className="jc-glow-card h-fit space-y-4 rounded-2xl border border-primary/30 bg-card p-5 lg:p-6"
+          className="jc-glow-card h-fit space-y-4 rounded-2xl border border-primary/30 bg-card p-5 lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto lg:p-6"
           style={{ boxShadow: "var(--jc-shadow)" }}
         >
           <div className="flex gap-3">
