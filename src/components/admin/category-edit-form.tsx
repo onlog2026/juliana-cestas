@@ -12,28 +12,36 @@ type Draft = {
   description: string;
   imageUrl: string;
   active: boolean;
+  parentId: string;
 };
 
-function toDraft(category?: Category): Draft {
+function toDraft(category?: Category, defaultParentId?: string): Draft {
   return {
     slug: category?.slug ?? "",
     name: category?.name ?? "",
     description: category?.description ?? "",
     imageUrl: category?.imageUrl ?? "",
     active: category?.active ?? true,
+    parentId: category?.parentId ?? defaultParentId ?? "",
   };
 }
 
 export function CategoryEditForm({
   category,
+  parents,
+  defaultParentId,
   onSaved,
   onCancel,
 }: {
   category?: Category;
+  /** Categorias PRINCIPAIS que podem ser pai (a própria já vem removida). */
+  parents: Category[];
+  /** Pré-seleciona um pai (usado no botão "Nova subcategoria"). */
+  defaultParentId?: string;
   onSaved: () => void;
   onCancel: () => void;
 }) {
-  const [draft, setDraft] = useState<Draft>(toDraft(category));
+  const [draft, setDraft] = useState<Draft>(toDraft(category, defaultParentId));
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -51,6 +59,7 @@ export function CategoryEditForm({
       description: draft.description,
       imageUrl: draft.imageUrl,
       active: draft.active,
+      parentId: draft.parentId || null,
     };
     startTransition(async () => {
       const result = await upsertCategory(input);
@@ -74,6 +83,25 @@ export function CategoryEditForm({
       </label>
 
       <label className="block">
+        <span className="mb-1.5 block text-sm font-medium text-foreground">Categoria pai</span>
+        <select
+          value={draft.parentId}
+          onChange={(e) => set("parentId", e.target.value)}
+          className="h-11 w-full rounded-[10px] border border-border bg-card px-3.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <option value="">Nenhuma — é uma categoria principal</option>
+          {parents.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+        <span className="mt-1 block text-xs text-muted-foreground">
+          Escolha uma categoria pai para transformar esta em subcategoria dela.
+        </span>
+      </label>
+
+      <label className="block">
         <span className="mb-1.5 block text-sm font-medium text-foreground">Descrição (opcional)</span>
         <textarea
           value={draft.description}
@@ -83,7 +111,7 @@ export function CategoryEditForm({
         />
       </label>
 
-      <ImageUploadField label="Imagem da categoria (opcional)" value={draft.imageUrl} onChange={(url) => set("imageUrl", url)} />
+      <ImageUploadField label="Ícone / imagem da categoria (opcional)" value={draft.imageUrl} onChange={(url) => set("imageUrl", url)} />
 
       <label className="flex items-center gap-2 text-sm text-foreground">
         <input

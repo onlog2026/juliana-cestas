@@ -12,6 +12,8 @@ export type CategoryInput = {
   description: string;
   imageUrl: string;
   active: boolean;
+  /** id da categoria pai (vira subcategoria) ou null/"" = categoria principal. */
+  parentId?: string | null;
 };
 
 function slugify(raw: string): string {
@@ -39,6 +41,37 @@ export async function upsertCategory(
   const admin = createAdminClient();
   const slug = slugify(input.slug || input.name).slice(0, 60) || crypto.randomUUID().slice(0, 8);
 
+  // Categoria pai: valida que é de UM nível só (a subcategoria não pode virar
+  // pai de outra) e da própria loja. "" ou null = categoria principal.
+  let parentId: string | null = null;
+  if (input.parentId) {
+    if (input.id && input.parentId === input.id) {
+      return { ok: false, error: "Uma categoria não pode ser subcategoria dela mesma." };
+    }
+    const { data: parent } = await admin
+      .from("categories")
+      .select("id, parent_id")
+      .eq("id", input.parentId)
+      .eq("tenant_id", staff.tenantId)
+      .maybeSingle();
+    if (!parent) return { ok: false, error: "Categoria pai não encontrada." };
+    if (parent.parent_id) {
+      return { ok: false, error: "A categoria pai não pode ser uma subcategoria (só um nível)." };
+    }
+    if (input.id) {
+      // Editando: se esta categoria já TEM filhas, não pode virar subcategoria.
+      const { count } = await admin
+        .from("categories")
+        .select("id", { count: "exact", head: true })
+        .eq("parent_id", input.id)
+        .eq("tenant_id", staff.tenantId);
+      if ((count ?? 0) > 0) {
+        return { ok: false, error: "Essa categoria já tem subcategorias, então não pode virar subcategoria de outra." };
+      }
+    }
+    parentId = input.parentId;
+  }
+
   const row = {
     tenant_id: staff.tenantId,
     slug,
@@ -46,6 +79,7 @@ export async function upsertCategory(
     description: input.description.trim() || null,
     image_url: input.imageUrl.trim() || null,
     active: input.active,
+    parent_id: parentId,
     updated_at: new Date().toISOString(),
   };
 
@@ -94,7 +128,10 @@ export async function deleteCategory(id: string): Promise<{ ok: true } | { ok: f
     // FK de products.category_id é RESTRICT de propósito: apagar uma
     // categoria com cesta vinculada apagaria silenciosamente o vínculo.
     if (error.code === "23503") {
-      return { ok: false, error: "Essa categoria tem cestas vinculadas. Mude a categoria delas antes de excluir." };
+      return {
+        ok: false,
+        error: "Essa categoria tem cestas ou subcategorias vinculadas. Mude/remova antes de excluir.",
+      };
     }
     return { ok: false, error: "Não foi possível excluir." };
   }

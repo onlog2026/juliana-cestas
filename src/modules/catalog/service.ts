@@ -111,13 +111,26 @@ export async function getAllProducts(tenantId: string): Promise<Product[]> {
 
 /** Produtos ativos de UMA categoria — usado pela página /categoria/[slug]. */
 export async function getProductsByCategoryId(tenantId: string, categoryId: string): Promise<Product[]> {
+  return getProductsByCategoryIds(tenantId, [categoryId]);
+}
+
+/**
+ * Produtos ativos de um CONJUNTO de categorias — usado pela página de categoria
+ * principal, que mostra os produtos dela E das subcategorias. Lista vazia
+ * devolve vazio sem ir ao banco.
+ */
+export async function getProductsByCategoryIds(
+  tenantId: string,
+  categoryIds: string[]
+): Promise<Product[]> {
+  if (categoryIds.length === 0) return [];
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from("products")
     .select(PUBLIC_PRODUCT_COLUMNS)
     .eq("tenant_id", tenantId)
-    .eq("category_id", categoryId)
+    .in("category_id", categoryIds)
     .eq("active", true)
     .order("sort_order", { ascending: true });
 

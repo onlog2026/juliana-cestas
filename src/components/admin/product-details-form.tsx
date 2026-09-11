@@ -158,11 +158,28 @@ export function ProductDetailsForm({
             className="h-11 w-full rounded-[10px] border border-border bg-background px-3.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="">Sem categoria</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
+            {categories
+              .filter((c) => !c.parentId)
+              .map((top) => {
+                const subs = categories.filter((c) => c.parentId === top.id);
+                if (subs.length === 0) {
+                  return (
+                    <option key={top.id} value={top.id}>
+                      {top.name}
+                    </option>
+                  );
+                }
+                return (
+                  <optgroup key={top.id} label={top.name}>
+                    <option value={top.id}>{top.name} (toda a categoria)</option>
+                    {subs.map((sub) => (
+                      <option key={sub.id} value={sub.id}>
+                        {sub.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                );
+              })}
           </select>
         </label>
         <label className="block">

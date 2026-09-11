@@ -2,6 +2,7 @@ import Link from "next/link";
 import { User } from "lucide-react";
 import { getTenantId } from "@/lib/tenant/context";
 import { getAllProducts } from "@/modules/catalog/service";
+import { getActiveCategoryTree } from "@/modules/catalog/categories";
 import { getSocialLinks } from "@/modules/settings/social-links";
 import { getSiteSettings } from "@/modules/settings/site-settings";
 import { getStoreProfile } from "@/modules/settings/store-profile";
@@ -13,8 +14,9 @@ import { HeaderLogo } from "@/components/loja/header-logo-editable";
 export async function SiteHeader() {
   // A loja vem do endereço acessado (visitante anônimo, sem login).
   const tenantId = await getTenantId();
-  const [products, socialLinks, siteSettings, storeProfile] = await Promise.all([
+  const [products, categoryTree, socialLinks, siteSettings, storeProfile] = await Promise.all([
     getAllProducts(tenantId),
+    getActiveCategoryTree(tenantId),
     getSocialLinks(tenantId),
     getSiteSettings(tenantId),
     getStoreProfile(tenantId),
@@ -23,6 +25,16 @@ export async function SiteHeader() {
   // nesse caso o link fica so com o logo, sem inventar marca nenhuma.
   const storeName = storeProfile.businessName?.trim() || "";
   const hasSocialLinks = Object.values(socialLinks).some(Boolean);
+
+  // Menu do topo em formato guarda-chuva: categoria principal -> subcategorias.
+  // Passa só os campos que o menu (client) precisa -- categories.ts é
+  // server-only e não pode cruzar a fronteira como objeto inteiro.
+  const navCategories = categoryTree.map((top) => ({
+    slug: top.slug,
+    name: top.name,
+    imageUrl: top.imageUrl,
+    children: top.children.map((sub) => ({ slug: sub.slug, name: sub.name, imageUrl: sub.imageUrl })),
+  }));
 
   return (
     // Fundo sólido, sem backdrop-filter: `backdrop-saturate` num elemento
@@ -68,9 +80,11 @@ export async function SiteHeader() {
         </nav>
       </div>
 
-      <div className="hidden border-t border-border md:block">
-        <HeaderNavMenu products={products} />
-      </div>
+      {navCategories.length > 0 ? (
+        <div className="hidden border-t border-border md:block">
+          <HeaderNavMenu categories={navCategories} />
+        </div>
+      ) : null}
 
       <div className="border-t border-border px-4 py-2.5 md:hidden">
         <HeaderSearch products={products} id="header-search-mobile" />

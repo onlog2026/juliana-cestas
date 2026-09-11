@@ -3,25 +3,19 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { formatCents } from "@/lib/money";
+import { ChevronDown } from "lucide-react";
 
-type NavProduct = {
-  slug: string;
-  name: string;
-  serves: string;
-  price: number;
-  image: string;
-};
+type NavSubcategory = { slug: string; name: string; imageUrl: string | null };
+type NavCategory = NavSubcategory & { children: NavSubcategory[] };
 
-type HoverState = { product: NavProduct; left: number; top: number };
+type HoverState = { category: NavCategory; left: number; top: number };
 
-const POPOVER_WIDTH = 224; // w-56
+const POPOVER_WIDTH = 248;
 // Tempo antes de fechar depois que o mouse sai de qualquer parte do menu --
-// sem isso, o cursor "perde" o hover no vão entre o item e o card (mesmo
-// vão pequeno) e o card some antes da pessoa conseguir clicar nele.
+// sem isso, o cursor "perde" o hover no vão entre o item e o card.
 const CLOSE_DELAY_MS = 200;
 
-export function HeaderNavMenu({ products }: { products: NavProduct[] }) {
+export function HeaderNavMenu({ categories }: { categories: NavCategory[] }) {
   const [hover, setHover] = useState<HoverState | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -37,64 +31,75 @@ export function HeaderNavMenu({ products }: { products: NavProduct[] }) {
     closeTimer.current = setTimeout(() => setHover(null), CLOSE_DELAY_MS);
   }
 
-  function showPopover(product: NavProduct, trigger: HTMLElement) {
+  function showPopover(category: NavCategory, trigger: HTMLElement) {
     cancelClose();
+    if (category.children.length === 0) {
+      setHover(null);
+      return;
+    }
     const rect = trigger.getBoundingClientRect();
     const center = rect.left + rect.width / 2;
     const left = Math.min(
       Math.max(center - POPOVER_WIDTH / 2, 8),
       window.innerWidth - POPOVER_WIDTH - 8
     );
-    setHover({ product, left, top: rect.bottom + 6 });
+    setHover({ category, left, top: rect.bottom + 6 });
   }
 
+  if (categories.length === 0) return null;
+
   return (
-    <nav className="mx-auto flex max-w-7xl items-center gap-6 overflow-x-auto px-4 py-2.5 text-sm font-medium text-foreground sm:px-6 lg:px-8">
-      {products.map((product) => (
+    <nav className="mx-auto flex max-w-7xl items-center gap-4 overflow-x-auto px-4 py-2.5 text-sm font-medium text-foreground sm:px-6 lg:px-8">
+      {categories.map((category) => (
         <div
-          key={product.slug}
-          onMouseEnter={(e) => showPopover(product, e.currentTarget)}
+          key={category.slug}
+          onMouseEnter={(e) => showPopover(category, e.currentTarget)}
           onMouseLeave={scheduleClose}
         >
           <Link
-            href={`/produto/${product.slug}`}
-            className="jc-nav-hover block whitespace-nowrap rounded-full px-3 py-1.5"
+            href={`/categoria/${category.slug}`}
+            className="jc-nav-hover flex items-center gap-1 whitespace-nowrap rounded-full px-3 py-1.5"
           >
-            {product.name}
+            {category.name}
+            {category.children.length > 0 ? <ChevronDown className="size-3.5 text-muted-foreground" /> : null}
           </Link>
         </div>
       ))}
 
-      {/* position:fixed de propósito -- posicionado "absolute" dentro do nav
-          (que precisa de overflow-x-auto pra rolar em tela estreita) ficava
-          cortado verticalmente pelo próprio nav (overflow-x força overflow-y
-          "auto" também, regra do CSS), e no lugar do card aparecia a barra
-          de rolagem nativa do navegador. "fixed" escapa desse corte. */}
+      {/* position:fixed de propósito -- o <nav> precisa de overflow-x-auto pra
+          rolar em tela estreita, e o overflow-x força overflow-y "auto", que
+          cortaria o card. "fixed" escapa desse corte (mesmo truque de antes). */}
       {hover ? (
         <div
           style={{ position: "fixed", left: hover.left, top: hover.top, width: POPOVER_WIDTH }}
-          className="z-50 rounded-card border border-border bg-card p-3 shadow-lg"
+          className="z-50 rounded-card border border-border bg-card p-2 shadow-lg"
           onMouseEnter={cancelClose}
           onMouseLeave={scheduleClose}
         >
           <Link
-            href={`/produto/${hover.product.slug}`}
-            className="flex items-center gap-3"
+            href={`/categoria/${hover.category.slug}`}
             onClick={() => setHover(null)}
+            className="jc-nav-hover mb-1 block rounded-[10px] px-3 py-2 text-sm font-semibold text-primary"
           >
-            {hover.product.image ? (
-              <div className="relative size-16 shrink-0 overflow-hidden rounded-[10px] bg-secondary">
-                <Image src={hover.product.image} alt="" fill sizes="64px" className="object-cover" />
-              </div>
-            ) : null}
-            <span className="min-w-0">
-              <span className="block truncate text-sm font-medium text-foreground">{hover.product.name}</span>
-              <span className="block text-xs text-muted-foreground">{hover.product.serves}</span>
-              <span className="block text-sm font-semibold text-primary">
-                {formatCents(hover.product.price * 100)}
-              </span>
-            </span>
+            Ver tudo em {hover.category.name}
           </Link>
+          <div className="flex flex-col">
+            {hover.category.children.map((sub) => (
+              <Link
+                key={sub.slug}
+                href={`/categoria/${sub.slug}`}
+                onClick={() => setHover(null)}
+                className="jc-nav-hover flex items-center gap-2.5 rounded-[10px] px-3 py-2 text-sm text-foreground"
+              >
+                <span className="relative size-8 shrink-0 overflow-hidden rounded-[8px] bg-secondary">
+                  {sub.imageUrl ? (
+                    <Image src={sub.imageUrl} alt="" fill sizes="32px" className="object-cover" />
+                  ) : null}
+                </span>
+                <span className="min-w-0 truncate">{sub.name}</span>
+              </Link>
+            ))}
+          </div>
         </div>
       ) : null}
     </nav>
