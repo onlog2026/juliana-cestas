@@ -357,3 +357,91 @@ export const ADMIN_MENU_MODULES: readonly (ModuleDefinition & { menu: ModuleMenu
   .filter((m): m is ModuleDefinition & { menu: ModuleMenuEntry } => Boolean(m.menu))
   .slice()
   .sort((a, b) => a.menu.menuOrder - b.menu.menuOrder);
+
+/* ─────────────────────── DEPARTAMENTOS DO MENU ──────────────────────────────
+ * Antes o menu era uma lista de 20 itens em fila. Agora ele é agrupado em
+ * "departamentos" (guarda-chuvas): Vendas, Catálogo, Marketing, Loja online,
+ * Financeiro, Configurações. "Início" fica solto no topo, fora de grupo.
+ *
+ * O padrão é o mesmo do Agentop e resolve o mesmo problema: um menu que só
+ * cresce vira uma parede de ícones. A relação item→departamento vive num MAPA
+ * ÚNICO (`MENU_GROUP_OF`) — mover um item de departamento é trocar UMA linha,
+ * sem mexer na definição do módulo (que é travada contra o banco pelo teste).
+ * Isto é dado puro (strings) de propósito: server, client e teste leem igual.
+ * ──────────────────────────────────────────────────────────────────────────*/
+
+/** Um departamento do menu, na ordem em que aparece. `iconName` é lucide (texto). */
+export type MenuGroup = { id: string; label: string; iconName: string };
+
+/** Departamentos, JÁ na ordem visual. Grupo sem item habilitado não aparece. */
+export const MENU_GROUPS: readonly MenuGroup[] = [
+  { id: "vendas", label: "Vendas", iconName: "ShoppingBag" },
+  { id: "catalogo", label: "Catálogo", iconName: "Boxes" },
+  { id: "marketing", label: "Marketing", iconName: "Megaphone" },
+  { id: "loja", label: "Loja online", iconName: "Store" },
+  { id: "financeiro", label: "Financeiro", iconName: "Wallet" },
+  { id: "config", label: "Configurações", iconName: "Settings" },
+];
+
+/**
+ * De qual departamento é cada módulo (por slug). Slug que NÃO está aqui fica
+ * solto no topo, fora de grupo (é o caso do `dashboard`/"Início"). Mover item =
+ * trocar uma linha; criar/remover departamento = mexer em `MENU_GROUPS`.
+ */
+export const MENU_GROUP_OF: Readonly<Record<string, string>> = {
+  // 🛒 Vendas — o dia a dia do pedido
+  pedidos: "vendas",
+  entregas: "vendas",
+  atendimento: "vendas",
+  // 📦 Catálogo — o que se vende e o estoque
+  produtos: "catalogo",
+  marcas: "catalogo",
+  estoque: "catalogo",
+  compras: "catalogo",
+  // 📣 Marketing — promover e fidelizar
+  cupons: "marketing",
+  avaliacoes: "marketing",
+  automacoes: "marketing",
+  // 🎨 Loja online — a vitrine e como ela é encontrada
+  cms: "loja",
+  seo: "loja",
+  templates: "loja",
+  galeria: "loja",
+  dominio: "loja",
+  // 💰 Financeiro — dinheiro
+  pagamentos: "financeiro",
+  financeiro: "financeiro",
+  // ⚙️ Configurações — ajustes e equipe
+  configuracoes: "config",
+  equipe: "config",
+};
+
+/** Item de menu já pronto para renderizar (sem componente de ícone). */
+export type AdminMenuItem = { slug: string; href: string; label: string; iconName: string };
+/** Departamento com seus itens (já filtrados/ordenados). */
+export type AdminMenuGroup = MenuGroup & { items: AdminMenuItem[] };
+/** O menu agrupado: itens soltos (topo) + departamentos com itens. */
+export type GroupedAdminMenu = { standalone: AdminMenuItem[]; groups: AdminMenuGroup[] };
+
+/**
+ * Agrupa uma lista de módulos-de-menu (já filtrada por plano) em
+ * departamentos. Item sem departamento vira "standalone" (topo). Departamento
+ * sem nenhum item some — a regra "só aparece se tiver ≥1 subitem habilitado".
+ * A ordem dentro do grupo é a `menuOrder` (a lista de entrada já vem ordenada).
+ */
+export function buildGroupedAdminMenu(
+  modules: readonly (ModuleDefinition & { menu: ModuleMenuEntry })[]
+): GroupedAdminMenu {
+  const items: AdminMenuItem[] = modules.map((m) => ({
+    slug: m.slug,
+    href: m.menu.href,
+    label: m.menu.label,
+    iconName: m.menu.iconName,
+  }));
+  const standalone = items.filter((i) => !MENU_GROUP_OF[i.slug]);
+  const groups: AdminMenuGroup[] = MENU_GROUPS.map((g) => ({
+    ...g,
+    items: items.filter((i) => MENU_GROUP_OF[i.slug] === g.id),
+  })).filter((g) => g.items.length > 0);
+  return { standalone, groups };
+}

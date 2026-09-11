@@ -1,31 +1,9 @@
 import Link from "next/link";
-import {
-  CreditCard,
-  Wallet,
-  Globe,
-  Zap,
-  Boxes,
-  Images,
-  Shapes,
-  ShoppingCart,
-  Star,
-  Tag,
-  Users,
-  Package,
-  Truck,
-  Search,
-  LayoutTemplate,
-  ShoppingBasket,
-  LayoutDashboard,
-  Ticket,
-  Settings,
-  Headset,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { getStoreProfile } from "@/modules/settings/store-profile";
 import { getEntitlements } from "@/modules/entitlements/service";
-import { ADMIN_MENU_MODULES } from "@/lib/modules/registry";
+import { ADMIN_MENU_MODULES, buildGroupedAdminMenu } from "@/lib/modules/registry";
+import { AdminNav } from "@/components/admin/admin-nav";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { MobileNavDrawer } from "@/components/admin/mobile-nav-drawer";
 import { PlanBanner } from "@/components/admin/plan-banner";
@@ -51,30 +29,6 @@ import { PlanBanner } from "@/components/admin/plan-banner";
  * -- ela não vê nenhuma diferença por causa deste arquivo.
  */
 
-/** Nome do ícone (texto, vindo do registro) -> componente. Só aqui, no servidor. */
-const ICONS: Record<string, LucideIcon> = {
-  CreditCard,
-  Wallet,
-  Globe,
-  Zap,
-  Boxes,
-  Images,
-  Shapes,
-  ShoppingCart,
-  Star,
-  Tag,
-  Users,
-  Package,
-  Truck,
-  Search,
-  LayoutTemplate,
-  ShoppingBasket,
-  LayoutDashboard,
-  Ticket,
-  Settings,
-  Headset,
-};
-
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const staff = await requireStaff();
   // O nome que aparece no painel é o da loja de quem está logado -- nunca um
@@ -88,11 +42,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // Trava 2: nunca entregar um menu vazio.
   const visiveis = liberados.length > 0 ? liberados : ADMIN_MENU_MODULES;
 
-  const navItems = visiveis.map((m) => ({
-    href: m.menu.href,
-    label: m.menu.label,
-    iconName: m.menu.iconName,
-  }));
+  // Menu agrupado em departamentos (Vendas, Catálogo, ...). Departamento sem
+  // nenhum módulo liberado some sozinho (regra dentro de buildGroupedAdminMenu).
+  const menu = buildGroupedAdminMenu(visiveis);
 
   return (
     <div className="flex min-h-dvh flex-col bg-secondary/30 md:flex-row">
@@ -103,7 +55,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin" className="font-display text-lg text-primary">
           {storeName || "Painel de gestão"}
         </Link>
-        <MobileNavDrawer items={navItems} staffEmail={staff.email} storeName={storeName} />
+        <MobileNavDrawer menu={menu} staffEmail={staff.email} storeName={storeName} />
       </div>
 
       <aside className="hidden shrink-0 md:flex md:w-56 md:flex-col md:border-r md:border-border md:bg-card md:px-4 md:py-6">
@@ -114,20 +66,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           {storeName ? <p className="text-xs text-muted-foreground">Painel de gestão</p> : null}
         </div>
 
-        <nav className="mt-8 flex flex-col gap-1">
-          {navItems.map((item) => {
-            const Icon = ICONS[item.iconName] ?? LayoutDashboard;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-2 rounded-[10px] px-3.5 py-2 text-sm font-medium text-foreground hover:bg-accent"
-              >
-                <Icon className="size-4" /> {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <div className="mt-8 min-h-0 flex-1 overflow-y-auto">
+          <AdminNav menu={menu} />
+        </div>
 
         <div className="mt-auto pt-8">
           <p className="truncate text-xs text-muted-foreground">{staff.email}</p>

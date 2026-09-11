@@ -1,72 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Menu,
-  X,
-  CreditCard,
-  Wallet,
-  Globe,
-  Zap,
-  Boxes,
-  Images,
-  Shapes,
-  ShoppingCart,
-  Star,
-  Tag,
-  Users,
-  Package,
-  Truck,
-  Search,
-  LayoutTemplate,
-  ShoppingBasket,
-  LayoutDashboard,
-  Ticket,
-  Settings,
-  Headset,
-} from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { AdminNav } from "@/components/admin/admin-nav";
 import { LogoutButton } from "@/components/admin/logout-button";
-import type { LucideIcon } from "lucide-react";
-
-// Ícones de componente de servidor (layout.tsx) não podem atravessar a
-// fronteira Server->Client como prop -- passar a função do ícone direto
-// quebrava a página inteira em produção (funcionava local, o build/tsc não
-// pegam isso porque é um erro de serialização em tempo de execução, não de
-// tipo). Em vez disso, passa só o NOME (string, serializável) e resolve o
-// componente aqui dentro, que já é client.
-const ICONS: Record<string, LucideIcon> = {
-  CreditCard,
-  Wallet,
-  Globe,
-  Zap,
-  Boxes,
-  Images,
-  Shapes,
-  ShoppingCart,
-  Star,
-  Tag,
-  Users,
-  Package,
-  Truck,
-  Search,
-  LayoutTemplate,
-  ShoppingBasket,
-  LayoutDashboard,
-  Ticket,
-  Settings,
-  Headset,
-};
-
-type NavItem = { href: string; label: string; iconName: string };
+import type { GroupedAdminMenu } from "@/lib/modules/registry";
 
 export function MobileNavDrawer({
-  items,
+  menu,
   staffEmail,
   storeName,
 }: {
-  items: NavItem[];
+  menu: GroupedAdminMenu;
   staffEmail: string | null;
   // Este componente é client e não pode ler o banco -- o nome da loja vem
   // pronto do layout (server), que já sabe qual loja é a de quem está logado.
@@ -99,7 +45,7 @@ export function MobileNavDrawer({
             onClick={() => setOpen(false)}
             className="absolute inset-0 bg-black/40"
           />
-          <nav className="jc-pop absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-card px-4 py-6 shadow-lg">
+          <div className="jc-pop absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-card px-4 py-6 shadow-lg">
             <div className="flex items-center justify-between">
               <span className="font-display text-lg text-primary">{storeName || "Painel de gestão"}</span>
               <button
@@ -112,29 +58,15 @@ export function MobileNavDrawer({
               </button>
             </div>
 
-            <div className="mt-6 flex flex-col gap-1">
-              {items.map((item) => {
-                const active = pathname === item.href;
-                const Icon = ICONS[item.iconName] ?? LayoutDashboard;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-medium ${
-                      active ? "bg-accent text-primary" : "text-foreground hover:bg-accent"
-                    }`}
-                  >
-                    <Icon className="size-5" /> {item.label}
-                  </Link>
-                );
-              })}
+            <div className="mt-6 min-h-0 flex-1 overflow-y-auto">
+              <AdminNav menu={menu} />
             </div>
 
             <div className="mt-auto pt-6">
               {staffEmail ? <p className="truncate text-xs text-muted-foreground">{staffEmail}</p> : null}
               <LogoutButton />
             </div>
-          </nav>
+          </div>
         </div>
       ) : null}
     </>

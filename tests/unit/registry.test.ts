@@ -6,6 +6,9 @@ import {
   CORE_MODULE_SLUGS,
   MODULE_REGISTRY,
   MODULE_SLUGS,
+  MENU_GROUPS,
+  MENU_GROUP_OF,
+  buildGroupedAdminMenu,
 } from "@/lib/modules/registry";
 import { SUPER_ADMIN_EMAILS } from "@/lib/platform/super-admins";
 
@@ -234,32 +237,66 @@ describe("menu do painel da loja", () => {
     expect(new Set(ordens).size).toBe(ordens.length);
   });
 
-  it("a ordem do menu é a MESMA que a lojista já usa hoje (mudar isso é mudar o painel dela)", () => {
-    expect(ADMIN_MENU_MODULES.map((m) => m.menu.label)).toEqual([
-      // As nove primeiras são a ordem que a lojista já conhece. Mexer NELAS é
-      // mexer no painel dela; acrescentar depois, não.
-      "Início",
-      "Pedidos",
-      "Entregas",
-      "Atendimento",
-      "Produtos",
-      "Marcas",
-      "Cupons",
-      "CMS",
-      "SEO",
-      "Configurações",
-      // Daqui para baixo, o que foi ganhando tela.
-      "Pagamentos",
-      "Avaliações",
-      "Financeiro",
-      "Modelos",
-      "Galeria",
-      "Equipe",
-      "Estoque",
-      "Compras",
-      "Domínio",
-      "Automações",
+  // O menu deixou de ser uma fila de 20 itens e virou departamentos
+  // ("guarda-chuvas"), no estilo do Agentop. O teste da ordem plana foi
+  // substituído pelos testes de departamento abaixo.
+  it("o item que fica solto no topo é só o Início", () => {
+    const menu = buildGroupedAdminMenu(ADMIN_MENU_MODULES);
+    expect(menu.standalone.map((i) => i.label)).toEqual(["Início"]);
+  });
+
+  it("a árvore de departamentos é exatamente esta (mudar isto é mudar o painel dela)", () => {
+    const menu = buildGroupedAdminMenu(ADMIN_MENU_MODULES);
+    const arvore = menu.groups.map((g) => [g.label, g.items.map((i) => i.label)] as const);
+    expect(arvore).toEqual([
+      ["Vendas", ["Pedidos", "Entregas", "Atendimento"]],
+      ["Catálogo", ["Produtos", "Marcas", "Estoque", "Compras"]],
+      ["Marketing", ["Cupons", "Avaliações", "Automações"]],
+      ["Loja online", ["CMS", "SEO", "Modelos", "Galeria", "Domínio"]],
+      ["Financeiro", ["Pagamentos", "Financeiro"]],
+      ["Configurações", ["Configurações", "Equipe"]],
     ]);
+  });
+
+  it("todo item do menu ou é solto ou cai num departamento que existe", () => {
+    for (const m of ADMIN_MENU_MODULES) {
+      const grupo = MENU_GROUP_OF[m.slug];
+      if (grupo !== undefined) {
+        expect(
+          MENU_GROUPS.some((g) => g.id === grupo),
+          `departamento "${grupo}" do módulo "${m.slug}" não existe em MENU_GROUPS`
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("MENU_GROUP_OF só cita módulos que estão no menu", () => {
+    const slugsNoMenu = new Set(ADMIN_MENU_MODULES.map((m) => m.slug));
+    for (const slug of Object.keys(MENU_GROUP_OF)) {
+      expect(slugsNoMenu.has(slug), `MENU_GROUP_OF cita "${slug}", que não é item de menu`).toBe(true);
+    }
+  });
+
+  it("nenhum departamento fica vazio e todos são usados (com o menu completo)", () => {
+    const menu = buildGroupedAdminMenu(ADMIN_MENU_MODULES);
+    const idsComItem = new Set(menu.groups.map((g) => g.id));
+    for (const g of MENU_GROUPS) {
+      expect(idsComItem.has(g.id), `departamento "${g.id}" ficou sem nenhum item`).toBe(true);
+    }
+  });
+
+  it("agrupar não perdeu nem inventou item: soma dos departamentos + soltos = total", () => {
+    const menu = buildGroupedAdminMenu(ADMIN_MENU_MODULES);
+    const total = menu.standalone.length + menu.groups.reduce((n, g) => n + g.items.length, 0);
+    expect(total).toBe(ADMIN_MENU_MODULES.length);
+  });
+
+  it("departamento sem módulo liberado não aparece (some sozinho)", () => {
+    // Só os itens de Vendas liberados -> só o departamento Vendas aparece.
+    const soVendas = ADMIN_MENU_MODULES.filter((m) => MENU_GROUP_OF[m.slug] === "vendas");
+    const menu = buildGroupedAdminMenu(soVendas);
+    expect(menu.groups.map((g) => g.id)).toEqual(["vendas"]);
+    expect(menu.standalone).toHaveLength(0);
   });
 
   /**
