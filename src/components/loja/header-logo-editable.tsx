@@ -108,11 +108,13 @@ export function HeaderLogo({
           if (editing) e.preventDefault();
         }}
       >
+        {/* alt com o nome da loja: quando há logo-imagem, o nome não fica em
+            nenhum texto ao lado, então o alt é o que leva a marca para o Google
+            e leitores de tela. Sem nome, vira decorativo (alt vazio). */}
         {/* eslint-disable-next-line @next/next/no-img-element -- pode ser GIF animado; next/image reprocessaria e perderia a animação */}
         <img
           src={logoHeaderUrl || "/logo/juliana-present-icon.svg"}
-          alt=""
-          aria-hidden="true"
+          alt={storeName}
           style={{ height: `${alturaExibida}px` }}
           className="w-auto max-w-[320px] shrink-0 object-contain"
         />

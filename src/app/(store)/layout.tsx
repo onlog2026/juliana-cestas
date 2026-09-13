@@ -20,28 +20,38 @@ export async function generateMetadata(): Promise<Metadata> {
     getStoreProfile(tenantId),
   ]);
   // Nome da loja: o do perfil; se ainda não foi preenchido, o título de SEO.
-  const storeName = storeProfile.businessName?.trim() || seo.siteTitle;
+  const storeName = storeProfile.businessName?.trim() || seo.siteTitle?.trim() || "";
+  // Blindagem: se o SEO do banco vier vazio (seo_settings sem linha), o
+  // título e a descrição NÃO podem sair em branco -- é o que faz o analisador
+  // acusar "sem meta description / sem title". Cai num texto real derivado do
+  // nome da loja.
+  const siteTitle = seo.siteTitle?.trim() || storeName || "Cestas de café da manhã e presentes";
+  const siteDescription =
+    seo.siteDescription?.trim() ||
+    (storeName
+      ? `${storeName} — cestas de café da manhã, presentes e kits comemorativos feitos à mão com carinho.`
+      : "Cestas de café da manhã, presentes e kits comemorativos feitos à mão com carinho.");
   return {
     metadataBase: new URL(SITE_URL),
     title: {
-      default: seo.siteTitle,
-      template: `%s | ${storeName}`,
+      default: siteTitle,
+      template: `%s | ${storeName || siteTitle}`,
     },
-    description: seo.siteDescription,
+    description: siteDescription,
     keywords: seo.keywords,
     icons: siteSettings.faviconUrl ? { icon: siteSettings.faviconUrl } : undefined,
     openGraph: {
-      title: seo.siteTitle,
-      description: seo.siteDescription,
-      siteName: storeName,
+      title: siteTitle,
+      description: siteDescription,
+      siteName: storeName || siteTitle,
       locale: "pt_BR",
       type: "website",
       images: seo.ogImageUrl ? [{ url: seo.ogImageUrl }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
-      title: seo.siteTitle,
-      description: seo.siteDescription,
+      title: siteTitle,
+      description: siteDescription,
     },
     alternates: { canonical: "/" },
   };

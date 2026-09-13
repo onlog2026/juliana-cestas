@@ -25,7 +25,10 @@ export async function generateMetadata(
   if (!category) return {};
   return {
     title: category.name,
-    description: category.description ?? undefined,
+    description:
+      category.description?.trim() ||
+      `${category.name}: cestas de café da manhã e presentes feitos à mão. Escolha a sua e receba com carinho.`,
+    alternates: { canonical: `/categoria/${slug}` },
   };
 }
 

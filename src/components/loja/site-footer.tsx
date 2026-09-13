@@ -18,6 +18,8 @@ const columns = [
     links: [
       { href: "/sobre", label: "Sobre a loja" },
       { href: "/trocas-e-devolucoes", label: "Trocas e entregas" },
+      { href: "/privacidade", label: "Política de Privacidade" },
+      { href: "/termos", label: "Termos de uso" },
     ],
   },
 ];

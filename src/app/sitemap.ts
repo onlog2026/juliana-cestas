@@ -8,7 +8,16 @@ import { getTenantId } from "@/lib/tenant/context";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://juliana-cestas-loja.vercel.app";
 
 /** Páginas que toda loja tem, independente do catálogo. */
-const STATIC_PAGES = ["", "/sobre", "/atendimento", "/faq", "/trocas-e-devolucoes"];
+const STATIC_PAGES = [
+  "",
+  "/sobre",
+  "/atendimento",
+  "/faq",
+  "/trocas-e-devolucoes",
+  "/avaliacoes",
+  "/privacidade",
+  "/termos",
+];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const tenantId = await getTenantId();

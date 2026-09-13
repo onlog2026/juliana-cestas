@@ -9,6 +9,7 @@
 import { getTenantId } from "@/lib/tenant/context";
 import { getContent } from "@/modules/content/service";
 import { getSeoSettings } from "@/modules/seo/service";
+import { getSocialLinks } from "@/modules/settings/social-links";
 import { getStoreProfile, type StoreProfile } from "@/modules/settings/store-profile";
 
 // TODO F7: a URL pública de cada loja vai vir de `tenant_domains`. Enquanto
@@ -32,11 +33,15 @@ function streetFromProfile(profile: StoreProfile): string {
 
 export async function LocalBusinessJsonLd() {
   const tenantId = await getTenantId();
-  const [profile, business, seo] = await Promise.all([
+  const [profile, business, seo, socialLinks] = await Promise.all([
     getStoreProfile(tenantId),
     getContent(tenantId, "business"),
     getSeoSettings(tenantId),
+    getSocialLinks(tenantId),
   ]);
+  // sameAs liga a entidade às redes sociais -- ajuda o Google (e IAs) a
+  // confirmar "é essa loja". Só entram os links realmente preenchidos.
+  const sameAs = Object.values(socialLinks).filter((v): v is string => Boolean(v && v.trim()));
 
   const name = clean(profile.businessName) || seo.siteTitle;
   const description = clean(business.description) || seo.siteDescription;
@@ -79,7 +84,7 @@ export async function LocalBusinessJsonLd() {
             },
           ]
         : undefined,
-    sameAs: [] as string[],
+    sameAs: sameAs.length > 0 ? sameAs : undefined,
   };
 
   return (

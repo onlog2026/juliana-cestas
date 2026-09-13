@@ -39,6 +39,7 @@ export async function generateMetadata(
     description:
       product.seoDescription?.trim() ||
       `${product.name} — ${product.serves}, ${currency.format(product.price)}. ${product.packaging}`,
+    alternates: { canonical: `/produto/${slug}` },
   };
 }
 
