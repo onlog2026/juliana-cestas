@@ -2,9 +2,9 @@ import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
 import { LogoutButton } from "@/components/admin/logout-button";
+import { SuperNav } from "@/components/platform/super-nav";
 import { SuperNavDrawer } from "@/components/platform/super-nav-drawer";
-import { superNavIcon } from "@/components/platform/super-nav-icons";
-import { SUPER_NAV_GROUPS } from "@/lib/platform/super-nav";
+import { SUPER_NAV_GROUPS, SUPER_NAV_STANDALONE } from "@/lib/platform/super-nav";
 
 export default async function SuperLayout({ children }: { children: React.ReactNode }) {
   // Primeira coisa que acontece: quem não é dono da plataforma nem chega aqui.
@@ -19,16 +19,8 @@ export default async function SuperLayout({ children }: { children: React.ReactN
           <span className="font-display text-lg">Plataforma</span>
         </Link>
         <SuperNavDrawer
-          groups={SUPER_NAV_GROUPS.map((group) => ({
-            label: group.label,
-            // Só dado serializável atravessa: o ícone vai como NOME.
-            items: group.items.map(({ href, label, iconName, external }) => ({
-              href,
-              label,
-              iconName,
-              external: external ?? false,
-            })),
-          }))}
+          standalone={SUPER_NAV_STANDALONE}
+          groups={SUPER_NAV_GROUPS}
           adminEmail={admin.email}
         />
       </div>
@@ -50,30 +42,7 @@ export default async function SuperLayout({ children }: { children: React.ReactN
         {/* O menu rola por dentro: com ~14 telas ele passa da altura da janela
             em notebook, e sem isso o botão "Sair" some embaixo da dobra. */}
         <div className="mt-7 min-h-0 flex-1 overflow-y-auto pr-1">
-          {SUPER_NAV_GROUPS.map((group) => (
-            <div key={group.label} className="mb-5">
-              <p className="px-3.5 pb-1.5 text-[10px] font-semibold tracking-widest text-primary-foreground/50 uppercase">
-                {group.label}
-              </p>
-              <nav className="flex flex-col gap-0.5">
-                {group.items.map((item) => {
-                  const Icon = superNavIcon(item.iconName);
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      title={item.hint}
-                      {...(item.external ? { target: "_blank", rel: "noreferrer" } : {})}
-                      className="flex items-center gap-2 rounded-[10px] px-3.5 py-2 text-sm font-medium text-primary-foreground/85 transition-colors hover:bg-primary-foreground/15 hover:text-primary-foreground"
-                    >
-                      <Icon className="size-4 shrink-0" />
-                      <span className="truncate">{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </nav>
-            </div>
-          ))}
+          <SuperNav standalone={SUPER_NAV_STANDALONE} groups={SUPER_NAV_GROUPS} />
         </div>
 
         {/* O bloco claro existe para o botão "Sair" (que usa as cores padrão do
