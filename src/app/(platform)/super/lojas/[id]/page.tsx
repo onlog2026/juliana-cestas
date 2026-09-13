@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
 import { getTenantById } from "@/modules/platform/service";
+import { listPlans } from "@/modules/platform/plans-service";
 import { getEnv } from "@/lib/env";
 import {
   TenantStatusBadge,
@@ -37,6 +38,10 @@ export default async function SuperLojaDetalhePage(props: { params: Promise<{ id
   const { id } = await props.params;
   const loja = await getTenantById(id);
   if (!loja) notFound();
+
+  // Lista real de planos, para o super-admin escolher num seletor em vez de
+  // digitar o slug à mão (evita "sujar" o Financeiro com plano inexistente).
+  const planos = (await listPlans()).map((p) => ({ slug: p.slug, name: p.name }));
 
   const { PLATFORM_DOMAIN } = getEnv();
   const temDominioProprio = Boolean(PLATFORM_DOMAIN);
@@ -146,6 +151,7 @@ export default async function SuperLojaDetalhePage(props: { params: Promise<{ id
         storefrontSuspensa={loja.status === "suspended"}
         temCortesia={Boolean(loja.bonusUntil)}
         planoAtual={loja.subscriptionPlan}
+        planos={planos}
       />
     </div>
   );

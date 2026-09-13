@@ -83,18 +83,50 @@ export function EnterStoreLink({
 
 type Result = { ok: true } | { ok: false; error: string };
 
+type PlanoOpcao = { slug: string; name: string };
+
+/**
+ * Seletor de plano com os planos REAIS da plataforma. Se o valor atual não
+ * estiver na lista (ex.: slug antigo/errado gravado antes), ainda aparece
+ * selecionado com um aviso, para não sumir/resetar calado.
+ */
+function PlanoSelect({
+  value,
+  onChange,
+  planos,
+}: {
+  value: string;
+  onChange: (slug: string) => void;
+  planos: PlanoOpcao[];
+}) {
+  const conhecido = value === "" || planos.some((p) => p.slug === value);
+  return (
+    <select value={value} onChange={(event) => onChange(event.target.value)} className={inputClass}>
+      <option value="">Sem plano</option>
+      {!conhecido ? <option value={value}>{value} (atual — fora da lista de planos)</option> : null}
+      {planos.map((p) => (
+        <option key={p.slug} value={p.slug}>
+          {p.name} ({p.slug})
+        </option>
+      ))}
+    </select>
+  );
+}
+
 export function TenantActions({
   tenantId,
   nome,
   storefrontSuspensa,
   temCortesia,
   planoAtual,
+  planos,
 }: {
   tenantId: string;
   nome: string;
   storefrontSuspensa: boolean;
   temCortesia: boolean;
   planoAtual: string | null;
+  planos: PlanoOpcao[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -315,12 +347,7 @@ export function TenantActions({
           </label>
           <label className="block">
             <span className="mb-1.5 block text-sm font-medium text-foreground">Plano da cortesia</span>
-            <input
-              value={cortesiaPlano}
-              onChange={(event) => setCortesiaPlano(event.target.value)}
-              placeholder="Exemplo: fundadora"
-              className={inputClass}
-            />
+            <PlanoSelect value={cortesiaPlano} onChange={setCortesiaPlano} planos={planos} />
           </label>
         </div>
         <label className="mt-3 block">
@@ -332,10 +359,6 @@ export function TenantActions({
             className={inputClass}
           />
         </label>
-        <p className="mt-2 text-xs text-muted-foreground">
-          O nome do plano é digitado à mão por enquanto — use exatamente o identificador que já aparece nos dados desta
-          loja. O editor de planos da plataforma entra depois.
-        </p>
         <button
           type="button"
           disabled={pending}
@@ -398,16 +421,11 @@ export function TenantActions({
         </p>
         <label className="mt-3 block">
           <span className="mb-1.5 block text-sm font-medium text-foreground">Plano</span>
-          <input
-            value={novoPlano}
-            onChange={(event) => setNovoPlano(event.target.value)}
-            placeholder="Exemplo: fundadora"
-            className={inputClass}
-          />
+          <PlanoSelect value={novoPlano} onChange={setNovoPlano} planos={planos} />
         </label>
         <p className="mt-2 text-xs text-muted-foreground">
-          Campo de texto livre por enquanto: digite o identificador do plano exatamente como ele já aparece nos dados
-          (por exemplo <strong>fundadora</strong>). A lista de planos da plataforma vem numa próxima etapa.
+          A lista mostra os planos reais da aba <strong>Planos &amp; preços</strong>. Só dá para escolher um plano que
+          existe — isso evita gravar um plano inválido por engano.
         </p>
         <button
           type="button"

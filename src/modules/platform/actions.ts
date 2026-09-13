@@ -47,6 +47,21 @@ async function loadTenant(id: string) {
 }
 
 /**
+ * Confere se o slug do plano existe MESMO em `subscription_plans`. Sem isso,
+ * "trocar plano" e "cortesia" (texto livre) deixavam gravar um slug digitado
+ * errado, e a loja caía em "plano não reconhecido" no Financeiro. Slug vazio =
+ * "sem plano" e é permitido (não valida).
+ */
+async function planoExiste(admin: ReturnType<typeof createAdminClient>, slug: string): Promise<boolean> {
+  const { data } = await admin
+    .from("subscription_plans")
+    .select("slug")
+    .eq("slug", slug)
+    .maybeSingle();
+  return Boolean(data);
+}
+
+/**
  * Libera acesso manualmente, SEM criar cobrança.
  * A tela precisa deixar isso explícito -- no Agentop o dono achava que
  * "ativar" religava a cobrança, e não religa.
@@ -173,11 +188,15 @@ export async function grantBonus(
   const ate = new Date(base.getTime() + input.dias * 86400000);
 
   const admin = createAdminClient();
+  const planoSlug = (input.planoSlug ?? "").trim();
+  if (planoSlug && !(await planoExiste(admin, planoSlug))) {
+    return { ok: false, error: "Plano da cortesia não encontrado. Escolha um plano que existe na aba Planos & preços." };
+  }
   const { data, error } = await admin
     .from("tenants")
     .update({
       bonus_until: ate.toISOString(),
-      bonus_plan_slug: input.planoSlug || null,
+      bonus_plan_slug: planoSlug || null,
       bonus_reason: input.motivo.trim(),
       bonus_granted_by: platformAdmin.email,
       bonus_granted_at: new Date().toISOString(),
@@ -189,7 +208,7 @@ export async function grantBonus(
 
   await audit(tenantId, platformAdmin.email, "cortesia_concedida", before.slug, before, {
     dias: input.dias,
-    plano: input.planoSlug,
+    plano: planoSlug || null,
     motivo: input.motivo,
     ate: ate.toISOString(),
   });
@@ -229,15 +248,19 @@ export async function changePlan(tenantId: string, planoSlug: string): Promise<R
   if (!before) return { ok: false, error: "Loja não encontrada." };
 
   const admin = createAdminClient();
+  const slug = (planoSlug ?? "").trim();
+  if (slug && !(await planoExiste(admin, slug))) {
+    return { ok: false, error: "Plano não encontrado. Escolha um plano que existe na aba Planos & preços." };
+  }
   const { data, error } = await admin
     .from("tenants")
-    .update({ subscription_plan: planoSlug || null })
+    .update({ subscription_plan: slug || null })
     .eq("id", tenantId)
     .select("id");
 
   if (error || !data || data.length === 0) return { ok: false, error: "Não foi possível trocar o plano." };
 
-  await audit(tenantId, platformAdmin.email, "plano_alterado", before.slug, before, { plano: planoSlug });
+  await audit(tenantId, platformAdmin.email, "plano_alterado", before.slug, before, { plano: slug || null });
   revalidatePath(`/super/lojas/${tenantId}`);
   return { ok: true };
 }
