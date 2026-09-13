@@ -173,6 +173,52 @@ export type AsaasPixQrCode = {
   expirationDate?: string | null;
 };
 
+export type AsaasSubscriptionCycle = "MONTHLY" | "YEARLY";
+
+/** Dados do cartão (tokenização server-side do Asaas). Nunca vão para log. */
+export type AsaasCreditCard = {
+  holderName: string;
+  number: string;
+  expiryMonth: string;
+  expiryYear: string;
+  ccv: string;
+};
+
+export type AsaasCreditCardHolderInfo = {
+  name: string;
+  email: string;
+  cpfCnpj: string;
+  postalCode: string;
+  addressNumber: string;
+  phone?: string;
+  mobilePhone?: string;
+};
+
+export type AsaasSubscriptionInput = {
+  customerId: string;
+  billingType: AsaasBillingType;
+  /** Em CENTAVOS — convertido para reais aqui dentro, num lugar só. */
+  amountCents: number;
+  cycle: AsaasSubscriptionCycle;
+  /** "YYYY-MM-DD". Hoje = 1ª cobrança imediata; a recorrência conta a partir daí. */
+  nextDueDate: string;
+  description?: string;
+  /** Casa o webhook ao tenant depois (JSON com o slug/plano). */
+  externalReference?: string;
+  creditCard?: AsaasCreditCard;
+  creditCardHolderInfo?: AsaasCreditCardHolderInfo;
+  remoteIp?: string;
+};
+
+export type AsaasSubscription = {
+  id: string;
+  status?: string;
+  value?: number;
+  cycle?: string;
+  nextDueDate?: string;
+  [k: string]: unknown;
+};
+
 export type AsaasWebhookInput = {
   name: string;
   url: string;
@@ -355,6 +401,55 @@ export function createAsaasClient(options: AsaasClientOptions) {
 
     async deleteWebhook(webhookId: string): Promise<{ deleted: boolean }> {
       return request<{ deleted: boolean }>("DELETE", `/webhooks/${encodeURIComponent(webhookId)}`);
+    },
+
+    /* ─────────────── ASSINATURA RECORRENTE (licença da plataforma) ──────────
+     * Usado pela cobrança do LOJISTA (loja paga a plataforma) — assinatura
+     * NATIVA do Asaas, que renova sozinha e dispara os eventos de pagamento a
+     * cada ciclo. Mesmo cliente, chave da PLATAFORMA (não a da loja).
+     * ───────────────────────────────────────────────────────────────────── */
+
+    async createSubscription(input: AsaasSubscriptionInput): Promise<AsaasSubscription> {
+      if (!Number.isInteger(input.amountCents) || input.amountCents < MIN_PAYMENT_CENTS) {
+        throw new AsaasError(
+          "O valor mínimo da assinatura é R$ 5,00.",
+          422,
+          "valor_minimo"
+        );
+      }
+      return request<AsaasSubscription>("POST", "/subscriptions", {
+        customer: input.customerId,
+        billingType: input.billingType,
+        value: centsToReais(input.amountCents),
+        cycle: input.cycle,
+        nextDueDate: input.nextDueDate,
+        description: input.description || undefined,
+        externalReference: input.externalReference || undefined,
+        // Cartão vai inline (tokenização server-side do Asaas). CEP + número do
+        // endereço são exigidos pelo antifraude do Asaas no cartão.
+        ...(input.creditCard ? { creditCard: input.creditCard } : {}),
+        ...(input.creditCardHolderInfo ? { creditCardHolderInfo: input.creditCardHolderInfo } : {}),
+        ...(input.remoteIp ? { remoteIp: input.remoteIp } : {}),
+      });
+    },
+
+    async getSubscription(subscriptionId: string): Promise<AsaasSubscription> {
+      return request<AsaasSubscription>("GET", `/subscriptions/${encodeURIComponent(subscriptionId)}`);
+    },
+
+    async cancelSubscription(subscriptionId: string): Promise<{ deleted: boolean; id?: string }> {
+      return request<{ deleted: boolean; id?: string }>(
+        "DELETE",
+        `/subscriptions/${encodeURIComponent(subscriptionId)}`
+      );
+    },
+
+    /** As cobranças geradas por uma assinatura (a 1ª é o que vira o QR do PIX). */
+    async getSubscriptionPayments(subscriptionId: string, limit = 10): Promise<{ data: AsaasPayment[] }> {
+      return request<{ data: AsaasPayment[] }>(
+        "GET",
+        `/subscriptions/${encodeURIComponent(subscriptionId)}/payments?limit=${limit}&order=asc`
+      );
     },
   };
 }
