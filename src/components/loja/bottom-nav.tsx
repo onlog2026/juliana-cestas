@@ -30,9 +30,13 @@ export function BottomNav({ whatsapp }: { whatsapp: string }) {
         href={`https://wa.me/${whatsapp}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex flex-1 flex-col items-center justify-center gap-0.5 text-[var(--jc-whatsapp)]"
+        aria-label="Falar no WhatsApp"
+        className="flex flex-1 flex-col items-center justify-center gap-0.5 text-muted-foreground transition-colors active:text-primary"
       >
-        <MessageCircle className="size-5" />
+        {/* Ícone verde (identidade do WhatsApp), mas o RÓTULO fica na cor
+            neutra dos outros itens: verde #25d366 em texto de 11px sobre fundo
+            claro não passa no contraste (WCAG AA) — era o único item de a11y. */}
+        <MessageCircle className="size-5 text-[var(--jc-whatsapp)]" />
         <span className="text-[11px] font-medium">WhatsApp</span>
       </a>
     </nav>

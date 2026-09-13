@@ -3,6 +3,9 @@ import { requireStaff } from "@/lib/auth/require-staff";
 import { getEntitlements } from "@/modules/entitlements/service";
 import { MODULE_REGISTRY } from "@/lib/modules/registry";
 import { VoucherRedeemForm } from "@/components/admin/voucher-redeem-form";
+import { SubscribeForm } from "@/components/admin/subscribe-form";
+import { getPlatformAsaasConfig } from "@/modules/platform/asaas-platform";
+import { getSellerPlans, getSellerCustomPriceCents } from "@/modules/platform/subscription-service";
 
 export const metadata: Metadata = { title: "Sua assinatura" };
 export const dynamic = "force-dynamic";
@@ -53,6 +56,13 @@ const ESTADO_TEXTO: Record<string, { titulo: string; detalhe: string; alerta: bo
 export default async function AssinaturaPage() {
   const staff = await requireStaff();
   const ent = await getEntitlements(staff);
+
+  // Cobrança automática: só mostra o formulário se a conta Asaas da plataforma
+  // já estiver ligada (chave configurada). Sem isso, mantém o aviso honesto.
+  const cobrancaLigada = getPlatformAsaasConfig().configured;
+  const [planos, precoProprio] = cobrancaLigada
+    ? await Promise.all([getSellerPlans(), getSellerCustomPriceCents(staff.tenantId)])
+    : [[], null];
 
   const estado = ESTADO_TEXTO[ent.state] ?? ESTADO_TEXTO.ok;
   const liberados = MODULE_REGISTRY.filter((m) => ent.allowed.includes(m.slug));
@@ -110,10 +120,20 @@ export default async function AssinaturaPage() {
 
       <section className="mt-5 rounded-card border border-border bg-card p-5">
         <p className="text-base font-semibold text-foreground">Contratar ou trocar de plano</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          A contratação com pagamento automático ainda está sendo ligada. Por enquanto, fale com a
-          gente que ajustamos o seu plano na hora — nenhuma cobrança acontece sem você aprovar.
-        </p>
+        {cobrancaLigada ? (
+          <>
+            <p className="mt-1 mb-4 text-sm text-muted-foreground">
+              Escolha o plano e a forma de pagamento. No cartão a renovação é automática todo mês; no PIX você
+              paga cada mês. Sua conta é liberada assim que o pagamento é confirmado.
+            </p>
+            <SubscribeForm plans={planos} customPriceCents={precoProprio} />
+          </>
+        ) : (
+          <p className="mt-1 text-sm text-muted-foreground">
+            A contratação com pagamento automático ainda está sendo ligada. Por enquanto, fale com a
+            gente que ajustamos o seu plano na hora — nenhuma cobrança acontece sem você aprovar.
+          </p>
+        )}
       </section>
 
       <section className="mt-5 grid gap-4 sm:grid-cols-2">
