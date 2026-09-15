@@ -10,8 +10,9 @@ import {
 import { generateSlots, isSlotStillAvailable } from "@/modules/delivery/slots";
 import { countWords } from "@/modules/cards/templates";
 import type { CheckoutInput } from "@/modules/checkout/schemas";
-import { sendOrderEmail, getEmailBrand } from "@/modules/notifications/send";
+import { sendOrderEmail, sendStoreWhatsapp, getEmailBrand } from "@/modules/notifications/send";
 import { orderConfirmedEmail } from "@/modules/notifications/templates/order-confirmed";
+import { buildStoreNewOrderText } from "@/modules/notifications/templates/store-new-order";
 import { weekdayOfDateStr } from "@/lib/time/sao-paulo";
 
 const WEEKDAY_LABELS = [
@@ -221,6 +222,34 @@ export async function createOrder(
     toEmail: input.buyerEmail || null,
     subject,
     html,
+  });
+
+  // Aviso pro WhatsApp da loja -- também melhor esforço (sendStoreWhatsapp
+  // nunca lança; sem Evolution configurada, só registra "pendente" no outbox).
+  const addressLine =
+    input.deliveryType === "pickup"
+      ? null
+      : [input.street, input.addressNumber, input.complement].filter(Boolean).join(", ") +
+        (input.neighborhood ? ` — ${input.neighborhood}` : "");
+  await sendStoreWhatsapp(tenantId, {
+    orderId: order.id,
+    orderNumber: order.number,
+    text: buildStoreNewOrderText({
+      orderNumber: order.number,
+      buyerName: input.buyerName,
+      buyerPhone: input.buyerPhone,
+      recipientName: input.recipientName,
+      items,
+      deliveryType: input.deliveryType,
+      addressLine,
+      zoneName: quote.zoneName,
+      deliveryDateLabel: formatDeliveryDateLabel(input.deliveryDate),
+      slotLabel: `${slot.start} e ${slot.end}`,
+      cardRecipient: input.cardRecipient,
+      cardMessage: input.cardMessage,
+      totalCents: quote.totalCents,
+      orderUrl: `${siteUrl}/pedido/${order.id}?t=${token}`,
+    }),
   });
 
   return { ok: true, orderId: order.id, number: order.number, token, totalCents: order.total_cents };

@@ -1,8 +1,9 @@
 import "server-only";
 import { Resend } from "resend";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getStoreProfile } from "@/modules/settings/store-profile";
+import { getStoreProfile, getStoreWhatsapp } from "@/modules/settings/store-profile";
 import { getSiteSettings } from "@/modules/settings/site-settings";
+import { getWhatsappClient } from "@/modules/notifications/whatsapp-config";
 
 // `review_invite` é o convite de avaliação (pedido ENTREGUE, migração 0030).
 // `cart_recovery` é o lembrete de pedido parado em aguardando_pagamento
@@ -132,4 +133,65 @@ export async function sendTicketEmail(
   }
 ) {
   await send(tenantId, { ...params, ticketId: params.ticketId });
+}
+
+/**
+ * Aviso de "pedido novo" pro WhatsApp da loja. Best-effort, igual ao e-mail:
+ * nunca lança, sempre registra a tentativa no outbox (`notifications`,
+ * canal `whatsapp`).
+ *
+ * Duas situações "config pendente" (não é erro, é config faltando) caem no
+ * mesmo caminho: sem WhatsApp cadastrado na loja (`getStoreWhatsapp` vazio)
+ * OU sem a Evolution API configurada (`getWhatsappClient` null). Nos dois
+ * casos grava `pending_domain` e volta -- o pedido do cliente nunca sente.
+ *
+ * Idempotência: a migração 0045 cria um índice único (order_id) só para
+ * `type = 'store_new_order'`. Se este pedido já tem um aviso registrado
+ * (reentrega pela mesma idempotencyKey), o insert é recusado em silêncio e
+ * a função não reenvia.
+ */
+export async function sendStoreWhatsapp(
+  tenantId: string,
+  params: { orderId: string; orderNumber: number; text: string }
+) {
+  const { orderId, orderNumber, text } = params;
+  const supabase = createAdminClient();
+  const toPhone = await getStoreWhatsapp(tenantId);
+  const client = getWhatsappClient();
+
+  const row = {
+    tenant_id: tenantId,
+    order_id: orderId,
+    type: "store_new_order",
+    channel: "whatsapp",
+    to_phone: toPhone || null,
+    subject: `Novo pedido #${orderNumber}`,
+    html: text,
+  };
+
+  if (!toPhone || !client) {
+    await supabase.from("notifications").insert({ ...row, status: "pending_domain" });
+    return;
+  }
+
+  const { data: inserted } = await supabase
+    .from("notifications")
+    .insert({ ...row, status: "pending" })
+    .select("id")
+    .single();
+  // Índice único recusou (já existe aviso para este pedido): não reenvia.
+  if (!inserted) return;
+
+  try {
+    await client.sendText(toPhone, text);
+    await supabase
+      .from("notifications")
+      .update({ status: "sent", sent_at: new Date().toISOString() })
+      .eq("id", inserted.id);
+  } catch (err) {
+    await supabase
+      .from("notifications")
+      .update({ status: "failed", error: err instanceof Error ? err.message : "erro desconhecido" })
+      .eq("id", inserted.id);
+  }
 }
