@@ -201,6 +201,55 @@ export async function updateProductDelivery(input: {
   return { ok: true };
 }
 
+export type ProductShippingInput = {
+  productId: string;
+  shipsNationally: boolean;
+  weightGrams: number | null;
+  lengthCm: number | null;
+  widthCm: number | null;
+  heightCm: number | null;
+};
+
+/**
+ * Envio nacional por transportadora (Fase 2 do frete). Marcar
+ * `shipsNationally` exige peso e as 3 medidas -- meio caminho (marcado sem
+ * medida) não serviria pra cotar nada, então a validação já barra aqui.
+ */
+export async function updateProductShipping(
+  input: ProductShippingInput
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const staff = await requireStaff();
+
+  const dims = [input.weightGrams, input.lengthCm, input.widthCm, input.heightCm];
+  if (input.shipsNationally && dims.some((v) => v == null || !Number.isInteger(v) || v <= 0)) {
+    return { ok: false, error: "Preencha peso e as três medidas (todas maiores que zero) para habilitar o envio nacional." };
+  }
+  for (const v of dims) {
+    if (v != null && (!Number.isInteger(v) || v <= 0)) {
+      return { ok: false, error: "Peso e medidas precisam ser números inteiros maiores que zero." };
+    }
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("products")
+    .update({
+      ships_nationally: input.shipsNationally,
+      weight_grams: input.weightGrams,
+      length_cm: input.lengthCm,
+      width_cm: input.widthCm,
+      height_cm: input.heightCm,
+    })
+    .eq("id", input.productId)
+    .eq("tenant_id", staff.tenantId);
+
+  if (error) return { ok: false, error: "Não foi possível salvar." };
+
+  revalidatePath("/checkout", "layout");
+  revalidatePath("/admin/produtos");
+  return { ok: true };
+}
+
 export async function updateProductUpsells(input: {
   productId: string;
   upsellProductIds: string[];

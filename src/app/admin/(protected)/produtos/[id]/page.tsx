@@ -7,6 +7,7 @@ import { canUseModule } from "@/modules/entitlements/service";
 import { getAllCategoriesAdmin } from "@/modules/catalog/categories";
 import { ProductDetailsForm } from "@/components/admin/product-details-form";
 import { ProductDeliveryForm } from "@/components/admin/product-delivery-form";
+import { ProductShippingForm } from "@/components/admin/product-shipping-form";
 import { ProductUpsellsForm } from "@/components/admin/product-upsells-form";
 import { DeleteProductButton } from "@/components/admin/delete-product-button";
 
@@ -52,6 +53,18 @@ export default async function AdminProdutoPage(props: PageProps<"/admin/produtos
             </p>
             <div className="mt-4">
               <ProductDeliveryForm productId={product.id} deliveryFeeCents={product.delivery_fee_cents} />
+            </div>
+          </section>
+
+          <section className="rounded-card border border-border bg-card p-5">
+            <h2 className="font-display text-lg text-foreground">Envio para o Brasil inteiro</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Fora da sua área de entrega local, o cliente vê uma cotação de transportadora (Correios/Melhor
+              Envio) em vez de "não atendemos". Como cesta é produto perecível, isso é opcional produto a
+              produto — só ative para o que aguenta viajar.
+            </p>
+            <div className="mt-4">
+              <ProductShippingForm product={product} />
             </div>
           </section>
 

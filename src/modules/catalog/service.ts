@@ -31,10 +31,16 @@ export type DbProduct = {
   seo_description: string | null;
   image_alt: string | null;
   social_caption: string | null;
+  /** Envio nacional por transportadora (Fase 2 do frete) -- ver modules/shipping. */
+  ships_nationally: boolean;
+  weight_grams: number | null;
+  length_cm: number | null;
+  width_cm: number | null;
+  height_cm: number | null;
 };
 
 const ADMIN_PRODUCT_COLUMNS =
-  "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, delivery_fee_cents, active, category_id, cost_cents, sku, barcode, stock_quantity, low_stock_threshold, ncm, cest, gallery_urls, video_url, description, short_description, seo_title, seo_description, image_alt, social_caption";
+  "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, delivery_fee_cents, active, category_id, cost_cents, sku, barcode, stock_quantity, low_stock_threshold, ncm, cest, gallery_urls, video_url, description, short_description, seo_title, seo_description, image_alt, social_caption, ships_nationally, weight_grams, length_cm, width_cm, height_cm";
 
 export type UpsellProduct = {
   id: string;

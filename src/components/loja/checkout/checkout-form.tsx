@@ -14,6 +14,14 @@ import type { DaySlots } from "@/modules/delivery/slots";
 import { CalendarPicker } from "@/components/loja/checkout/calendar-picker";
 import { CardPattern } from "@/components/loja/checkout/card-pattern";
 
+/** Uma opção de transportadora (Correios/Melhor Envio) para fora da área local. */
+type CarrierOptionDTO = {
+  name: string;
+  companyName: string | null;
+  priceCents: number;
+  deliveryDays: number | null;
+};
+
 /** Resposta de `/api/frete`: o frete calculado a partir do CEP. */
 type FreteResult =
   | {
@@ -24,7 +32,7 @@ type FreteResult =
       prazoMaxDays: number | null;
       freeShipping: boolean;
     }
-  | { served: false; message: string };
+  | { served: false; message: string; carrierOptions?: CarrierOptionDTO[] };
 
 type Props = {
   product: DbProduct;
@@ -1015,17 +1023,43 @@ function FreteBox({
   }
 
   if (!frete.served) {
-    const link = whatsapp
-      ? `https://wa.me/${whatsapp}?text=${encodeURIComponent(
-          `Olá! Quero comprar a ${productName}, mas meu CEP não aparece na entrega. Podem me ajudar?`
-        )}`
-      : null;
+    const carrierOptions = frete.carrierOptions ?? [];
+    const cheapest = carrierOptions[0] ?? null;
+    const whatsappMessage = cheapest
+      ? `Olá! Quero comprar a ${productName} e vi uma estimativa de envio por ${cheapest.name} (${formatCents(
+          cheapest.priceCents
+        )}). Podem confirmar e fechar esse envio?`
+      : `Olá! Quero comprar a ${productName}, mas meu CEP não aparece na entrega. Podem me ajudar?`;
+    const link = whatsapp ? `https://wa.me/${whatsapp}?text=${encodeURIComponent(whatsappMessage)}` : null;
+
     return (
       <div className="rounded-[10px] border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-        <p className="font-medium">Ainda não entregamos nesse CEP.</p>
-        <p className="mt-0.5 text-amber-800">
-          Fale com a gente que a gente dá um jeito — ou escolha “Retirar na loja”.
+        <p className="font-medium">
+          {cheapest ? "Fora da nossa área de entrega local." : "Ainda não entregamos nesse CEP."}
         </p>
+
+        {carrierOptions.length > 0 ? (
+          <div className="mt-2 space-y-1.5">
+            <p className="text-amber-800">Estimativa por transportadora (a confirmar no WhatsApp):</p>
+            <ul className="space-y-1">
+              {carrierOptions.slice(0, 3).map((o, i) => (
+                <li key={`${o.name}-${i}`} className="flex items-center justify-between gap-2 text-sm">
+                  <span>
+                    {o.name}
+                    {o.companyName && o.companyName !== o.name ? ` (${o.companyName})` : ""}
+                    {o.deliveryDays != null ? ` — até ${o.deliveryDays} dias` : ""}
+                  </span>
+                  <span className="font-semibold tabular-nums">{formatCents(o.priceCents)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="mt-0.5 text-amber-800">
+            Fale com a gente que a gente dá um jeito — ou escolha “Retirar na loja”.
+          </p>
+        )}
+
         {link ? (
           <a
             href={link}
