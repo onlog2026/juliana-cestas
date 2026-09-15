@@ -343,7 +343,11 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
     setValue("couponCode", undefined);
   }
 
-  const totalCents = useMemo(() => {
+  // A região escolhida (para mostrar o nome e o valor do frete no resumo).
+  const selectedZone = useMemo(() => zones.find((z) => z.id === zoneId) ?? null, [zones, zoneId]);
+
+  // Mercadoria = cesta + adicionais + produtos sugeridos (sem frete/desconto).
+  const merchandiseCents = useMemo(() => {
     const addonsCents = addonSlugs.reduce((sum, slug) => {
       const addon = addons.find((a) => a.slug === slug);
       return sum + (addon?.price_cents ?? 0);
@@ -352,16 +356,21 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
       const upsell = upsells.find((u) => u.slug === slug);
       return sum + (upsell?.price_cents ?? 0);
     }, 0);
-    const zone = zones.find((z) => z.id === zoneId);
-    const deliveryFee =
-      appliedCoupon?.signature === couponSignature
-        ? appliedCoupon.deliveryFeeCents
-        : deliveryType === "delivery"
-          ? (zone?.fee_cents ?? 0) + product.delivery_fee_cents
-          : 0;
-    const discount = appliedCoupon?.signature === couponSignature ? appliedCoupon.discountCents : 0;
-    return product.price_cents + addonsCents + upsellsCents + deliveryFee - discount;
-  }, [addonSlugs, upsellSlugs, deliveryType, zoneId, zones, product, appliedCoupon, couponSignature]);
+    return product.price_cents + addonsCents + upsellsCents;
+  }, [addonSlugs, upsellSlugs, addons, upsells, product]);
+
+  // Frete: cupom de frete grátis zera; senão é a taxa da região (+ eventual
+  // frete próprio do produto). Fica exposto para o resumo mostrar o valor.
+  const deliveryFeeCents = useMemo(() => {
+    if (appliedCoupon?.signature === couponSignature) return appliedCoupon.deliveryFeeCents;
+    if (deliveryType !== "delivery") return 0;
+    return (selectedZone?.fee_cents ?? 0) + product.delivery_fee_cents;
+  }, [appliedCoupon, couponSignature, deliveryType, selectedZone, product]);
+
+  const discountCents =
+    appliedCoupon?.signature === couponSignature ? appliedCoupon.discountCents : 0;
+
+  const totalCents = merchandiseCents + deliveryFeeCents - discountCents;
 
   // ── Envio ────────────────────────────────────────────────────────────────
   const [submitting, setSubmitting] = useState(false);
@@ -766,8 +775,29 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
           </div>
         ) : null}
 
-        <div className="border-t border-border pt-4 text-sm text-muted-foreground">
-          {deliveryType === "pickup" ? "Retirada na loja — frete grátis" : "Entrega"}
+        <div className="space-y-1.5 border-t border-border pt-4 text-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="tabular-nums text-foreground">{formatCents(merchandiseCents)}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">
+              {deliveryType === "pickup"
+                ? "Retirada na loja"
+                : selectedZone
+                  ? `Entrega — ${selectedZone.name}`
+                  : "Entrega"}
+            </span>
+            <span className="tabular-nums text-foreground">
+              {deliveryType === "pickup"
+                ? "grátis"
+                : deliveryType === "delivery" && !selectedZone && appliedCoupon?.signature !== couponSignature
+                  ? "escolha a região"
+                  : deliveryFeeCents === 0
+                    ? "grátis"
+                    : formatCents(deliveryFeeCents)}
+            </span>
+          </div>
         </div>
 
         <div className="border-t border-border pt-4">
