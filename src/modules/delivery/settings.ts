@@ -8,6 +8,15 @@ export type DeliveryZone = {
   fee_cents: number;
 };
 
+/** Zona como o painel precisa ver: inclui inativas e a ordem, para gerir. */
+export type DeliveryZoneAdmin = {
+  id: string;
+  name: string;
+  fee_cents: number;
+  active: boolean;
+  sort_order: number;
+};
+
 export type DeliverySettings = DeliverySettingsInput & { cardMaxWords: number };
 
 export async function getDeliverySettings(tenantId: string): Promise<DeliverySettings | null> {
@@ -41,6 +50,23 @@ export async function getDeliveryZones(tenantId: string): Promise<DeliveryZone[]
     .eq("tenant_id", tenantId)
     .eq("active", true)
     .order("sort_order");
+
+  return data ?? [];
+}
+
+/**
+ * Todas as zonas da loja, ativas e inativas, na ordem de exibição -- para a
+ * tela de gestão no painel (o checkout usa `getDeliveryZones`, que já filtra as
+ * ativas).
+ */
+export async function getAllDeliveryZones(tenantId: string): Promise<DeliveryZoneAdmin[]> {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("delivery_zones")
+    .select("id, name, fee_cents, active, sort_order")
+    .eq("tenant_id", tenantId)
+    .order("sort_order")
+    .order("name");
 
   return data ?? [];
 }

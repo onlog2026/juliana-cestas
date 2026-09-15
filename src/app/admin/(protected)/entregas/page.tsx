@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireStaffWithModule } from "@/lib/auth/require-module";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { AdvanceStatusButton } from "@/components/admin/advance-status-button";
+import { EntregasTabs } from "@/components/admin/entregas-tabs";
 import { saoPauloDateStr } from "@/lib/time/sao-paulo";
 
 export default async function AdminEntregasPage(props: {
@@ -34,8 +35,9 @@ export default async function AdminEntregasPage(props: {
   return (
     <div>
       <h1 className="font-display text-2xl text-foreground">Entregas</h1>
+      <EntregasTabs active="agenda" />
 
-      <form method="get" className="mt-4 flex items-center gap-2">
+      <form method="get" className="mt-6 flex items-center gap-2">
         <input
           type="date"
           name="data"
