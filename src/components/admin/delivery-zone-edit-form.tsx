@@ -35,6 +35,8 @@ export function DeliveryZoneEditForm({
   const [name, setName] = useState(zone?.name ?? "");
   const [price, setPrice] = useState(zone ? centsToReais(zone.fee_cents) : "");
   const [active, setActive] = useState(zone?.active ?? true);
+  const [prazoMin, setPrazoMin] = useState(zone?.prazo_min_days != null ? String(zone.prazo_min_days) : "");
+  const [prazoMax, setPrazoMax] = useState(zone?.prazo_max_days != null ? String(zone.prazo_max_days) : "");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -52,8 +54,22 @@ export function DeliveryZoneEditForm({
       return;
     }
 
+    const toDays = (v: string): number | null => {
+      const t = v.trim();
+      if (!t) return null;
+      const n = Number.parseInt(t, 10);
+      return Number.isNaN(n) ? null : n;
+    };
+
     startTransition(async () => {
-      const result = await upsertDeliveryZone({ id: zone?.id, name, feeCents, active });
+      const result = await upsertDeliveryZone({
+        id: zone?.id,
+        name,
+        feeCents,
+        active,
+        prazoMinDays: toDays(prazoMin),
+        prazoMaxDays: toDays(prazoMax),
+      });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -91,6 +107,31 @@ export function DeliveryZoneEditForm({
           Deixe <strong>0</strong> (ou 0,00) para frete grátis nessa área.
         </span>
       </label>
+
+      <div>
+        <span className="mb-1.5 block text-sm font-medium text-foreground">Prazo de entrega (opcional)</span>
+        <div className="flex items-center gap-2">
+          <input
+            value={prazoMin}
+            onChange={(e) => setPrazoMin(e.target.value)}
+            placeholder="mín."
+            inputMode="numeric"
+            className={`${inputClass} w-20`}
+          />
+          <span className="text-sm text-muted-foreground">a</span>
+          <input
+            value={prazoMax}
+            onChange={(e) => setPrazoMax(e.target.value)}
+            placeholder="máx."
+            inputMode="numeric"
+            className={`${inputClass} w-20`}
+          />
+          <span className="text-sm text-muted-foreground">dias úteis</span>
+        </div>
+        <span className="mt-1 block text-xs text-muted-foreground">
+          Deixe em branco se não quiser mostrar prazo.
+        </span>
+      </div>
 
       <label className="flex items-center gap-2 text-sm text-foreground">
         <input

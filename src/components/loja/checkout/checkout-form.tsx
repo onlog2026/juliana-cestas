@@ -5,24 +5,36 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Loader2, MapPin, Store, Tag, X } from "lucide-react";
+import { Check, Loader2, MapPin, MessageCircle, Store, Tag, Truck, X } from "lucide-react";
 import { checkoutInputSchema, type CheckoutInput } from "@/modules/checkout/schemas";
 import { CARD_TEMPLATES, countWords } from "@/modules/cards/templates";
 import { formatCents } from "@/lib/money";
 import type { DbProduct, DbProductAddon, UpsellProduct } from "@/modules/catalog/service";
-import type { DeliveryZone } from "@/modules/delivery/settings";
 import type { DaySlots } from "@/modules/delivery/slots";
 import { CalendarPicker } from "@/components/loja/checkout/calendar-picker";
 import { CardPattern } from "@/components/loja/checkout/card-pattern";
+
+/** Resposta de `/api/frete`: o frete calculado a partir do CEP. */
+type FreteResult =
+  | {
+      served: true;
+      zoneName: string;
+      deliveryFeeCents: number;
+      prazoMinDays: number | null;
+      prazoMaxDays: number | null;
+      freeShipping: boolean;
+    }
+  | { served: false; message: string };
 
 type Props = {
   product: DbProduct;
   addons: DbProductAddon[];
   upsells: UpsellProduct[];
-  zones: DeliveryZone[];
   cardMaxWords: number;
   /** Nome da loja atual -- vem do servidor porque este componente e client. */
   storeName?: string;
+  /** WhatsApp da loja (só dígitos) -- botão quando o CEP não é atendido. */
+  whatsapp?: string;
 };
 
 const DRAFT_VERSION = 1;
@@ -54,7 +66,7 @@ function formatDayOnlyLabel(dateStr: string, weekday: number) {
   return `${weekdayNames[weekday]} ${d}`;
 }
 
-export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, storeName = "" }: Props) {
+export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName = "", whatsapp = "" }: Props) {
   const router = useRouter();
   const key = draftKey(product.slug);
 
@@ -157,6 +169,8 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
   // ── CEP ──────────────────────────────────────────────────────────────────
   const [cepLoading, setCepLoading] = useState(false);
   const [cepError, setCepError] = useState<string | null>(null);
+  const [frete, setFrete] = useState<FreteResult | null>(null);
+  const [freteLoading, setFreteLoading] = useState(false);
   const cepValue = watch("cep");
 
   useEffect(() => {
@@ -279,6 +293,42 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
     );
   }
 
+  // ── Frete por CEP ─────────────────────────────────────────────────────────
+  // Quando o CEP tem 8 dígitos e é entrega, calcula o frete no servidor (mesma
+  // conta do checkout). Recalcula se o cliente mexe nos adicionais/upsell, por
+  // causa do "frete grátis acima de X".
+  const addonsSig = JSON.stringify(addonSlugs);
+  const upsellsSig = JSON.stringify(upsellSlugs);
+  useEffect(() => {
+    const digits = (cepValue || "").replace(/\D/g, "");
+    if (deliveryType !== "delivery" || digits.length !== 8) {
+      setFrete(null);
+      setFreteLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setFreteLoading(true);
+    fetch("/api/frete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productSlug: product.slug, addonSlugs, upsellSlugs, cep: digits }),
+    })
+      .then((r) => r.json())
+      .then((data: FreteResult) => {
+        if (!cancelled) setFrete(data);
+      })
+      .catch(() => {
+        if (!cancelled) setFrete({ served: false, message: "Não deu pra calcular o frete agora. Tente de novo." });
+      })
+      .finally(() => {
+        if (!cancelled) setFreteLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cepValue, deliveryType, addonsSig, upsellsSig]);
+
   // ── Cupom ────────────────────────────────────────────────────────────────
   const [couponInput, setCouponInput] = useState("");
   const [couponApplying, setCouponApplying] = useState(false);
@@ -290,8 +340,12 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
     signature: string;
   } | null>(null);
 
-  const zoneId = watch("zoneId");
-  const couponSignature = JSON.stringify({ addonSlugs, upsellSlugs, deliveryType, zoneId });
+  const couponSignature = JSON.stringify({
+    addonSlugs,
+    upsellSlugs,
+    deliveryType,
+    cep: (cepValue || "").replace(/\D/g, ""),
+  });
 
   // Item mudou depois de aplicar o cupom (frete/desconto ficariam errados) --
   // limpa em silêncio, sem mensagem de erro, só exige aplicar de novo.
@@ -312,7 +366,7 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
           addonSlugs,
           upsellSlugs,
           deliveryType,
-          zoneId: zoneId || "",
+          cep: (cepValue || "").replace(/\D/g, ""),
           couponCode: couponInput,
           buyerEmail: watch("buyerEmail") || "",
         }),
@@ -343,9 +397,6 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
     setValue("couponCode", undefined);
   }
 
-  // A região escolhida (para mostrar o nome e o valor do frete no resumo).
-  const selectedZone = useMemo(() => zones.find((z) => z.id === zoneId) ?? null, [zones, zoneId]);
-
   // Mercadoria = cesta + adicionais + produtos sugeridos (sem frete/desconto).
   const merchandiseCents = useMemo(() => {
     const addonsCents = addonSlugs.reduce((sum, slug) => {
@@ -359,13 +410,13 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
     return product.price_cents + addonsCents + upsellsCents;
   }, [addonSlugs, upsellSlugs, addons, upsells, product]);
 
-  // Frete: cupom de frete grátis zera; senão é a taxa da região (+ eventual
-  // frete próprio do produto). Fica exposto para o resumo mostrar o valor.
+  // Frete: cupom de frete grátis zera; senão é o valor calculado por CEP no
+  // servidor (que já inclui frete próprio do produto e frete-grátis-acima-de-X).
   const deliveryFeeCents = useMemo(() => {
     if (appliedCoupon?.signature === couponSignature) return appliedCoupon.deliveryFeeCents;
     if (deliveryType !== "delivery") return 0;
-    return (selectedZone?.fee_cents ?? 0) + product.delivery_fee_cents;
-  }, [appliedCoupon, couponSignature, deliveryType, selectedZone, product]);
+    return frete?.served ? frete.deliveryFeeCents : 0;
+  }, [appliedCoupon, couponSignature, deliveryType, frete]);
 
   const discountCents =
     appliedCoupon?.signature === couponSignature ? appliedCoupon.discountCents : 0;
@@ -466,38 +517,52 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
           </div>
 
           {deliveryType === "delivery" ? (
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <Field label="CEP" error={cepError ?? undefined} hint={cepLoading ? "Buscando endereço…" : undefined}>
-                <input {...register("cep")} className={inputClass} placeholder="00000-000" maxLength={9} />
-              </Field>
-              <Field label="Região" error={errors.zoneId?.message}>
-                <select {...register("zoneId")} className={inputClass}>
-                  <option value="">Selecione</option>
-                  {zones.map((zone) => (
-                    <option key={zone.id} value={zone.id}>
-                      {zone.name} {zone.fee_cents > 0 ? `— ${formatCents(zone.fee_cents)}` : "— grátis"}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Rua" error={errors.street?.message}>
-                <input {...register("street")} className={inputClass} />
-              </Field>
-              <Field label="Número" error={errors.addressNumber?.message}>
-                <input {...register("addressNumber")} className={inputClass} />
-              </Field>
-              <Field label="Complemento (opcional)">
-                <input {...register("complement")} className={inputClass} placeholder="Apto, bloco…" />
-              </Field>
-              <Field label="Bairro" error={errors.neighborhood?.message}>
-                <input {...register("neighborhood")} className={inputClass} />
-              </Field>
-              <Field label="Cidade">
-                <input {...register("city")} className={inputClass} />
-              </Field>
-              <Field label="UF">
-                <input {...register("state")} className={inputClass} maxLength={2} />
-              </Field>
+            <div className="mt-4 space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="CEP"
+                  error={cepError ?? errors.cep?.message}
+                  hint={cepLoading ? "Buscando endereço…" : "Digite o CEP e calculamos o frete pra você."}
+                >
+                  <input
+                    {...register("cep")}
+                    className={inputClass}
+                    placeholder="00000-000"
+                    maxLength={9}
+                    inputMode="numeric"
+                    autoComplete="postal-code"
+                  />
+                </Field>
+              </div>
+
+              <FreteBox
+                frete={frete}
+                loading={freteLoading}
+                cepComplete={(cepValue || "").replace(/\D/g, "").length === 8}
+                whatsapp={whatsapp}
+                productName={product.name}
+              />
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Rua" error={errors.street?.message}>
+                  <input {...register("street")} className={inputClass} autoComplete="address-line1" />
+                </Field>
+                <Field label="Número" error={errors.addressNumber?.message}>
+                  <input {...register("addressNumber")} className={inputClass} inputMode="numeric" />
+                </Field>
+                <Field label="Complemento (opcional)">
+                  <input {...register("complement")} className={inputClass} placeholder="Apto, bloco…" />
+                </Field>
+                <Field label="Bairro" error={errors.neighborhood?.message}>
+                  <input {...register("neighborhood")} className={inputClass} />
+                </Field>
+                <Field label="Cidade">
+                  <input {...register("city")} className={inputClass} autoComplete="address-level2" />
+                </Field>
+                <Field label="UF">
+                  <input {...register("state")} className={inputClass} maxLength={2} autoComplete="address-level1" />
+                </Field>
+              </div>
             </div>
           ) : null}
         </section>
@@ -784,20 +849,29 @@ export function CheckoutForm({ product, addons, upsells, zones, cardMaxWords, st
             <span className="text-muted-foreground">
               {deliveryType === "pickup"
                 ? "Retirada na loja"
-                : selectedZone
-                  ? `Entrega — ${selectedZone.name}`
+                : frete?.served
+                  ? `Entrega — ${frete.zoneName}`
                   : "Entrega"}
             </span>
             <span className="tabular-nums text-foreground">
               {deliveryType === "pickup"
                 ? "grátis"
-                : deliveryType === "delivery" && !selectedZone && appliedCoupon?.signature !== couponSignature
-                  ? "escolha a região"
-                  : deliveryFeeCents === 0
+                : appliedCoupon?.signature === couponSignature
+                  ? deliveryFeeCents === 0
                     ? "grátis"
-                    : formatCents(deliveryFeeCents)}
+                    : formatCents(deliveryFeeCents)
+                  : !frete?.served
+                    ? "calcular com o CEP"
+                    : deliveryFeeCents === 0
+                      ? "grátis"
+                      : formatCents(deliveryFeeCents)}
             </span>
           </div>
+          {deliveryType === "delivery" && frete?.served && formatPrazo(frete.prazoMinDays, frete.prazoMaxDays) ? (
+            <p className="text-xs text-muted-foreground">
+              {formatPrazo(frete.prazoMinDays, frete.prazoMaxDays)}
+            </p>
+          ) : null}
         </div>
 
         <div className="border-t border-border pt-4">
@@ -895,5 +969,91 @@ function Field({
       {error ? <span className="mt-1 block text-xs text-destructive">{error}</span> : null}
       {!error && hint ? <span className="mt-1 block text-xs text-muted-foreground">{hint}</span> : null}
     </label>
+  );
+}
+
+/** Texto do prazo de entrega, ou null se a zona não tem prazo definido. */
+function formatPrazo(min: number | null, max: number | null): string | null {
+  if (min == null && max == null) return null;
+  if (min != null && max != null && min !== max) return `Entrega em ${min} a ${max} dias úteis`;
+  const dias = max ?? min;
+  return `Entrega em até ${dias} ${dias === 1 ? "dia útil" : "dias úteis"}`;
+}
+
+/**
+ * Cartão do frete: some do lugar do antigo menu de regiões. Mostra, de forma
+ * compacta e visual, o resultado do cálculo por CEP — carregando, valor+prazo,
+ * ou "não atendido" com o WhatsApp.
+ */
+function FreteBox({
+  frete,
+  loading,
+  cepComplete,
+  whatsapp,
+  productName,
+}: {
+  frete: FreteResult | null;
+  loading: boolean;
+  cepComplete: boolean;
+  whatsapp: string;
+  productName: string;
+}) {
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 rounded-[10px] border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">
+        <Loader2 className="size-4 animate-spin" /> Calculando o frete…
+      </div>
+    );
+  }
+
+  if (!cepComplete || !frete) {
+    return (
+      <p className="rounded-[10px] border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
+        Digite o CEP acima para ver o valor e o prazo da entrega.
+      </p>
+    );
+  }
+
+  if (!frete.served) {
+    const link = whatsapp
+      ? `https://wa.me/${whatsapp}?text=${encodeURIComponent(
+          `Olá! Quero comprar a ${productName}, mas meu CEP não aparece na entrega. Podem me ajudar?`
+        )}`
+      : null;
+    return (
+      <div className="rounded-[10px] border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <p className="font-medium">Ainda não entregamos nesse CEP.</p>
+        <p className="mt-0.5 text-amber-800">
+          Fale com a gente que a gente dá um jeito — ou escolha “Retirar na loja”.
+        </p>
+        {link ? (
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex h-9 items-center gap-1.5 rounded-full bg-green-600 px-4 text-sm font-semibold text-white hover:bg-green-700"
+          >
+            <MessageCircle className="size-4" /> Falar no WhatsApp
+          </a>
+        ) : null}
+      </div>
+    );
+  }
+
+  const prazo = formatPrazo(frete.prazoMinDays, frete.prazoMaxDays);
+  const gratis = frete.freeShipping || frete.deliveryFeeCents === 0;
+  return (
+    <div className="flex items-start gap-3 rounded-[10px] border border-primary/30 bg-accent px-4 py-3">
+      <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <Truck className="size-4" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-foreground">Entrega para {frete.zoneName}</p>
+        {prazo ? <p className="text-xs text-muted-foreground">{prazo}</p> : null}
+      </div>
+      <span className="shrink-0 text-sm font-bold tabular-nums text-foreground">
+        {gratis ? "Grátis" : formatCents(frete.deliveryFeeCents)}
+      </span>
+    </div>
   );
 }

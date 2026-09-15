@@ -46,6 +46,8 @@ export const checkoutInputSchema = z
       .or(z.literal("")),
 
     deliveryType: z.enum(["delivery", "pickup"]),
+    // O CEP define a zona/frete (derivada no servidor via faixa de CEP). Não há
+    // mais seleção manual de região.
     cep: z.string().trim().optional(),
     street: z.string().trim().optional(),
     addressNumber: z.string().trim().max(20).optional(),
@@ -53,11 +55,6 @@ export const checkoutInputSchema = z
     neighborhood: z.string().trim().optional(),
     city: z.string().trim().optional(),
     state: z.string().trim().max(2).optional(),
-    // "" é o valor real que o <select> não tocado manda (retirada na loja
-    // nunca renderiza esse campo) -- sem aceitar "", checkout com retirada
-    // falhava a validação em silêncio e o botão "Ir para pagamento" não
-    // fazia nada.
-    zoneId: z.union([z.string().uuid(), z.literal("")]).optional(),
 
     deliveryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     deliverySlotStart: z.string().regex(/^\d{2}:\d{2}$/),
@@ -72,8 +69,11 @@ export const checkoutInputSchema = z
   .refine(
     (data) =>
       data.deliveryType === "pickup" ||
-      (data.addressNumber && data.zoneId && data.street && data.neighborhood),
-    { message: "Endereço incompleto", path: ["addressNumber"] }
+      ((data.cep ?? "").replace(/\D/g, "").length === 8 &&
+        data.addressNumber &&
+        data.street &&
+        data.neighborhood),
+    { message: "Preencha o CEP e o endereço para a entrega.", path: ["cep"] }
   );
 
 export type CheckoutInput = z.infer<typeof checkoutInputSchema>;

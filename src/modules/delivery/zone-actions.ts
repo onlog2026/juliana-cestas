@@ -11,9 +11,18 @@ export type DeliveryZoneInput = {
   /** Taxa em CENTAVOS (o servidor é a fonte da verdade do preço). */
   feeCents: number;
   active: boolean;
+  /** Prazo de entrega em dias úteis (opcional). */
+  prazoMinDays?: number | null;
+  prazoMaxDays?: number | null;
 };
 
 type ActionResult = { ok: true } | { ok: false; error: string };
+
+function prazoOrNull(v: number | null | undefined): number | null {
+  if (v == null || Number.isNaN(v)) return null;
+  const n = Math.trunc(v);
+  return n >= 0 && n <= 365 ? n : null;
+}
 
 /** Revalida o painel e a vitrine (o checkout lê as zonas ao carregar). */
 function revalidar() {
@@ -49,10 +58,19 @@ export async function upsertDeliveryZone(input: DeliveryZoneInput): Promise<Acti
 
   const admin = createAdminClient();
 
+  const prazoMin = prazoOrNull(input.prazoMinDays);
+  const prazoMax = prazoOrNull(input.prazoMaxDays);
+
   if (input.id) {
     const { error } = await admin
       .from("delivery_zones")
-      .update({ name, fee_cents: input.feeCents, active: input.active })
+      .update({
+        name,
+        fee_cents: input.feeCents,
+        active: input.active,
+        prazo_min_days: prazoMin,
+        prazo_max_days: prazoMax,
+      })
       .eq("id", input.id)
       .eq("tenant_id", staff.tenantId);
     if (error) {
@@ -65,6 +83,8 @@ export async function upsertDeliveryZone(input: DeliveryZoneInput): Promise<Acti
       name,
       fee_cents: input.feeCents,
       active: input.active,
+      prazo_min_days: prazoMin,
+      prazo_max_days: prazoMax,
       sort_order: await nextSortOrder(admin, staff.tenantId),
       // Dado criado pela lojista é real, não um exemplo semeado.
       placeholder: false,
@@ -133,6 +153,92 @@ export async function reorderDeliveryZones(orderedIds: string[]): Promise<Action
     )
   );
   if (results.some((r) => r.error)) return { ok: false, error: "Não foi possível reordenar." };
+
+  revalidar();
+  return { ok: true };
+}
+
+/** Adiciona uma faixa de CEP (8 dígitos como inteiro) a uma zona da loja. */
+export async function addCepRange(
+  zoneId: string,
+  cepStart: number,
+  cepEnd: number
+): Promise<ActionResult> {
+  const gate = await ensureModuleForAction("frete");
+  if (!gate.ok) return { ok: false, error: gate.mensagem };
+  const staff = gate.staff;
+
+  if (
+    !Number.isInteger(cepStart) ||
+    !Number.isInteger(cepEnd) ||
+    cepStart < 0 ||
+    cepEnd > 99999999
+  ) {
+    return { ok: false, error: "Informe um CEP inicial e final válidos (8 dígitos)." };
+  }
+  if (cepEnd < cepStart) {
+    return { ok: false, error: "O CEP final precisa ser maior ou igual ao inicial." };
+  }
+
+  const admin = createAdminClient();
+  const { data: zone } = await admin
+    .from("delivery_zones")
+    .select("id")
+    .eq("id", zoneId)
+    .eq("tenant_id", staff.tenantId)
+    .maybeSingle();
+  if (!zone) return { ok: false, error: "Área não encontrada." };
+
+  const { error } = await admin.from("delivery_cep_ranges").insert({
+    tenant_id: staff.tenantId,
+    zone_id: zoneId,
+    cep_start: cepStart,
+    cep_end: cepEnd,
+  });
+  if (error) {
+    if (error.code === "23505") return { ok: false, error: "Essa faixa de CEP já existe." };
+    return { ok: false, error: "Não foi possível salvar a faixa de CEP." };
+  }
+
+  revalidar();
+  return { ok: true };
+}
+
+export async function deleteCepRange(rangeId: string): Promise<ActionResult> {
+  const gate = await ensureModuleForAction("frete");
+  if (!gate.ok) return { ok: false, error: gate.mensagem };
+  const staff = gate.staff;
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("delivery_cep_ranges")
+    .delete()
+    .eq("id", rangeId)
+    .eq("tenant_id", staff.tenantId);
+  if (error) return { ok: false, error: "Não foi possível remover a faixa de CEP." };
+
+  revalidar();
+  return { ok: true };
+}
+
+/** Frete grátis acima de um valor em centavos (null = desligado). */
+export async function setFreeShippingThreshold(cents: number | null): Promise<ActionResult> {
+  const gate = await ensureModuleForAction("frete");
+  if (!gate.ok) return { ok: false, error: gate.mensagem };
+  const staff = gate.staff;
+
+  let value: number | null = null;
+  if (cents != null) {
+    if (!Number.isInteger(cents) || cents < 0) return { ok: false, error: "Informe um valor válido." };
+    value = cents;
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("delivery_settings")
+    .update({ free_shipping_min_cents: value })
+    .eq("tenant_id", staff.tenantId);
+  if (error) return { ok: false, error: "Não foi possível salvar o frete grátis." };
 
   revalidar();
   return { ok: true };

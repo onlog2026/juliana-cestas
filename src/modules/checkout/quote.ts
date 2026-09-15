@@ -1,6 +1,6 @@
 import "server-only";
 import { getProductForCheckout, getUpsellsForProduct } from "@/modules/catalog/service";
-import { getDeliveryZones } from "@/modules/delivery/settings";
+import { resolveZoneByCep, getDeliverySettings } from "@/modules/delivery/settings";
 import { validateCoupon, computeDiscount } from "@/modules/coupons/validate";
 
 export type QuoteResult =
@@ -14,7 +14,11 @@ export type QuoteResult =
       couponId: string | null;
       couponCode: string | null;
       totalCents: number;
+      zoneId: string | null;
       zoneName: string | null;
+      prazoMinDays: number | null;
+      prazoMaxDays: number | null;
+      freeShipping: boolean;
       upsellItems: { id: string; slug: string; name: string; price_cents: number }[];
     }
   | { ok: false; error: string };
@@ -30,7 +34,8 @@ export async function quoteCheckout(
     addonSlugs: string[];
     upsellSlugs?: string[];
     deliveryType: "delivery" | "pickup";
-    zoneId?: string;
+    /** CEP do cliente (8 dígitos, com ou sem máscara). Define a zona/frete. */
+    cep?: string;
     couponCode?: string;
     buyerEmail?: string;
   }
@@ -60,22 +65,39 @@ export async function quoteCheckout(
     }
   }
 
+  const merchandiseCents = subtotalCents + addonsCents + upsellsCents;
+
+  // Frete: derivado do CEP (não do cliente). A zona sai da faixa de CEP.
   let deliveryFeeCents = 0;
+  let zoneId: string | null = null;
   let zoneName: string | null = null;
+  let prazoMinDays: number | null = null;
+  let prazoMaxDays: number | null = null;
+  let freeShipping = false;
   if (input.deliveryType === "delivery") {
-    if (!input.zoneId) return { ok: false, error: "Escolha a região de entrega." };
-    const zones = await getDeliveryZones(tenantId);
-    const zone = zones.find((z) => z.id === input.zoneId);
-    if (!zone) return { ok: false, error: "Região de entrega inválida." };
-    deliveryFeeCents = zone.fee_cents + product.delivery_fee_cents;
+    if (!input.cep) return { ok: false, error: "Informe o CEP para calcular o frete." };
+    const zone = await resolveZoneByCep(tenantId, input.cep);
+    if (!zone) {
+      return { ok: false, error: "Ainda não entregamos nesse CEP. Fale com a gente no WhatsApp." };
+    }
+    zoneId = zone.zoneId;
     zoneName = zone.name;
+    prazoMinDays = zone.prazoMinDays;
+    prazoMaxDays = zone.prazoMaxDays;
+    deliveryFeeCents = zone.feeCents + product.delivery_fee_cents;
+
+    // Frete grátis acima de um valor (configuração da loja).
+    const settings = await getDeliverySettings(tenantId);
+    if (settings?.freeShippingMinCents != null && merchandiseCents >= settings.freeShippingMinCents) {
+      deliveryFeeCents = 0;
+      freeShipping = true;
+    }
   }
 
   let discountCents = 0;
   let couponId: string | null = null;
   let couponCode: string | null = null;
   if (input.couponCode && input.couponCode.trim()) {
-    const merchandiseCents = subtotalCents + addonsCents + upsellsCents;
     const result = await validateCoupon(tenantId, {
       code: input.couponCode,
       buyerEmail: input.buyerEmail ?? "",
@@ -86,12 +108,13 @@ export async function quoteCheckout(
     couponCode = result.coupon.code;
     if (result.coupon.type === "free_shipping") {
       deliveryFeeCents = 0;
+      freeShipping = true;
     } else {
       discountCents = computeDiscount(result.coupon, merchandiseCents);
     }
   }
 
-  const totalCents = subtotalCents + addonsCents + upsellsCents + deliveryFeeCents - discountCents;
+  const totalCents = merchandiseCents + deliveryFeeCents - discountCents;
   if (totalCents < 500) return { ok: false, error: "Valor total abaixo do mínimo." };
 
   return {
@@ -104,7 +127,11 @@ export async function quoteCheckout(
     couponId,
     couponCode,
     totalCents,
+    zoneId,
     zoneName,
+    prazoMinDays,
+    prazoMaxDays,
+    freeShipping,
     upsellItems,
   };
 }

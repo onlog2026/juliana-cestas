@@ -4,21 +4,23 @@ import { quoteCheckout } from "@/modules/checkout/quote";
 import { checkRateLimit, clientIp } from "@/lib/security/rate-limit";
 import { getTenantId } from "@/lib/tenant/context";
 
+/**
+ * Calcula o frete a partir do CEP, para o cartão do checkout ("Entrega para X —
+ * R$ Y · até Z dias"). Reusa o `quoteCheckout` (mesma conta do servidor), então
+ * o valor mostrado é exatamente o que será cobrado. Sem cupom aqui.
+ */
 const schema = z.object({
   productSlug: z.string().min(1),
-  addonSlugs: z.array(z.string()),
-  upsellSlugs: z.array(z.string()),
-  deliveryType: z.enum(["delivery", "pickup"]),
-  cep: z.string().trim().optional().or(z.literal("")),
-  couponCode: z.string().trim().min(1).max(40),
-  buyerEmail: z.string().trim().email().optional().or(z.literal("")),
+  addonSlugs: z.array(z.string()).default([]),
+  upsellSlugs: z.array(z.string()).default([]),
+  cep: z.string().trim().min(1),
 });
 
 export async function POST(req: Request) {
   const ip = clientIp(req);
-  const withinLimit = await checkRateLimit(`apply-coupon:${ip}`, 20, 300);
+  const withinLimit = await checkRateLimit(`frete:${ip}`, 40, 300);
   if (!withinLimit) {
-    return NextResponse.json({ error: "Muitas tentativas. Espera um pouco e tenta de novo." }, { status: 429 });
+    return NextResponse.json({ error: "Muitas consultas. Espere um pouco." }, { status: 429 });
   }
 
   let body: unknown;
@@ -38,19 +40,22 @@ export async function POST(req: Request) {
     productSlug: parsed.data.productSlug,
     addonSlugs: parsed.data.addonSlugs,
     upsellSlugs: parsed.data.upsellSlugs,
-    deliveryType: parsed.data.deliveryType,
-    cep: parsed.data.cep || undefined,
-    couponCode: parsed.data.couponCode,
-    buyerEmail: parsed.data.buyerEmail || undefined,
+    deliveryType: "delivery",
+    cep: parsed.data.cep,
   });
 
-  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
-  if (!result.couponCode) return NextResponse.json({ error: "Cupom inválido." }, { status: 400 });
+  if (!result.ok) {
+    // CEP não atendido (ou inválido): a loja mostra o WhatsApp em vez de travar.
+    return NextResponse.json({ served: false, message: result.error });
+  }
 
   return NextResponse.json({
-    couponCode: result.couponCode,
-    discountCents: result.discountCents,
+    served: true,
+    zoneName: result.zoneName,
     deliveryFeeCents: result.deliveryFeeCents,
+    prazoMinDays: result.prazoMinDays,
+    prazoMaxDays: result.prazoMaxDays,
+    freeShipping: result.freeShipping,
     totalCents: result.totalCents,
   });
 }

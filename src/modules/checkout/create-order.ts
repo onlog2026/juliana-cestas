@@ -5,7 +5,6 @@ import { getProductForCheckout } from "@/modules/catalog/service";
 import { quoteCheckout } from "@/modules/checkout/quote";
 import {
   getDeliverySettings,
-  getDeliveryZones,
   getSlotOccupancy,
 } from "@/modules/delivery/settings";
 import { generateSlots, isSlotStillAvailable } from "@/modules/delivery/slots";
@@ -58,7 +57,7 @@ export async function createOrder(
     addonSlugs: input.addonSlugs,
     upsellSlugs: input.upsellSlugs,
     deliveryType: input.deliveryType,
-    zoneId: input.zoneId,
+    cep: input.cep,
     couponCode: input.couponCode,
     buyerEmail: input.buyerEmail,
   });
@@ -70,9 +69,6 @@ export async function createOrder(
   // não bate com o hash salvo.
   const placeholderTokenHash = hashToken(generatePublicToken());
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-
-  const zones = input.deliveryType === "delivery" ? await getDeliveryZones(tenantId) : [];
-  const zone = zones.find((z) => z.id === input.zoneId);
 
   const items = [
     {
@@ -142,8 +138,8 @@ export async function createOrder(
       neighborhood: input.neighborhood || null,
       city: input.city || null,
       state: input.state || null,
-      zone_id: input.zoneId || null,
-      zone_name: zone?.name ?? null,
+      zone_id: quote.zoneId,
+      zone_name: quote.zoneName,
       delivery_date: input.deliveryDate,
       delivery_slot_start: slot.start,
       delivery_slot_end: slot.end,
