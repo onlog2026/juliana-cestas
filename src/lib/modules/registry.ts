@@ -304,6 +304,17 @@ export const MODULE_REGISTRY: readonly ModuleDefinition[] = [
     sortOrder: 27,
     menu: { href: "/admin/compras", label: "Compras", iconName: "ShoppingCart", menuOrder: 18 },
   },
+  {
+    slug: "frete",
+    name: "Frete",
+    description: "Áreas de entrega por bairro/região e o preço de cada uma.",
+    category: "operacao",
+    isCore: false,
+    sortOrder: 28,
+    // menuOrder 3.5: logo DEPOIS de Entregas (3) e antes de Atendimento (4) --
+    // frete e entrega andam juntos no departamento Vendas.
+    menu: { href: "/admin/frete", label: "Frete", iconName: "MapPin", menuOrder: 3.5 },
+  },
 ];
 
 /** Todos os slugs, na ordem do catálogo. */
@@ -392,6 +403,7 @@ export const MENU_GROUP_OF: Readonly<Record<string, string>> = {
   // 🛒 Vendas — o dia a dia do pedido
   pedidos: "vendas",
   entregas: "vendas",
+  frete: "vendas",
   atendimento: "vendas",
   // 📦 Catálogo — o que se vende e o estoque
   produtos: "catalogo",

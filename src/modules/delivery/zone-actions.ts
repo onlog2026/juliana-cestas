@@ -17,7 +17,7 @@ type ActionResult = { ok: true } | { ok: false; error: string };
 
 /** Revalida o painel e a vitrine (o checkout lê as zonas ao carregar). */
 function revalidar() {
-  revalidatePath("/admin/entregas/areas");
+  revalidatePath("/admin/frete");
   revalidatePath("/", "layout");
 }
 
@@ -28,10 +28,10 @@ function revalidar() {
  * que veio do formulário.
  */
 export async function upsertDeliveryZone(input: DeliveryZoneInput): Promise<ActionResult> {
-  // TRAVA DE SERVIDOR (módulo "entregas"): a action é um endpoint HTTP -- some
+  // TRAVA DE SERVIDOR (módulo "frete"): a action é um endpoint HTTP -- some
   // do menu não quer dizer que sumiu da rede. Devolve a recusa em vez de
   // redirecionar, porque quem chamou é um formulário que mostra o aviso na tela.
-  const gate = await ensureModuleForAction("entregas");
+  const gate = await ensureModuleForAction("frete");
   if (!gate.ok) return { ok: false, error: gate.mensagem };
   const staff = gate.staff;
 
@@ -94,7 +94,7 @@ async function nextSortOrder(
 }
 
 export async function deleteDeliveryZone(id: string): Promise<ActionResult> {
-  const gate = await ensureModuleForAction("entregas");
+  const gate = await ensureModuleForAction("frete");
   if (!gate.ok) return { ok: false, error: gate.mensagem };
   const staff = gate.staff;
 
@@ -118,7 +118,7 @@ export async function deleteDeliveryZone(id: string): Promise<ActionResult> {
 }
 
 export async function reorderDeliveryZones(orderedIds: string[]): Promise<ActionResult> {
-  const gate = await ensureModuleForAction("entregas");
+  const gate = await ensureModuleForAction("frete");
   if (!gate.ok) return { ok: false, error: gate.mensagem };
   const staff = gate.staff;
 

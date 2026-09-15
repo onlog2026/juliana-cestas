@@ -137,6 +137,7 @@ type ModuloDoSql = {
 const MIGRACOES_COM_MODULOS = [
   "0026_platform_plans_vouchers.sql",
   "0031_inventory_purchases.sql",
+  "0043_frete_module.sql",
 ];
 
 function modulosDoSql(): ModuloDoSql[] {
@@ -249,7 +250,7 @@ describe("menu do painel da loja", () => {
     const menu = buildGroupedAdminMenu(ADMIN_MENU_MODULES);
     const arvore = menu.groups.map((g) => [g.label, g.items.map((i) => i.label)] as const);
     expect(arvore).toEqual([
-      ["Vendas", ["Pedidos", "Entregas", "Atendimento"]],
+      ["Vendas", ["Pedidos", "Entregas", "Frete", "Atendimento"]],
       ["Catálogo", ["Produtos", "Marcas", "Estoque", "Compras"]],
       ["Marketing", ["Cupons", "Avaliações", "Automações"]],
       ["Loja online", ["CMS", "SEO", "Modelos", "Galeria", "Domínio"]],
