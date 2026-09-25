@@ -5,14 +5,16 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Loader2, MapPin, MessageCircle, Store, Tag, Truck, X } from "lucide-react";
+import { Check, Loader2, MapPin, MessageCircle, Plus, Store, Tag, Truck, X } from "lucide-react";
 import { checkoutInputSchema, type CheckoutInput } from "@/modules/checkout/schemas";
 import { CARD_TEMPLATES, countWords } from "@/modules/cards/templates";
 import { formatCents } from "@/lib/money";
 import type { DbProduct, DbProductAddon, UpsellProduct } from "@/modules/catalog/service";
 import type { DaySlots } from "@/modules/delivery/slots";
 import { CalendarPicker } from "@/components/loja/checkout/calendar-picker";
-import { CardPattern } from "@/components/loja/checkout/card-pattern";
+import { CardFace } from "@/components/loja/card-face";
+import { AddonPicker } from "@/components/loja/checkout/addon-picker";
+import { addOne, countBySlug, removeOne } from "@/modules/checkout/addon-qty";
 
 /** Uma opção de transportadora (Correios/Melhor Envio) para fora da área local. */
 type CarrierOptionDTO = {
@@ -121,6 +123,9 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
         if (draft.v === DRAFT_VERSION) {
           idempotencyKeyRef.current = draft.idempotencyKey || idempotencyKeyRef.current;
           Object.entries(draft.values).forEach(([field, value]) => {
+            // Rascunho antigo pode ter um modelo de cartão que não existe mais
+            // na escolha (clássico, botânico…): ignora, senão o envio falha.
+            if (field === "cardTemplate" && !CARD_TEMPLATES.some((t) => t.slug === value)) return;
             if (value !== undefined) setValue(field as keyof CheckoutInput, value as never);
           });
           setValue("idempotencyKey", idempotencyKeyRef.current);
@@ -285,12 +290,12 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
   const addonSlugs = watch("addonSlugs") || [];
   const upsellSlugs = watch("upsellSlugs") || [];
 
-  function toggleAddon(slug: string) {
-    const current = getValues("addonSlugs") || [];
-    setValue(
-      "addonSlugs",
-      current.includes(slug) ? current.filter((s) => s !== slug) : [...current, slug]
-    );
+  function addAddon(slug: string) {
+    setValue("addonSlugs", addOne(getValues("addonSlugs") || [], slug));
+  }
+
+  function removeAddon(slug: string) {
+    setValue("addonSlugs", removeOne(getValues("addonSlugs") || [], slug));
   }
 
   function toggleUpsell(slug: string) {
@@ -646,24 +651,41 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
           )}
         </section>
 
-        {/* 4. Cartão */}
+        {/* 4. Adicionais (fotos, bolos, embalagens…) -- quantos quiser */}
+        {addons.length > 0 ? (
+          <section>
+            <h2 className="font-display text-xl text-foreground">Adicionais</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Adicione quantos quiser.</p>
+            <div className="mt-4">
+              <AddonPicker addons={addons} slugs={addonSlugs} onAdd={addAddon} onRemove={removeAddon} />
+            </div>
+          </section>
+        ) : null}
+
+        {/* 5. Cartão */}
         <section>
           <h2 className="font-display text-xl text-foreground">Cartãozinho</h2>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {CARD_TEMPLATES.map((t) => (
-              <button
-                key={t.slug}
-                type="button"
-                onClick={() => setValue("cardTemplate", t.slug)}
-                className={`rounded-full border px-3.5 py-2 text-sm font-medium transition-colors ${
-                  cardTemplate === t.slug
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-card text-foreground hover:bg-accent"
-                }`}
-              >
-                {t.name}
-              </button>
-            ))}
+          <div className="mt-4 grid grid-cols-3 gap-2.5 sm:grid-cols-5">
+            {CARD_TEMPLATES.map((t) => {
+              const active = cardTemplate === t.slug;
+              return (
+                <button
+                  key={t.slug}
+                  type="button"
+                  onClick={() => setValue("cardTemplate", t.slug)}
+                  aria-pressed={active}
+                  aria-label={`Cartão ${t.name}`}
+                  className={`group flex flex-col rounded-xl p-1 text-center transition-colors ${
+                    active ? "bg-primary/10 ring-2 ring-primary" : "ring-1 ring-border hover:bg-accent"
+                  }`}
+                >
+                  <CardFace template={t} compact className="pointer-events-none min-h-[118px] flex-1 !shadow-none" />
+                  <span className={`mt-1 block text-xs font-medium ${active ? "text-primary" : "text-foreground"}`}>
+                    {t.name}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -692,65 +714,61 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
           </label>
 
           <div className="mt-6 flex justify-center">
-            <div
-              className={`relative w-full max-w-sm overflow-hidden rounded-2xl border px-8 py-10 ${template.paperClass} ${template.borderClass}`}
-              style={{ boxShadow: "var(--jc-shadow)" }}
-            >
-              <CardPattern template={template} />
-              <p className="relative font-display text-lg leading-relaxed text-[#3a3226]">
-                {cardMessage || "Sua mensagem aparece aqui."}
-              </p>
-              <p className="relative mt-6 font-display text-base text-[#3a3226]">
-                Para {cardRecipient || "quem você ama"}
-                {cardSender ? `, de ${cardSender}` : ""}.
-              </p>
-              <p className="relative mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">{storeName}</p>
-            </div>
+            <CardFace
+              template={template}
+              message={cardMessage || "Sua mensagem aparece aqui."}
+              recipient={cardRecipient || "quem você ama"}
+              sender={cardSender}
+              storeName={storeName}
+              className="w-full max-w-sm"
+            />
           </div>
         </section>
 
-        {/* 5. Aproveite e leve também (upsell / cross-sell) */}
+        {/* 6. Aproveite e leve também (upsell / cross-sell) -- mesmo visual dos adicionais */}
         {upsells.length > 0 ? (
           <section>
             <h2 className="font-display text-xl text-foreground">Aproveite e leve também</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Complementos que combinam com {product.name}.
             </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <ul className="mt-4 divide-y divide-border overflow-hidden rounded-card border border-border bg-card">
               {upsells.map((upsell) => {
                 const checked = upsellSlugs.includes(upsell.slug);
                 return (
-                  <label
-                    key={upsell.id}
-                    className={`flex cursor-pointer items-center gap-3 rounded-card border p-3 transition-colors ${
-                      checked ? "border-primary bg-accent" : "border-border bg-card hover:bg-accent/50"
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleUpsell(upsell.slug)}
-                      className="size-4 shrink-0 rounded border-border"
-                    />
-                    {upsell.image_url ? (
-                      <div className="relative size-14 shrink-0 overflow-hidden rounded-[10px] bg-secondary">
-                        <Image src={upsell.image_url} alt={upsell.name} fill sizes="56px" className="object-cover" />
-                      </div>
-                    ) : null}
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium text-foreground">{upsell.name}</span>
-                      <span className="block text-sm text-muted-foreground">
-                        + {formatCents(upsell.price_cents)}
-                      </span>
-                    </span>
-                  </label>
+                  <li key={upsell.id} className="flex items-center gap-3 px-4 py-3">
+                    <div className="relative size-14 shrink-0 overflow-hidden rounded-[10px] bg-secondary">
+                      {upsell.image_url ? (
+                        <Image src={upsell.image_url} alt="" fill sizes="56px" className="object-cover" />
+                      ) : null}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium leading-snug text-foreground">{upsell.name}</p>
+                      <p className="mt-0.5 text-sm font-semibold tabular-nums text-primary">
+                        +{formatCents(upsell.price_cents)}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleUpsell(upsell.slug)}
+                      aria-pressed={checked}
+                      aria-label={`${checked ? "Tirar" : "Adicionar"} ${upsell.name}`}
+                      className={`flex size-11 shrink-0 items-center justify-center rounded-full border transition-colors active:scale-95 ${
+                        checked
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background text-foreground hover:bg-accent"
+                      }`}
+                    >
+                      {checked ? <Check className="size-5" /> : <Plus className="size-5" />}
+                    </button>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           </section>
         ) : null}
 
-        {/* 6. Observações */}
+        {/* 7. Observações */}
         <section>
           <h2 className="font-display text-xl text-foreground">Observações</h2>
           <textarea
@@ -829,24 +847,25 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
             </div>
           ) : null}
 
-          {addons.length > 0 ? (
-          <div className="space-y-2 border-t border-border pt-4">
-            {addons.map((addon) => (
-              <label key={addon.id} className="flex items-center justify-between gap-2 text-sm">
-                <span className="flex items-center gap-2 text-foreground">
-                  <input
-                    type="checkbox"
-                    checked={addonSlugs.includes(addon.slug)}
-                    onChange={() => toggleAddon(addon.slug)}
-                    className="size-4 rounded border-border"
-                  />
-                  {addon.name}
-                </span>
-                <span className="text-muted-foreground">{formatCents(addon.price_cents)}</span>
-              </label>
-            ))}
-          </div>
-        ) : null}
+          {addonSlugs.length > 0 ? (
+            <div className="space-y-1.5 border-t border-border pt-4">
+              <p className="text-xs font-medium text-muted-foreground">Adicionais escolhidos</p>
+              {Array.from(countBySlug(addonSlugs).entries()).map(([slug, qty]) => {
+                const addon = addons.find((a) => a.slug === slug);
+                if (!addon) return null;
+                return (
+                  <div key={slug} className="flex items-center justify-between gap-2 text-sm">
+                    <span className="min-w-0 truncate text-foreground">
+                      {qty}x {addon.name}
+                    </span>
+                    <span className="shrink-0 tabular-nums text-muted-foreground">
+                      {formatCents(addon.price_cents * qty)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
 
         <div className="space-y-1.5 border-t border-border pt-4 text-sm">
           <div className="flex items-center justify-between">

@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
-import { getAllProductsAdmin, getUpsellProductIds } from "@/modules/catalog/service";
+import { getAllProductsAdmin, getUpsellProductIds, getProductAddonsAdmin } from "@/modules/catalog/service";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { canUseModule } from "@/modules/entitlements/service";
 import { getAllCategoriesAdmin } from "@/modules/catalog/categories";
 import { ProductDetailsForm } from "@/components/admin/product-details-form";
 import { ProductDeliveryForm } from "@/components/admin/product-delivery-form";
 import { ProductShippingForm } from "@/components/admin/product-shipping-form";
+import { ProductAddonsManager } from "@/components/admin/product-addons-manager";
 import { ProductUpsellsForm } from "@/components/admin/product-upsells-form";
 import { DeleteProductButton } from "@/components/admin/delete-product-button";
 
@@ -18,10 +19,11 @@ export default async function AdminProdutoPage(props: PageProps<"/admin/produtos
   const product = products.find((p) => p.id === id);
   if (!product) notFound();
 
-  const [upsellIds, categories, iaLiberada] = await Promise.all([
+  const [upsellIds, categories, iaLiberada, addons] = await Promise.all([
     getUpsellProductIds(staff.tenantId, product.id),
     getAllCategoriesAdmin(staff.tenantId),
     canUseModule(staff, "ia"),
+    getProductAddonsAdmin(staff.tenantId, product.id),
   ]);
   const otherProducts = products.filter((p) => p.id !== product.id);
 
@@ -46,6 +48,17 @@ export default async function AdminProdutoPage(props: PageProps<"/admin/produtos
         </section>
 
         <div className="space-y-6">
+          <section className="rounded-card border border-border bg-card p-5">
+            <h2 className="font-display text-lg text-foreground">Adicionais</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Extras que o cliente soma à compra (fotos, bolos, embalagens…), quantos quiser. Agrupe por seção e
+              coloque uma foto — aparece no checkout em lista, com botão +.
+            </p>
+            <div className="mt-4">
+              <ProductAddonsManager productId={product.id} addons={addons} />
+            </div>
+          </section>
+
           <section className="rounded-card border border-border bg-card p-5">
             <h2 className="font-display text-lg text-foreground">Valor de entrega</h2>
             <p className="mt-1 text-sm text-muted-foreground">

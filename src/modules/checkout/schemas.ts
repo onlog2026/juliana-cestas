@@ -20,7 +20,7 @@ export const checkoutInputSchema = z
   .object({
     idempotencyKey: z.string().uuid(),
     productSlug: z.string().min(1),
-    addonSlugs: z.array(z.string()),
+    addonSlugs: z.array(z.string()).max(60),
     upsellSlugs: z.array(z.string()),
     couponCode: z.string().trim().max(40).optional(),
 

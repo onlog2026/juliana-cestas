@@ -250,6 +250,115 @@ export async function updateProductShipping(
   return { ok: true };
 }
 
+export type ProductAddonInput = {
+  id?: string;
+  productId: string;
+  name: string;
+  priceCents: number;
+  groupName: string;
+  note: string;
+  imageUrl: string;
+  active: boolean;
+};
+
+/**
+ * Cria ou edita um adicional do produto (foto, seção, observação e preço). O
+ * preço é sempre revalidado no servidor: é dinheiro que o cliente paga.
+ */
+export async function upsertProductAddon(
+  input: ProductAddonInput
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const staff = await requireStaff();
+
+  const name = input.name.trim();
+  if (!name) return { ok: false, error: "Dê um nome para o adicional." };
+  if (name.length > 80) return { ok: false, error: "O nome está muito longo." };
+  if (!Number.isInteger(input.priceCents) || input.priceCents < 0 || input.priceCents > 1_000_000) {
+    return { ok: false, error: "Informe um preço válido." };
+  }
+  const groupName = input.groupName.trim();
+  const note = input.note.trim();
+  if (groupName.length > 40) return { ok: false, error: "O nome da seção pode ter até 40 letras." };
+  if (note.length > 60) return { ok: false, error: "A observação pode ter até 60 letras." };
+
+  const admin = createAdminClient();
+
+  // O produto tem que ser desta loja (nunca gravar adicional em produto alheio).
+  const { data: product } = await admin
+    .from("products")
+    .select("id")
+    .eq("id", input.productId)
+    .eq("tenant_id", staff.tenantId)
+    .maybeSingle();
+  if (!product) return { ok: false, error: "Produto não encontrado." };
+
+  const row = {
+    name,
+    price_cents: input.priceCents,
+    group_name: groupName || null,
+    note: note || null,
+    image_url: input.imageUrl.trim() || null,
+    active: input.active,
+  };
+
+  if (input.id) {
+    const { error } = await admin
+      .from("product_addons")
+      .update(row)
+      .eq("id", input.id)
+      .eq("product_id", input.productId)
+      .eq("tenant_id", staff.tenantId);
+    if (error) return { ok: false, error: "Não foi possível salvar o adicional." };
+  } else {
+    // slug único por produto: nome + sufixo curto (o slug só identifica o item no carrinho).
+    const slug = `${slugify(name).slice(0, 40) || "adicional"}-${crypto.randomUUID().slice(0, 6)}`;
+    const { data: last } = await admin
+      .from("product_addons")
+      .select("sort_order")
+      .eq("tenant_id", staff.tenantId)
+      .eq("product_id", input.productId)
+      .order("sort_order", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const { error } = await admin.from("product_addons").insert({
+      ...row,
+      tenant_id: staff.tenantId,
+      product_id: input.productId,
+      slug,
+      sort_order: (last?.sort_order ?? 0) + 1,
+    });
+    if (error) return { ok: false, error: "Não foi possível criar o adicional." };
+  }
+
+  revalidatePath("/checkout", "layout");
+  revalidatePath(`/admin/produtos/${input.productId}`);
+  return { ok: true };
+}
+
+export async function deleteProductAddon(
+  addonId: string,
+  productId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const staff = await requireStaff();
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("product_addons")
+    .delete()
+    .eq("id", addonId)
+    .eq("product_id", productId)
+    .eq("tenant_id", staff.tenantId);
+  if (error) {
+    // Adicional já vendido fica preso ao histórico do pedido (FK) -- some da loja desativando.
+    if (error.code === "23503") {
+      return { ok: false, error: "Esse adicional já foi vendido. Desmarque “Ativo” em vez de excluir." };
+    }
+    return { ok: false, error: "Não foi possível excluir." };
+  }
+  revalidatePath("/checkout", "layout");
+  revalidatePath(`/admin/produtos/${productId}`);
+  return { ok: true };
+}
+
 export async function updateProductUpsells(input: {
   productId: string;
   upsellProductIds: string[];

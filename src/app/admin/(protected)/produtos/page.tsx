@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, FolderTree } from "lucide-react";
 import { getAllProductsAdmin } from "@/modules/catalog/service";
+import { getAllCategoriesAdmin } from "@/modules/catalog/categories";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { formatCents } from "@/lib/money";
 import { NewProductButton } from "@/components/admin/new-product-button";
@@ -8,7 +9,18 @@ import { ProductThumbnail } from "@/components/admin/product-thumbnail";
 
 export default async function AdminProdutosPage() {
   const staff = await requireStaff();
-  const products = await getAllProductsAdmin(staff.tenantId);
+  const [products, categories] = await Promise.all([
+    getAllProductsAdmin(staff.tenantId),
+    getAllCategoriesAdmin(staff.tenantId),
+  ]);
+  // "Categoria › Subcategoria" de cada produto, para a lista mostrar onde ele está.
+  const byId = new Map(categories.map((c) => [c.id, c]));
+  const categoryLabel = (id: string | null) => {
+    const c = id ? byId.get(id) : null;
+    if (!c) return null;
+    const parent = c.parentId ? byId.get(c.parentId) : null;
+    return parent ? `${parent.name} › ${c.name}` : c.name;
+  };
 
   return (
     <div className="max-w-[1400px]">
@@ -19,7 +31,15 @@ export default async function AdminProdutosPage() {
             Dados, valor de entrega e produtos sugeridos (upsell) de cada cesta. Retirada na loja é sempre grátis.
           </p>
         </div>
-        <NewProductButton />
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+          <Link
+            href="/admin/produtos/categorias"
+            className="flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground hover:bg-accent"
+          >
+            <FolderTree className="size-4" /> Categorias
+          </Link>
+          <NewProductButton />
+        </div>
       </div>
 
       <div className="mt-6 divide-y divide-border rounded-card border border-border bg-card">
@@ -41,6 +61,12 @@ export default async function AdminProdutosPage() {
                 ) : null}
               </p>
               <p className="text-xs text-muted-foreground">
+                {categoryLabel(product.category_id) ? (
+                  <>
+                    <span className="font-medium text-foreground/80">{categoryLabel(product.category_id)}</span>
+                    {" · "}
+                  </>
+                ) : null}
                 {formatCents(product.price_cents)}
                 {" · "}
                 Entrega: {product.delivery_fee_cents > 0 ? formatCents(product.delivery_fee_cents) : "grátis"}

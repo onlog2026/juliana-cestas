@@ -2,6 +2,7 @@ import "server-only";
 import { getProductForCheckout, getUpsellsForProduct } from "@/modules/catalog/service";
 import { resolveZoneByCep, getDeliverySettings } from "@/modules/delivery/settings";
 import { validateCoupon, computeDiscount } from "@/modules/coupons/validate";
+import { MAX_ADDON_QTY, countBySlug } from "@/modules/checkout/addon-qty";
 
 export type QuoteResult =
   | {
@@ -47,6 +48,9 @@ export async function quoteCheckout(
   const subtotalCents = product.price_cents;
 
   let addonsCents = 0;
+  for (const qty of countBySlug(input.addonSlugs).values()) {
+    if (qty > MAX_ADDON_QTY) return { ok: false, error: `Máximo de ${MAX_ADDON_QTY} unidades por adicional.` };
+  }
   for (const slug of input.addonSlugs) {
     const addon = addons.find((a) => a.slug === slug);
     if (!addon) return { ok: false, error: `Adicional inválido: ${slug}` };

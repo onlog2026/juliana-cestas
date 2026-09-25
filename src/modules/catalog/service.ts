@@ -55,7 +55,18 @@ export type DbProductAddon = {
   slug: string;
   name: string;
   price_cents: number;
+  image_url: string | null;
+  /** Seção em que aparece na lista (ex.: "Fotos", "Bolos"). null = "Outros". */
+  group_name: string | null;
+  /** Observação curta embaixo do nome (ex.: "Personalizado"). */
+  note: string | null;
+  sort_order: number;
 };
+
+/** Adicional como o painel edita: inclui os inativos. */
+export type DbProductAddonAdmin = DbProductAddon & { active: boolean };
+
+const ADDON_COLUMNS = "id, slug, name, price_cents, image_url, group_name, note, sort_order";
 
 const PUBLIC_PRODUCT_COLUMNS =
   "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, gallery_urls, video_url, description, short_description, seo_title, seo_description, image_alt";
@@ -164,15 +175,30 @@ export async function getProductForCheckout(tenantId: string, slug: string) {
 
   const { data: addons } = await supabase
     .from("product_addons")
-    .select("id, slug, name, price_cents")
+    .select(ADDON_COLUMNS)
     .eq("tenant_id", tenantId)
     .eq("product_id", product.id)
-    .eq("active", true);
+    .eq("active", true)
+    .order("sort_order", { ascending: true })
+    .order("name", { ascending: true });
 
   return {
     product: product as DbProduct,
     addons: (addons ?? []) as DbProductAddon[],
   };
+}
+
+/** Todos os adicionais de um produto (ativos e inativos), para o painel. */
+export async function getProductAddonsAdmin(tenantId: string, productId: string): Promise<DbProductAddonAdmin[]> {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("product_addons")
+    .select(`${ADDON_COLUMNS}, active`)
+    .eq("tenant_id", tenantId)
+    .eq("product_id", productId)
+    .order("sort_order", { ascending: true })
+    .order("name", { ascending: true });
+  return (data ?? []) as DbProductAddonAdmin[];
 }
 
 /** Todos os produtos do tenant, para o painel admin (inclui inativos). */

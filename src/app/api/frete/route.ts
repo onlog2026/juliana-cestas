@@ -5,6 +5,7 @@ import { getDeliverySettings } from "@/modules/delivery/settings";
 import { resolveDelivery } from "@/modules/delivery/resolve-delivery";
 import { checkRateLimit, clientIp } from "@/lib/security/rate-limit";
 import { getTenantId } from "@/lib/tenant/context";
+import { countBySlug } from "@/modules/checkout/addon-qty";
 
 /**
  * Calcula o frete a partir do CEP, para o cartão do checkout ("Entrega para X —
@@ -88,8 +89,9 @@ export async function POST(req: Request) {
   // Mercadoria só para o frete-grátis-acima-de-X. Itens desconhecidos são
   // ignorados (não é papel deste endpoint validar o carrinho).
   let merchandiseCents = found.product.price_cents;
+  const addonQty = countBySlug(parsed.data.addonSlugs);
   for (const addon of found.addons) {
-    if (parsed.data.addonSlugs.includes(addon.slug)) merchandiseCents += addon.price_cents;
+    merchandiseCents += addon.price_cents * (addonQty.get(addon.slug) ?? 0);
   }
   const upsells = await getUpsellsForProduct(tenantId, found.product.id);
   for (const upsell of upsells) {

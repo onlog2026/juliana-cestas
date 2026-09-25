@@ -3,11 +3,9 @@ import { ChevronRight } from "lucide-react";
 import { requireStaffWithModule } from "@/lib/auth/require-module";
 import { getSocialLinks } from "@/modules/settings/social-links";
 import { getAllBannersAdmin } from "@/modules/banners/service";
-import { getAllCategoriesAdmin } from "@/modules/catalog/categories";
 import { getSiteSettings } from "@/modules/settings/site-settings";
 import { SocialLinksForm } from "@/components/admin/social-links-form";
 import { BannersManager } from "@/components/admin/banners-manager";
-import { CategoriesManager } from "@/components/admin/categories-manager";
 import { SiteBrandingForm } from "@/components/admin/site-branding-form";
 
 export default async function AdminCmsPage() {
@@ -16,10 +14,9 @@ export default async function AdminCmsPage() {
   // módulo "cms" no plano é levado para a página de oferta.
   // (Esta tela edita banners, categorias e a marca do site.)
   const staff = await requireStaffWithModule("cms");
-  const [links, banners, categories, siteSettings] = await Promise.all([
+  const [links, banners, siteSettings] = await Promise.all([
     getSocialLinks(staff.tenantId),
     getAllBannersAdmin(staff.tenantId),
-    getAllCategoriesAdmin(staff.tenantId),
     getSiteSettings(staff.tenantId),
   ]);
 
@@ -45,11 +42,15 @@ export default async function AdminCmsPage() {
           <section className="rounded-card border border-border bg-card p-5">
             <h2 className="font-display text-lg text-foreground">Categorias</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Organizam as cestas no site (menu, filtro). Cada cesta pertence a uma categoria no cadastro do produto.
+              Categorias e subcategorias agora ficam em Produtos, junto do cadastro de cada cesta.
             </p>
-            <div className="mt-4">
-              <CategoriesManager categories={categories} />
-            </div>
+            <Link
+              href="/admin/produtos/categorias"
+              className="jc-nav-hover mt-4 flex h-11 items-center justify-between rounded-[10px] border border-border px-4 text-sm font-medium text-foreground"
+            >
+              Gerenciar categorias
+              <ChevronRight className="size-4" />
+            </Link>
           </section>
 
           <section className="rounded-card border border-border bg-card p-5">

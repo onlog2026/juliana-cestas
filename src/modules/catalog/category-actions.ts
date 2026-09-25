@@ -28,11 +28,11 @@ function slugify(raw: string): string {
 export async function upsertCategory(
   input: CategoryInput
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  // TRAVA DE SERVIDOR (módulo "cms"): a action é um endpoint HTTP -- some
+  // TRAVA DE SERVIDOR (módulo "produtos"): a action é um endpoint HTTP -- some
   // do menu não quer dizer que sumiu da rede. Devolve a recusa em vez de
   // redirecionar, porque quem chamou é um formulário que precisa mostrar o
   // aviso na tela.
-  const gate = await ensureModuleForAction("cms");
+  const gate = await ensureModuleForAction("produtos");
   if (!gate.ok) return { ok: false, error: gate.mensagem };
   const staff = gate.staff;
 
@@ -95,6 +95,7 @@ export async function upsertCategory(
 
   revalidatePath("/", "layout");
   revalidatePath("/admin/cms");
+  revalidatePath("/admin/produtos/categorias");
   revalidatePath("/admin/produtos", "layout");
   return { ok: true };
 }
@@ -114,11 +115,11 @@ async function nextSortOrder(
 }
 
 export async function deleteCategory(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  // TRAVA DE SERVIDOR (módulo "cms"): a action é um endpoint HTTP -- some
+  // TRAVA DE SERVIDOR (módulo "produtos"): a action é um endpoint HTTP -- some
   // do menu não quer dizer que sumiu da rede. Devolve a recusa em vez de
   // redirecionar, porque quem chamou é um formulário que precisa mostrar o
   // aviso na tela.
-  const gate = await ensureModuleForAction("cms");
+  const gate = await ensureModuleForAction("produtos");
   if (!gate.ok) return { ok: false, error: gate.mensagem };
   const staff = gate.staff;
 
@@ -138,17 +139,18 @@ export async function deleteCategory(id: string): Promise<{ ok: true } | { ok: f
 
   revalidatePath("/", "layout");
   revalidatePath("/admin/cms");
+  revalidatePath("/admin/produtos/categorias");
   return { ok: true };
 }
 
 export async function reorderCategories(
   orderedIds: string[]
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  // TRAVA DE SERVIDOR (módulo "cms"): a action é um endpoint HTTP -- some
+  // TRAVA DE SERVIDOR (módulo "produtos"): a action é um endpoint HTTP -- some
   // do menu não quer dizer que sumiu da rede. Devolve a recusa em vez de
   // redirecionar, porque quem chamou é um formulário que precisa mostrar o
   // aviso na tela.
-  const gate = await ensureModuleForAction("cms");
+  const gate = await ensureModuleForAction("produtos");
   if (!gate.ok) return { ok: false, error: gate.mensagem };
   const staff = gate.staff;
 
@@ -162,5 +164,6 @@ export async function reorderCategories(
 
   revalidatePath("/", "layout");
   revalidatePath("/admin/cms");
+  revalidatePath("/admin/produtos/categorias");
   return { ok: true };
 }

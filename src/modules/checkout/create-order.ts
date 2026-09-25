@@ -14,6 +14,7 @@ import { sendOrderEmail, sendStoreWhatsapp, getEmailBrand } from "@/modules/noti
 import { orderConfirmedEmail } from "@/modules/notifications/templates/order-confirmed";
 import { buildStoreNewOrderText } from "@/modules/notifications/templates/store-new-order";
 import { weekdayOfDateStr } from "@/lib/time/sao-paulo";
+import { countBySlug } from "@/modules/checkout/addon-qty";
 
 const WEEKDAY_LABELS = [
   "domingo", "segunda-feira", "terça-feira", "quarta-feira",
@@ -80,15 +81,16 @@ export async function createOrder(
       qty: 1,
       items_snapshot: found.product.items,
     },
-    ...input.addonSlugs
-      .map((slug) => found.addons.find((a) => a.slug === slug))
-      .filter((a): a is NonNullable<typeof a> => Boolean(a))
-      .map((addon) => ({
+    // Adicional repetido = quantidade: uma linha "Nx nome" em vez de N linhas iguais.
+    ...Array.from(countBySlug(input.addonSlugs).entries())
+      .map(([slug, qty]) => ({ addon: found.addons.find((a) => a.slug === slug), qty }))
+      .filter((x): x is { addon: NonNullable<typeof x.addon>; qty: number } => Boolean(x.addon))
+      .map(({ addon, qty }) => ({
         kind: "addon",
         addon_id: addon.id,
         name: addon.name,
         unit_price_cents: addon.price_cents,
-        qty: 1,
+        qty,
         items_snapshot: null,
       })),
     ...quote.upsellItems.map((upsell) => ({

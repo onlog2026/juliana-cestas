@@ -6,7 +6,7 @@ import { getCustomerOrderDetail } from "@/modules/customers/service";
 import { getTenantId } from "@/lib/tenant/context";
 import { getStoreProfile } from "@/modules/settings/store-profile";
 import { getCardTemplate } from "@/modules/cards/templates";
-import { CardPattern } from "@/components/loja/checkout/card-pattern";
+import { CardFace } from "@/components/loja/card-face";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { formatCents } from "@/lib/money";
 
@@ -76,18 +76,14 @@ export default async function ContaPedidoPage(props: PageProps<"/conta/pedidos/[
         </div>
       </div>
 
-      <div
-        className={`relative mt-4 overflow-hidden rounded-2xl border px-8 py-8 ${template.paperClass} ${template.borderClass}`}
-        style={{ boxShadow: "var(--jc-shadow)" }}
-      >
-        <CardPattern template={template} />
-        <p className="relative font-display text-lg leading-relaxed text-[#3a3226]">{order.card_message}</p>
-        <p className="relative mt-6 font-display text-base text-[#3a3226]">
-          Para {order.card_recipient}
-          {order.card_sender ? `, de ${order.card_sender}` : ""}.
-        </p>
-        <p className="relative mt-8 text-xs uppercase tracking-[0.12em] text-[#8a7d5f]">{storeName}</p>
-      </div>
+      <CardFace
+        template={template}
+        message={order.card_message}
+        recipient={order.card_recipient}
+        sender={order.card_sender}
+        storeName={storeName}
+        className="mt-4"
+      />
 
       <p className="mt-6 flex items-start gap-2 text-xs text-muted-foreground">
         <Check className="mt-0.5 size-3.5 shrink-0" />
