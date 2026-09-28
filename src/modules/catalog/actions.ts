@@ -52,6 +52,15 @@ export async function createProduct(): Promise<
 
   const admin = createAdminClient();
   const slug = `nova-cesta-${Date.now().toString(36)}`;
+  // Nasce no FIM da lista: sem isto o produto fica com sort_order=0 (default) e
+  // fura a ordem que a lojista definiu -- toda a vitrine ordena por sort_order.
+  const { data: last } = await admin
+    .from("products")
+    .select("sort_order")
+    .eq("tenant_id", staff.tenantId)
+    .order("sort_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
   const { data, error } = await admin
     .from("products")
     .insert({
@@ -60,6 +69,7 @@ export async function createProduct(): Promise<
       name: "Nova cesta",
       price_cents: 500,
       active: false,
+      sort_order: (last?.sort_order ?? 0) + 1,
     })
     .select("id")
     .single();
@@ -68,6 +78,34 @@ export async function createProduct(): Promise<
 
   revalidatePath("/admin/produtos");
   return { ok: true, id: data.id };
+}
+
+/**
+ * Reordena os produtos da loja (setas ↑↓ no admin). Grava sort_order = posição
+ * na lista; a vitrine inteira (home "Mais pedidas", categorias, "Outras cestas")
+ * lê por sort_order asc. Molde igual ao reorderDeliveryZones.
+ */
+export async function reorderProducts(
+  orderedIds: string[]
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const staff = await requireStaff();
+
+  const admin = createAdminClient();
+  const results = await Promise.all(
+    orderedIds.map((id, index) =>
+      admin
+        .from("products")
+        .update({ sort_order: index })
+        .eq("id", id)
+        .eq("tenant_id", staff.tenantId)
+    )
+  );
+  if (results.some((r) => r.error)) return { ok: false, error: "Não foi possível reordenar." };
+
+  revalidatePath("/admin/produtos");
+  // A ordem muda a vitrine toda (home, categorias, produtos relacionados).
+  revalidatePath("/", "layout");
+  return { ok: true };
 }
 
 export async function updateProductDetails(

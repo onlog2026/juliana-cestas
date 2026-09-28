@@ -159,6 +159,10 @@
   }
   html {
     @apply font-sans;
+    /* O cabeçalho é sticky (top-0, sem offset): sem isto, um clique numa âncora
+       da página (ex.: #mais-pedidas) para o alvo escondido atrás do header.
+       ~5rem cobre a barra do topo; se sobrar/faltar um pouco, é só estético. */
+    scroll-padding-top: 5rem;
   }
 }
 

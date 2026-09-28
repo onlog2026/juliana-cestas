@@ -37,7 +37,7 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[slug]">)
   if (!settings) notFound();
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-muted-foreground">
         <Link href="/" className="transition-colors hover:text-primary">
           Início
@@ -54,7 +54,7 @@ export default async function CheckoutPage(props: PageProps<"/checkout/[slug]">)
         Finalizar {found.product.name}
       </h1>
 
-      <div className="mt-8">
+      <div className="mt-6">
         <CheckoutForm
           product={found.product}
           addons={found.addons}

@@ -8,6 +8,7 @@ import { getSiteSettings } from "@/modules/settings/site-settings";
 import { getStoreProfile } from "@/modules/settings/store-profile";
 import { HeaderSearch } from "@/components/loja/header-search";
 import { HeaderNavMenu } from "@/components/loja/header-nav-menu";
+import { MobileNavMenu } from "@/components/loja/mobile-nav-menu";
 import { SocialIcons } from "@/components/loja/social-icons";
 import { HeaderLogo } from "@/components/loja/header-logo-editable";
 
@@ -78,6 +79,15 @@ export async function SiteHeader() {
             Minha conta
           </Link>
         </nav>
+
+        {/* Hambúrguer só no celular (o menu de categorias do desktop é o
+            HeaderNavMenu abaixo, hidden md:block). ml-auto o empurra pra direita
+            quando a busca e a conta ficam escondidas no mobile. */}
+        {navCategories.length > 0 ? (
+          <div className="ml-auto md:hidden">
+            <MobileNavMenu categories={navCategories} />
+          </div>
+        ) : null}
       </div>
 
       {navCategories.length > 0 ? (

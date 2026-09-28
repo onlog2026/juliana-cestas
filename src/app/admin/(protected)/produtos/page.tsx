@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { ChevronRight, FolderTree } from "lucide-react";
+import { FolderTree } from "lucide-react";
 import { getAllProductsAdmin } from "@/modules/catalog/service";
 import { getAllCategoriesAdmin } from "@/modules/catalog/categories";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { formatCents } from "@/lib/money";
 import { NewProductButton } from "@/components/admin/new-product-button";
-import { ProductThumbnail } from "@/components/admin/product-thumbnail";
+import { ProductsList, type ProductRow } from "@/components/admin/products-list";
 
 export default async function AdminProdutosPage() {
   const staff = await requireStaff();
@@ -21,6 +21,23 @@ export default async function AdminProdutosPage() {
     const parent = c.parentId ? byId.get(c.parentId) : null;
     return parent ? `${parent.name} › ${c.name}` : c.name;
   };
+
+  // Monta a lista já pronta pro componente cliente (que faz a reordenação por
+  // setas). Rótulos formatados aqui no servidor: o cliente só apresenta.
+  const rows: ProductRow[] = products.map((product) => ({
+    id: product.id,
+    name: product.name,
+    active: product.active,
+    imageUrl: product.image_url,
+    categoryLabel: categoryLabel(product.category_id),
+    priceLabel: formatCents(product.price_cents),
+    deliveryLabel: product.delivery_fee_cents > 0 ? formatCents(product.delivery_fee_cents) : "grátis",
+    stock: product.stock_quantity,
+    stockLow:
+      product.stock_quantity !== null &&
+      product.low_stock_threshold !== null &&
+      product.stock_quantity <= product.low_stock_threshold,
+  }));
 
   return (
     <div className="max-w-[1400px]">
@@ -42,56 +59,11 @@ export default async function AdminProdutosPage() {
         </div>
       </div>
 
-      <div className="mt-6 divide-y divide-border rounded-card border border-border bg-card">
-        {products.map((product) => (
-          <Link
-            key={product.id}
-            href={`/admin/produtos/${product.id}`}
-            className="flex items-center justify-between gap-3 px-4 py-3.5 hover:bg-accent"
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              <ProductThumbnail imageUrl={product.image_url} alt={product.name} />
-              <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-foreground">
-                {product.name}
-                {!product.active ? (
-                  <span className="ml-2 rounded-full bg-secondary px-2 py-0.5 text-xs font-normal text-muted-foreground">
-                    inativa
-                  </span>
-                ) : null}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {categoryLabel(product.category_id) ? (
-                  <>
-                    <span className="font-medium text-foreground/80">{categoryLabel(product.category_id)}</span>
-                    {" · "}
-                  </>
-                ) : null}
-                {formatCents(product.price_cents)}
-                {" · "}
-                Entrega: {product.delivery_fee_cents > 0 ? formatCents(product.delivery_fee_cents) : "grátis"}
-                {product.stock_quantity !== null ? (
-                  <>
-                    {" · "}
-                    <span
-                      className={
-                        product.low_stock_threshold !== null &&
-                        product.stock_quantity <= product.low_stock_threshold
-                          ? "font-medium text-destructive"
-                          : undefined
-                      }
-                    >
-                      Estoque: {product.stock_quantity}
-                    </span>
-                  </>
-                ) : null}
-              </p>
-              </div>
-            </div>
-            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-          </Link>
-        ))}
-      </div>
+      <p className="mt-4 text-xs text-muted-foreground">
+        Use as setas ↑↓ para ordenar. A ordem aqui é a mesma que aparece na loja
+        (home “Mais pedidas”, categorias e cestas relacionadas).
+      </p>
+      <ProductsList products={rows} />
     </div>
   );
 }

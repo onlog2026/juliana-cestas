@@ -36,7 +36,9 @@ export async function SiteFooter() {
   const storeName = storeProfile.businessName?.trim() || "";
 
   return (
-    <footer className="border-t border-border bg-secondary/60">
+    // pb-20 no mobile: o BottomNav fixo (h-16 = 64px) cobriria o fim do rodapé;
+    // o respiro tira o texto de baixo do menu. No desktop (md) não há BottomNav.
+    <footer className="border-t border-border bg-secondary/60 pb-20 md:pb-0">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr] lg:px-8">
         <div>
           {siteSettings.logoFooterUrl ? (
