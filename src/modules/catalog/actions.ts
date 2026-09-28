@@ -82,7 +82,7 @@ export async function createProduct(): Promise<
 
 /**
  * Reordena os produtos da loja (setas ↑↓ no admin). Grava sort_order = posição
- * na lista; a vitrine inteira (home "Mais pedidas", categorias, "Outras cestas")
+ * na lista; a vitrine inteira (home "Nossas cestas", categorias, "Outras cestas")
  * lê por sort_order asc. Molde igual ao reorderDeliveryZones.
  */
 export async function reorderProducts(

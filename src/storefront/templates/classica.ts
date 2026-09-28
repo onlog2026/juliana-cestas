@@ -11,16 +11,18 @@
  * ordem, mesmas classes. Se este arquivo "melhorar" alguma coisa, a troca
  * deixa de ser reversível sem susto.
  *
- * Conferência (linha a linha de `page.tsx`, 06/09/2026):
- *   19  <BannerCarousel banners={banners} />          -> hero / carousel
- *   20-33 os dois botões "Ver cestas" e "Mais pedidas" -> hero.quickLinks
- *   34  <CategoryTiles />                             -> category-grid / tiles
- *   35  <FeaturedProducts />                          -> product-grid / featured
- *   36-38 <Reveal><CartaozinhoSection /></Reveal>     -> signature / image-text
- *   39  <Collections />                               -> collection-spotlight
- *   40  <Benefits />                                  -> benefits / icons-row
- *   41  <Faq />                                       -> faq / accordion
- *   42-44 <Reveal><WhatsappCta /></Reveal>            -> cta-whatsapp / band
+ * Conferência (`page.tsx`, atualizada em 28/09/2026 quando a home ganhou a grade
+ * "Nossas cestas" e os atalhos das categorias; `CategoryTiles` e `Collections`
+ * saíram da home por decisão do dono):
+ *   <BannerCarousel banners={banners} />              -> hero / carousel
+ *   os dois botões "Ver cestas" e "Nossas cestas"     -> hero.quickLinks
+ *   <CategoryShortcuts />                             -> category-grid / shortcuts
+ *   <FeaturedProducts />                              -> product-grid / featured
+ *   <Reveal><CartaozinhoSection /></Reveal>           -> signature / image-text
+ *   <ReviewsShowcase /> (some sozinha sem avaliação)  -> (fora do modelo)
+ *   <Benefits />                                      -> benefits / icons-row
+ *   <Faq />                                           -> faq / accordion
+ *   <Reveal><WhatsappCta /></Reveal>                  -> cta-whatsapp / band
  *
  * O tema é, token por token, o `:root` do `globals.css` de hoje. Materializar
  * este modelo tem que ser visualmente um NADA ACONTECEU.
@@ -31,7 +33,7 @@ export const classica: TemplateDefinition = {
   key: "classica",
   name: "Clássica",
   description:
-    "A loja como ela é hoje: banner grande, categorias com foto, produtos, cartãozinho e perguntas frequentes.",
+    "A loja como ela é hoje: banner grande, atalhos das categorias, produtos, cartãozinho e perguntas frequentes.",
   indicadoPara:
     "Loja artesanal, com poucos produtos e foto bonita em cada um. É o modelo da Juliana Present.",
 
@@ -83,7 +85,7 @@ export const classica: TemplateDefinition = {
           props: {
             quickLinks: [
               { label: "Ver cestas", href: "/categoria/cafe-da-manha", style: "solid" },
-              { label: "Mais pedidas", href: "#mais-pedidas", style: "outline" },
+              { label: "Nossas cestas", href: "#nossas-cestas", style: "outline" },
             ],
             eyebrow: "",
             headline: "",
@@ -95,26 +97,20 @@ export const classica: TemplateDefinition = {
         {
           id: "categorias",
           type: "category-grid",
-          variant: "tiles",
+          variant: "shortcuts",
           props: { titleOverride: "", sticky: false },
         },
         {
-          id: "mais-pedidas",
+          id: "nossas-cestas",
           type: "product-grid",
           variant: "featured",
-          props: { title: "Mais pedidas", subtitle: "", limit: 0, showFilters: false },
+          props: { title: "Nossas cestas", subtitle: "", limit: 0, showFilters: false },
         },
         {
           id: "cartaozinho",
           type: "signature",
           variant: "image-text",
           props: { imageOverride: "" },
-        },
-        {
-          id: "selecao",
-          type: "collection-spotlight",
-          variant: "spotlight",
-          props: {},
         },
         {
           id: "beneficios",

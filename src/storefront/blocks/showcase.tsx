@@ -14,6 +14,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ImageOff } from "lucide-react";
 import { BannerCarousel } from "@/components/loja/banner-carousel";
+import { CategoryShortcuts } from "@/components/loja/category-shortcuts";
 import { CategoryTiles } from "@/components/loja/category-tiles";
 import { FeaturedProducts } from "@/components/loja/featured-products";
 import { ProductCard } from "@/components/loja/product-card";
@@ -192,7 +193,11 @@ export async function CategoryGridBlock({
     );
   }
 
-  // "tiles" — os quadradinhos de hoje. O componente cuida do próprio texto.
+  // "shortcuts" — a faixa de atalhos de hoje (foto redonda + nome).
+  if (variant === "shortcuts") return <CategoryShortcuts />;
+
+  // "tiles" — os quadradinhos que a home tinha antes de 28/09/2026. O componente
+  // cuida do próprio texto.
   return <CategoryTiles />;
 }
 
@@ -282,6 +287,6 @@ export async function ProductGridBlock({
     );
   }
 
-  // "featured" — a grade "Mais pedidas" de hoje, com o componente de hoje.
+  // "featured" — a grade "Nossas cestas" de hoje, com o componente de hoje.
   return <FeaturedProducts />;
 }

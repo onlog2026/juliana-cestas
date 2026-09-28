@@ -1,27 +1,52 @@
 import { getTenantId } from "@/lib/tenant/context";
 import { getAllProducts } from "@/modules/catalog/service";
+import { getContent } from "@/modules/content/service";
 import { ProductCard } from "./product-card";
-import { Reveal } from "./reveal";
+import { PromoBanners } from "./promo-banners";
+import { SortableProductGrid, type GridEntry } from "./sortable-product-grid";
 
+// Grade de 2 colunas (celular) / 3 (tablet) / 5 (computador): o cartão ocupa
+// ~50vw / ~33vw / ~20vw. Pedir mais que isso só baixaria bytes à toa.
+const GRID_SIZES = "(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw";
+
+/**
+ * "Nossas cestas": a grade principal da home. O servidor monta os cartões
+ * (ProductCard segue sendo server component) na ordem manual da loja; o
+ * `SortableProductGrid` só os reordena no navegador quando o cliente escolhe
+ * outra ordem -- assim a home continua estática.
+ *
+ * `id="mais-pedidas"` fica como âncora-alias: a seção já se chamou "Mais
+ * pedidas" e ainda pode haver link antigo (Google, WhatsApp) apontando pra lá.
+ */
 export async function FeaturedProducts() {
-  const featuredProducts = await getAllProducts(await getTenantId());
+  const tenantId = await getTenantId();
+  const [products, promoContent] = await Promise.all([
+    getAllProducts(tenantId),
+    getContent(tenantId, "promo_banners"),
+  ]);
+
+  const entries: GridEntry[] = products.map((product, index) => ({
+    id: product.id,
+    order: index,
+    price: product.price,
+    createdAt: product.createdAt ?? "",
+    sold: 0,
+    node: <ProductCard product={product} sizes={GRID_SIZES} />,
+  }));
+
+  // Só passa o bloco se há o que mostrar -- um bloco vazio ainda abriria uma
+  // linha em branco (com espaçamento) no meio da grade.
+  const hasPromo =
+    promoContent.enabled && Boolean(promoContent.wide.imageUrl || promoContent.narrow.imageUrl);
+
   return (
-    <section
-      id="mais-pedidas"
-      className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8"
-    >
-      <div className="flex items-baseline justify-between">
-        <h2 className="font-display text-2xl text-foreground">
-          Mais pedidas
-        </h2>
-      </div>
-      <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-6">
-        {featuredProducts.map((product) => (
-          <Reveal key={product.id}>
-            <ProductCard product={product} />
-          </Reveal>
-        ))}
-      </div>
+    <section id="nossas-cestas" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <span id="mais-pedidas" aria-hidden="true" />
+      <SortableProductGrid
+        title="Nossas cestas"
+        entries={entries}
+        promo={hasPromo ? <PromoBanners promo={promoContent} /> : undefined}
+      />
     </section>
   );
 }

@@ -7,7 +7,13 @@ const currency = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 });
 
-export function ProductCard({ product }: { product: Product }) {
+// Padrão das grades de 3–4 colunas (categoria, produtos relacionados). A grade
+// da home tem 5 colunas e passa o próprio `sizes` -- pedir 22vw num cartão que
+// ocupa ~19vw só baixa bytes à toa; e pedir 20vw numa grade de 3 colunas
+// borraria a foto. Por isso o `sizes` é decidido por quem conhece a grade.
+const DEFAULT_SIZES = "(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 90vw";
+
+export function ProductCard({ product, sizes }: { product: Product; sizes?: string }) {
   return (
     <Link
       href={`/produto/${product.slug}`}
@@ -18,7 +24,7 @@ export function ProductCard({ product }: { product: Product }) {
           src={product.image}
           alt={product.name}
           fill
-          sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 90vw"
+          sizes={sizes ?? DEFAULT_SIZES}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
         {product.badge ? (

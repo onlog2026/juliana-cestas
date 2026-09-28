@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { BannerCarousel } from "@/components/loja/banner-carousel";
 import { getActiveBanners } from "@/modules/banners/service";
-import { CategoryTiles } from "@/components/loja/category-tiles";
+import { CategoryShortcuts } from "@/components/loja/category-shortcuts";
 import { FeaturedProducts } from "@/components/loja/featured-products";
 import { CartaozinhoSection } from "@/components/loja/cartaozinho-section";
-import { Collections } from "@/components/loja/collections";
 import { Benefits } from "@/components/loja/benefits";
 import { ReviewsShowcase } from "@/components/loja/reviews/reviews-showcase";
 import { Faq } from "@/components/loja/faq";
@@ -38,19 +37,23 @@ export default async function Home() {
           Ver cestas
         </Link>
         <Link
-          href="#mais-pedidas"
+          href="#nossas-cestas"
           className="inline-flex h-12 items-center rounded-full border border-[color-mix(in_oklch,var(--primary),transparent_70%)] px-7 text-base font-semibold text-primary transition-colors hover:bg-accent"
         >
-          Mais pedidas
+          Nossas cestas
         </Link>
       </div>
-      <CategoryTiles />
+      {/* Atalhos das categorias reais + UMA grade de produtos. Os blocos
+          antigos "CategoryTiles" (lista de produtos com nome de categoria) e
+          "Collections" (seleção por preço, conteúdo de semente de quando a
+          loja tinha 5 cestas) repetiam os mesmos produtos 3-4 vezes na página
+          -- saíram da home (decisão do dono, 28/09). */}
+      <CategoryShortcuts />
       <FeaturedProducts />
       <Reveal>
         <CartaozinhoSection />
       </Reveal>
-      <Collections />
-      {/* Prova social entra logo depois das coleções, antes dos benefícios:
+      {/* Prova social entra logo depois da grade, antes dos benefícios:
           quem chegou até aqui já viu o produto e é onde a opinião de outra
           pessoa pesa. Sem nenhuma avaliação aprovada, o componente devolve
           `null` e a home fica exatamente como está hoje -- seção vazia é pior

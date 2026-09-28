@@ -61,7 +61,7 @@ export default async function AdminProdutosPage() {
 
       <p className="mt-4 text-xs text-muted-foreground">
         Use as setas ↑↓ para ordenar. A ordem aqui é a mesma que aparece na loja
-        (home “Mais pedidas”, categorias e cestas relacionadas).
+        (home “Nossas cestas”, categorias e cestas relacionadas).
       </p>
       <ProductsList products={rows} />
     </div>

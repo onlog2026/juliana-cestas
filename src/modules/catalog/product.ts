@@ -27,4 +27,6 @@ export type Product = {
   seoTitle?: string;
   seoDescription?: string;
   imageAlt?: string;
+  /** Quando o produto foi cadastrado (ISO). Usado na ordenação "Mais novos". */
+  createdAt?: string;
 };

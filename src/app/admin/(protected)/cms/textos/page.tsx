@@ -17,18 +17,20 @@ export default async function AdminTextosPage() {
   const staff = await requireStaffWithModule("cms");
   const t = staff.tenantId;
 
-  const [benefits, faq, signature, whatsappCta, categoryTiles, collections, about, returns, business] =
-    await Promise.all([
-      getContentForAdmin(t, "benefits"),
-      getContentForAdmin(t, "faq"),
-      getContentForAdmin(t, "signature"),
-      getContentForAdmin(t, "whatsapp_cta"),
-      getContentForAdmin(t, "category_tiles"),
-      getContentForAdmin(t, "collections"),
-      getContentForAdmin(t, "about"),
-      getContentForAdmin(t, "returns"),
-      getContentForAdmin(t, "business"),
-    ]);
+  // As seções "category_tiles" e "collections" (títulos da faixa de produtos e da
+  // vitrine por preço) SAÍRAM da home em 28/09 -- a home tem uma grade só
+  // ("Nossas cestas") e os atalhos das categorias reais. Os dados antigos
+  // continuam guardados; só não há mais formulário aqui, para não editar algo
+  // que não aparece em lugar nenhum.
+  const [benefits, faq, signature, whatsappCta, about, returns, business] = await Promise.all([
+    getContentForAdmin(t, "benefits"),
+    getContentForAdmin(t, "faq"),
+    getContentForAdmin(t, "signature"),
+    getContentForAdmin(t, "whatsapp_cta"),
+    getContentForAdmin(t, "about"),
+    getContentForAdmin(t, "returns"),
+    getContentForAdmin(t, "business"),
+  ]);
 
   return (
     <div className="max-w-[1400px]">
@@ -121,32 +123,6 @@ export default async function AdminTextosPage() {
                 { key: "buttonLabel", label: "Texto do botão", type: "text" },
               ]}
             />
-          </div>
-        </section>
-
-        <section className="rounded-card border border-border bg-card p-5">
-          <h2 className="font-display text-lg text-foreground">Títulos de seção da home</h2>
-          <div className="mt-4 space-y-6">
-            <ContentFieldsForm
-              section="category_tiles"
-              value={categoryTiles.value as unknown as Record<string, unknown>}
-              isCustom={categoryTiles.isCustom}
-              help="Título da faixa de produtos da home."
-              fields={[{ key: "title", label: "Título", type: "text" }]}
-            />
-            <div className="border-t border-border pt-6">
-              <ContentFieldsForm
-                section="collections"
-                value={collections.value as unknown as Record<string, unknown>}
-                isCustom={collections.isCustom}
-                help="Vitrine por faixa de preço. Deixe o valor em branco para esconder a seção."
-                fields={[
-                  { key: "title", label: "Título", type: "text" },
-                  { key: "maxPriceCents", label: "Preço máximo em centavos (20000 = R$ 200)", type: "text" },
-                  { key: "highlightProductSlug", label: "Produto em destaque (slug)", type: "text" },
-                ]}
-              />
-            </div>
           </div>
         </section>
 

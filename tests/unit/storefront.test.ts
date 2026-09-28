@@ -103,10 +103,9 @@ describe("modelo clássica — cópia fiel da loja que está no ar", () => {
   /** Componente da home de hoje -> bloco que passa a representá-lo. */
   const COMPONENTE_PARA_BLOCO: Record<string, string> = {
     BannerCarousel: "hero",
-    CategoryTiles: "category-grid",
+    CategoryShortcuts: "category-grid",
     FeaturedProducts: "product-grid",
     CartaozinhoSection: "signature",
-    Collections: "collection-spotlight",
     Benefits: "benefits",
     Faq: "faq",
     WhatsappCta: "cta-whatsapp",
@@ -137,7 +136,7 @@ describe("modelo clássica — cópia fiel da loja que está no ar", () => {
     expect(hero?.variant).toBe("carousel");
     expect(hero?.props.quickLinks).toEqual([
       { label: "Ver cestas", href: "/categoria/cafe-da-manha", style: "solid" },
-      { label: "Mais pedidas", href: "#mais-pedidas", style: "outline" },
+      { label: "Nossas cestas", href: "#nossas-cestas", style: "outline" },
     ]);
   });
 
@@ -356,7 +355,7 @@ describe("troca de modelo", () => {
 
     expect(hero.props.quickLinks).toEqual([
       { label: "Ver cestas", href: "/categoria/cafe-da-manha", style: "solid" },
-      { label: "Mais pedidas", href: "#mais-pedidas", style: "outline" },
+      { label: "Nossas cestas", href: "#nossas-cestas", style: "outline" },
     ]);
     expect(hero.variant).toBe("split");
   });

@@ -9,6 +9,7 @@ import { SocialLinksForm } from "@/components/admin/social-links-form";
 import { BannersManager } from "@/components/admin/banners-manager";
 import { SiteBrandingForm } from "@/components/admin/site-branding-form";
 import { ContentAnnouncementForm } from "@/components/admin/content-announcement-form";
+import { ContentPromoBannersForm } from "@/components/admin/content-promo-banners-form";
 
 export default async function AdminCmsPage() {
   // TRAVA DE SERVIDOR: esconder o item do menu não impede ninguém de
@@ -16,11 +17,12 @@ export default async function AdminCmsPage() {
   // módulo "cms" no plano é levado para a página de oferta.
   // (Esta tela edita banners, categorias e a marca do site.)
   const staff = await requireStaffWithModule("cms");
-  const [links, banners, siteSettings, announcement] = await Promise.all([
+  const [links, banners, siteSettings, announcement, promoBanners] = await Promise.all([
     getSocialLinks(staff.tenantId),
     getAllBannersAdmin(staff.tenantId),
     getSiteSettings(staff.tenantId),
     getContentForAdmin(staff.tenantId, "announcement"),
+    getContentForAdmin(staff.tenantId, "promo_banners"),
   ]);
 
   return (
@@ -31,15 +33,28 @@ export default async function AdminCmsPage() {
       </p>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-2">
-        <section className="rounded-card border border-border bg-card p-5 xl:p-6">
-          <h2 className="font-display text-lg text-foreground">Banners da home</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Fotos e frases do carrossel no topo da home. A ordem daqui é a ordem que aparece no site.
-          </p>
-          <div className="mt-4">
-            <BannersManager banners={banners} />
-          </div>
-        </section>
+        <div className="space-y-6">
+          <section className="rounded-card border border-border bg-card p-5 xl:p-6">
+            <h2 className="font-display text-lg text-foreground">Banners da home</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Fotos e frases do carrossel no topo da home. A ordem daqui é a ordem que aparece no site.
+            </p>
+            <div className="mt-4">
+              <BannersManager banners={banners} />
+            </div>
+          </section>
+
+          <section className="rounded-card border border-border bg-card p-5 xl:p-6">
+            <h2 className="font-display text-lg text-foreground">Banners promocionais</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Dois banners de tamanhos diferentes no meio da lista de cestas (depois da 3ª linha): um largo e um
+              estreito.
+            </p>
+            <div className="mt-4">
+              <ContentPromoBannersForm value={promoBanners.value} />
+            </div>
+          </section>
+        </div>
 
         <div className="space-y-6">
           <section className="rounded-card border border-border bg-card p-5">

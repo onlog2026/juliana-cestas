@@ -139,7 +139,16 @@ export const categoryGridBlock: BlockSpec<CategoryGridProps> = {
   label: "Categorias",
   description: "Atalhos para os grupos de produtos da loja.",
   variants: [
-    { key: "tiles", label: "Quadradinhos com foto", description: "Foto, nome e porção. É o de hoje." },
+    {
+      key: "shortcuts",
+      label: "Atalhos redondos",
+      description: "Foto redonda e nome de cada categoria, em uma faixa. É o de hoje (desde 28/09/2026).",
+    },
+    {
+      key: "tiles",
+      label: "Quadradinhos com foto",
+      description: "Foto, nome e porção. Era o da home antes de 28/09/2026.",
+    },
     {
       key: "pills",
       label: "Pílulas no topo",
@@ -169,7 +178,7 @@ export const productGridBlock: BlockSpec<ProductGridProps> = {
     {
       key: "featured",
       label: "Mais pedidas",
-      description: "A grade de hoje, com o titulo fixo Mais pedidas.",
+      description: "A grade de hoje, com o titulo fixo Nossas cestas.",
     },
     {
       key: "asymmetric",
