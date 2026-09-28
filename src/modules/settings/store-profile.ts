@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export type StoreProfile = {
@@ -29,7 +30,12 @@ const EMPTY: StoreProfile = {
   state: null,
 };
 
-export async function getStoreProfile(tenantId: string): Promise<StoreProfile> {
+// `cache()` do React: uma consulta por REQUISIÇÃO, não uma por chamador. A home
+// chama isto no layout, no cabeçalho, no rodapé, na página e em seções -- eram
+// 5+ idas ao banco para a mesma linha a cada geração da página.
+export const getStoreProfile = cache(fetchStoreProfile);
+
+async function fetchStoreProfile(tenantId: string): Promise<StoreProfile> {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("store_profile")

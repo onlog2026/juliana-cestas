@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check, Loader2, Pencil, X } from "lucide-react";
-import { checkStaffSession } from "@/lib/auth/actions";
+import { useIsStaff } from "@/components/loja/use-is-staff";
 import { updateSiteSettings } from "@/modules/settings/actions";
 import {
   LOGO_HEADER_HEIGHT_DEFAULT,
@@ -39,23 +39,14 @@ export function HeaderLogo({
   storeName: string;
 }) {
   const router = useRouter();
-  const [isStaff, setIsStaff] = useState(false);
+  // Compartilhado com o carrossel: uma pergunta ao servidor por página, e só
+  // para quem tem cookie de login (visitante comum não pergunta nada).
+  const isStaff = useIsStaff();
   const [editing, setEditing] = useState(false);
   const [draftLogo, setDraftLogo] = useState(logoHeaderUrl ?? "");
   const [draftHeight, setDraftHeight] = useState(logoHeaderHeight ?? LOGO_HEADER_HEIGHT_DEFAULT);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-
-  // Roda depois que a página carrega -- não tira a home da geração estática.
-  useEffect(() => {
-    let active = true;
-    checkStaffSession().then((staff) => {
-      if (active) setIsStaff(staff);
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
 
   // Enquanto NÃO está editando, mostra o que está salvo de verdade -- só
   // durante a edição o slider manda no que aparece (pré-visualização ao vivo,

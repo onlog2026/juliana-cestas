@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildCategoryTree, type Category, type CategoryNode } from "./category-tree";
 
@@ -32,7 +33,11 @@ function mapCategory(row: CategoryRow): Category {
 
 
 /** Categorias visíveis no site, na ordem certa. */
-export async function getActiveCategories(tenantId: string): Promise<Category[]> {
+// Uma consulta por requisição: o cabeçalho (menu) e os atalhos da home leem as
+// mesmas categorias.
+export const getActiveCategories = cache(fetchActiveCategories);
+
+async function fetchActiveCategories(tenantId: string): Promise<Category[]> {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("categories")

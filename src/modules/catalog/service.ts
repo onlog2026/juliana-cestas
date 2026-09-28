@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Product } from "@/modules/catalog/product";
 
@@ -113,8 +114,16 @@ function mapPublicProduct(p: {
   };
 }
 
-/** Catálogo público (home, categoria, página de produto) — vem sempre do banco. */
-export async function getAllProducts(tenantId: string): Promise<Product[]> {
+/**
+ * Catálogo público (home, categoria, página de produto) — vem sempre do banco.
+ *
+ * `cache()` do React: uma consulta por REQUISIÇÃO. A home lia o catálogo inteiro
+ * 4 vezes (cabeçalho, atalhos, grade, coleções) -- só custava no build e na
+ * regeneração da página, mas custava.
+ */
+export const getAllProducts = cache(fetchAllProducts);
+
+async function fetchAllProducts(tenantId: string): Promise<Product[]> {
   const supabase = createAdminClient();
 
   const { data, error } = await supabase

@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export type SiteSettings = {
@@ -15,7 +16,10 @@ export type SiteSettings = {
 
 const EMPTY: SiteSettings = { logoHeaderUrl: null, logoFooterUrl: null, faviconUrl: null, logoHeaderHeight: null };
 
-export async function getSiteSettings(tenantId: string): Promise<SiteSettings> {
+// Uma consulta por requisição (metadados, cabeçalho e rodapé leem a mesma linha).
+export const getSiteSettings = cache(fetchSiteSettings);
+
+async function fetchSiteSettings(tenantId: string): Promise<SiteSettings> {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("site_settings")

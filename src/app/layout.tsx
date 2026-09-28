@@ -26,15 +26,21 @@ const youngSerif = Young_Serif({
 
 // Fontes extras só pros textos de banner (CMS) -- mais variedade além das
 // duas fontes de marca do site.
+// `preload: false` nas duas: sem isso o Next pré-carrega o arquivo da fonte em
+// TODA página, mesmo que nenhum banner use essa fonte. O @font-face continua
+// declarado, então o navegador baixa a fonte só quando um texto realmente a usa
+// (e `display: swap`, o padrão, evita texto invisível enquanto ela chega).
 const playfairDisplay = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
+  preload: false,
 });
 
 const poppins = Poppins({
   variable: "--font-poppins",
   weight: ["400", "600"],
   subsets: ["latin"],
+  preload: false,
 });
 
 // Metadados específicos da loja ficam em (store)/layout.tsx -- aqui só o que

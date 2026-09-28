@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Pencil, Check, X, Loader2, Move } from "lucide-react";
 import { bannerFontCssVar, BANNER_FONTS } from "@/lib/fonts";
 import { upsertBanner } from "@/modules/banners/actions";
-import { checkStaffSession } from "@/lib/auth/actions";
+import { useIsStaff } from "@/components/loja/use-is-staff";
 import type { Banner } from "@/modules/banners/service";
 
 type EditDraft = {
@@ -39,6 +39,82 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 /**
+ * A foto do banner num `<picture>`: o NAVEGADOR escolhe UMA imagem (a do
+ * celular abaixo de 640px, a do computador acima) e só essa é baixada.
+ *
+ * Antes eram dois `<Image priority>` (um com `sm:hidden`, outro com
+ * `hidden sm:block`): o CSS escondia um, mas o navegador baixava OS DOIS do
+ * primeiro banner, ambos com prioridade máxima -- no celular, uma foto de
+ * computador inteira baixada à toa, disputando banda com a que aparece. Era
+ * também o que gerava o aviso "Image with src … has fill and a height value
+ * of 0" no console (a imagem `display:none` mede 0).
+ *
+ * A posição do foco da foto (`object-position`) é diferente no celular e no
+ * computador (`mobileObjectPosition` x `objectPosition`); como agora existe uma
+ * <img> só, as duas posições vão em variáveis CSS e o breakpoint `sm` escolhe.
+ */
+function BannerPicture({
+  banner,
+  priority,
+  objectPosition,
+  editing,
+  onImageClick,
+}: {
+  banner: Banner;
+  priority: boolean;
+  /** Foco do computador (o que está sendo editado, no modo edição). */
+  objectPosition: string;
+  editing: boolean;
+  onImageClick?: (e: React.MouseEvent) => void;
+}) {
+  // No Next 16, `getImageProps` NÃO transforma `priority` em atributos (quem faz
+  // isso é o componente <Image>): a prioridade do 1º banner (a imagem que define
+  // o LCP) tem que ir explícita, `loading="eager"` + `fetchPriority="high"`. O
+  // <img> já está no HTML do servidor, então o navegador o descobre cedo e não
+  // precisa de <link rel="preload">. Os demais ficam `lazy` (o padrão).
+  const common = {
+    alt: banner.text,
+    fill: true,
+    sizes: "100vw",
+    ...(priority ? ({ loading: "eager", fetchPriority: "high" } as const) : {}),
+  } as const;
+  const desktop = getImageProps({ ...common, src: banner.image });
+  const mobile = banner.mobileImage ? getImageProps({ ...common, src: banner.mobileImage }) : null;
+  const mobilePosition = banner.mobileImage ? banner.mobileObjectPosition ?? "50% 50%" : objectPosition;
+
+  return (
+    <picture>
+      {mobile ? <source media="(max-width: 639px)" srcSet={mobile.props.srcSet} /> : null}
+      {/* eslint-disable-next-line @next/next/no-img-element -- <img> vindo de getImageProps: o next/image continua otimizando (srcSet), só dentro de um <picture> */}
+      <img
+        {...desktop.props}
+        className={`object-cover [object-position:var(--jc-op-m)] sm:[object-position:var(--jc-op-d)] ${
+          editing ? "cursor-crosshair" : ""
+        }`}
+        style={
+          {
+            ...desktop.props.style,
+            "--jc-op-m": mobilePosition,
+            "--jc-op-d": objectPosition,
+          } as React.CSSProperties
+        }
+        onClick={
+          onImageClick
+            ? (e) => {
+                // No celular, com foto própria do celular, o foco editável é o
+                // do COMPUTADOR (invisível ali): ignora o clique, como antes
+                // (a foto do celular nunca teve esse clique).
+                if (banner.mobileImage && window.matchMedia("(max-width: 639px)").matches) return;
+                onImageClick(e);
+              }
+            : undefined
+        }
+      />
+    </picture>
+  );
+}
+
+/**
  * O tamanho da fonte usa clamp(min, 4cqi, max) -- "cqi" é relativo à largura
  * do PRÓPRIO banner (container query), não da janela toda como "vw" fazia.
  * Antes, o preview do admin (numa coluna estreita) e a home (tela toda, e
@@ -49,7 +125,9 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
   const router = useRouter();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [isStaff, setIsStaff] = useState(false);
+  // Só decide se mostra o botão "Editar banner" (a trava de verdade está nas
+  // actions). Visitante sem login não faz nenhuma chamada ao servidor.
+  const isStaff = useIsStaff();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<EditDraft | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -70,21 +148,6 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
     }, 5500);
     return () => window.clearInterval(id);
   }, [count, paused, editing]);
-
-  // Checagem só decide se mostra o botão "Editar" -- chama a MESMA lógica
-  // de sessão que protege o painel de verdade (requireStaff), então nunca
-  // diverge dela. Roda depois que a página carrega (useEffect), então não
-  // tira a home da geração estática -- só quem já está com a página aberta
-  // é que faz essa pergunta ao servidor.
-  useEffect(() => {
-    let active = true;
-    checkStaffSession().then((staff) => {
-      if (active) setIsStaff(staff);
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
 
   if (count === 0) return null;
 
@@ -222,28 +285,12 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
                   if (isEditingThis) e.preventDefault();
                 }}
               >
-                {banner.mobileImage ? (
-                  <Image
-                    src={banner.mobileImage}
-                    alt={banner.text}
-                    fill
-                    priority={i === 0}
-                    sizes="100vw"
-                    className="object-cover sm:hidden"
-                    style={{ objectPosition: banner.mobileObjectPosition ?? "50% 50%" }}
-                  />
-                ) : null}
-                <Image
-                  src={banner.image}
-                  alt={banner.text}
-                  fill
+                <BannerPicture
+                  banner={banner}
                   priority={i === 0}
-                  sizes="100vw"
-                  className={`object-cover ${banner.mobileImage ? "hidden sm:block" : ""} ${
-                    isEditingThis ? "cursor-crosshair" : ""
-                  }`}
-                  style={{ objectPosition: effective.objectPosition }}
-                  onClick={isCurrent ? handleImageClick : undefined}
+                  objectPosition={effective.objectPosition}
+                  editing={Boolean(isEditingThis)}
+                  onImageClick={isCurrent ? handleImageClick : undefined}
                 />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
                 <p

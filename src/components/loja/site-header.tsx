@@ -30,6 +30,19 @@ export async function SiteHeader() {
   // nesse caso o link fica so com o logo, sem inventar marca nenhuma.
   const storeName = storeProfile.businessName?.trim() || "";
 
+  // A busca (componente de cliente) só precisa destes 5 campos. Passar o
+  // produto inteiro (itens, descrição, embalagem, galeria...) fazia o servidor
+  // serializar TODOS os produtos completos no HTML de TODA página da loja (o
+  // cabeçalho está no layout). Uma lista só, compartilhada pelas duas
+  // instâncias (celular e computador): o React não a repete no payload.
+  const searchProducts = products.map((p) => ({
+    slug: p.slug,
+    name: p.name,
+    serves: p.serves,
+    price: p.price,
+    image: p.image,
+  }));
+
   // Menu do topo em formato guarda-chuva: categoria principal -> subcategorias.
   // Passa só os campos que o menu (client) precisa -- categories.ts é
   // server-only e não pode cruzar a fronteira como objeto inteiro.
@@ -65,7 +78,7 @@ export async function SiteHeader() {
 
         <div className="hidden flex-1 justify-center md:flex">
           <div className="w-full max-w-md">
-            <HeaderSearch products={products} id="header-search-desktop" />
+            <HeaderSearch products={searchProducts} id="header-search-desktop" />
           </div>
         </div>
 
@@ -103,7 +116,7 @@ export async function SiteHeader() {
       ) : null}
 
       <div className="border-t border-border px-4 py-2.5 md:hidden">
-        <HeaderSearch products={products} id="header-search-mobile" />
+        <HeaderSearch products={searchProducts} id="header-search-mobile" />
       </div>
     </header>
     </>
