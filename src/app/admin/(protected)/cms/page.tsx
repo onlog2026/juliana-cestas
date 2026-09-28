@@ -4,9 +4,11 @@ import { requireStaffWithModule } from "@/lib/auth/require-module";
 import { getSocialLinks } from "@/modules/settings/social-links";
 import { getAllBannersAdmin } from "@/modules/banners/service";
 import { getSiteSettings } from "@/modules/settings/site-settings";
+import { getContentForAdmin } from "@/modules/content/service";
 import { SocialLinksForm } from "@/components/admin/social-links-form";
 import { BannersManager } from "@/components/admin/banners-manager";
 import { SiteBrandingForm } from "@/components/admin/site-branding-form";
+import { ContentAnnouncementForm } from "@/components/admin/content-announcement-form";
 
 export default async function AdminCmsPage() {
   // TRAVA DE SERVIDOR: esconder o item do menu não impede ninguém de
@@ -14,10 +16,11 @@ export default async function AdminCmsPage() {
   // módulo "cms" no plano é levado para a página de oferta.
   // (Esta tela edita banners, categorias e a marca do site.)
   const staff = await requireStaffWithModule("cms");
-  const [links, banners, siteSettings] = await Promise.all([
+  const [links, banners, siteSettings, announcement] = await Promise.all([
     getSocialLinks(staff.tenantId),
     getAllBannersAdmin(staff.tenantId),
     getSiteSettings(staff.tenantId),
+    getContentForAdmin(staff.tenantId, "announcement"),
   ]);
 
   return (
@@ -39,6 +42,17 @@ export default async function AdminCmsPage() {
         </section>
 
         <div className="space-y-6">
+          <section className="rounded-card border border-border bg-card p-5">
+            <h2 className="font-display text-lg text-foreground">Aviso no topo da loja</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Uma faixa de aviso acima do cabeçalho (frete grátis, feriado, promoção). Ela só aparece quando
+              você liga e escreve um texto.
+            </p>
+            <div className="mt-4">
+              <ContentAnnouncementForm value={announcement.value} />
+            </div>
+          </section>
+
           <section className="rounded-card border border-border bg-card p-5">
             <h2 className="font-display text-lg text-foreground">Categorias</h2>
             <p className="mt-1 text-sm text-muted-foreground">

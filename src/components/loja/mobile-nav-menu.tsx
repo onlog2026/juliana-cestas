@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
+import { InstagramIcon } from "@/components/loja/social-icons";
 
 type NavSubcategory = { slug: string; name: string; imageUrl: string | null };
 type NavCategory = NavSubcategory & { children: NavSubcategory[] };
@@ -15,7 +16,14 @@ type NavCategory = NavSubcategory & { children: NavSubcategory[] };
  * subcategorias. Renderizado em portal no body para escapar do contexto de
  * empilhamento do header (sticky z-40) e ficar acima do BottomNav (fixed z-40).
  */
-export function MobileNavMenu({ categories }: { categories: NavCategory[] }) {
+export function MobileNavMenu({
+  categories,
+  instagramUrl,
+}: {
+  categories: NavCategory[];
+  /** No celular o Instagram mora aqui (o cabeçalho não tem espaço ao lado da logo). */
+  instagramUrl?: string | null;
+}) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -102,6 +110,22 @@ export function MobileNavMenu({ categories }: { categories: NavCategory[] }) {
                     </div>
                   ))}
                 </nav>
+                {instagramUrl ? (
+                  <div
+                    className="mt-auto border-t border-border p-3"
+                    style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+                  >
+                    <a
+                      href={instagramUrl}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="jc-nav-hover flex h-11 items-center gap-3 rounded-[10px] px-3 text-sm font-medium text-foreground"
+                    >
+                      <InstagramIcon className="size-5" />
+                      Siga no Instagram
+                    </a>
+                  </div>
+                ) : null}
               </div>
             </div>,
             document.body

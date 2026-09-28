@@ -82,6 +82,68 @@ export const categoryTilesSchema = z.object({
   title: z.string().trim().max(160),
 });
 
+/**
+ * Link editável pelo painel: vazio (sem link), caminho interno ("/categoria/x")
+ * ou https. Recusa `javascript:`, `data:` e "//dominio" (protocolo relativo,
+ * que o navegador trataria como site de fora).
+ */
+export const safeHrefSchema = z
+  .string()
+  .trim()
+  .max(300)
+  .refine((v) => v === "" || /^\/(?!\/)/.test(v) || /^https:\/\//i.test(v), {
+    message: "Use um caminho do site (começando com /) ou um link https.",
+  });
+
+const hexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+
+/**
+ * Barra de aviso no topo da loja (frete grátis, feriado, promoção...). Some
+ * inteira quando desligada ou sem texto -- a barra só existe para avisos.
+ */
+export const announcementSchema = z.object({
+  enabled: z.boolean(),
+  text: z.string().trim().max(160),
+  href: safeHrefSchema.optional(),
+  bgColor: hexColorSchema.optional(),
+  textColor: hexColorSchema.optional(),
+});
+
+/**
+ * Imagem de banner enviada pelo painel: só o Storage público do Supabase (o
+ * único host que o next/image aceita em next.config.ts) ou um arquivo do
+ * próprio site. Qualquer outro host quebraria a página na hora de renderizar.
+ */
+export const promoImageUrlSchema = z
+  .string()
+  .trim()
+  .max(500)
+  .refine(
+    (v) =>
+      v === "" ||
+      /^\/(?!\/)/.test(v) ||
+      /^https:\/\/oygizajevizwhiymgsly\.supabase\.co\/storage\/v1\/object\/public\//.test(v),
+    { message: "Envie a imagem pelo painel." }
+  );
+
+export const promoSlotSchema = z.object({
+  imageUrl: promoImageUrlSchema,
+  mobileImageUrl: promoImageUrlSchema.optional(),
+  href: safeHrefSchema,
+  alt: z.string().trim().max(160),
+});
+
+/**
+ * Dois banners promocionais no meio da grade de produtos da home: um largo
+ * (2/3 da largura no computador) e um estreito (1/3). Aparecem após a 3ª
+ * linha de produtos; slot sem imagem não aparece.
+ */
+export const promoBannersSchema = z.object({
+  enabled: z.boolean(),
+  wide: promoSlotSchema,
+  narrow: promoSlotSchema,
+});
+
 /** Toda seção conhecida da vitrine, com seu formato. */
 export const STORE_SECTIONS = {
   benefits: benefitsSchema,
@@ -93,6 +155,8 @@ export const STORE_SECTIONS = {
   business: businessSchema,
   about: richPageSchema,
   returns: richPageSchema,
+  announcement: announcementSchema,
+  promo_banners: promoBannersSchema,
 } as const;
 
 export type StoreSection = keyof typeof STORE_SECTIONS;

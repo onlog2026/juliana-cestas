@@ -4,7 +4,7 @@ type IconProps = { className?: string };
 
 // lucide-react (a lib de ícones do projeto) não traz logos de marca --
 // glyphs oficiais inline em vez de puxar uma dependência nova só pra isso.
-function InstagramIcon({ className }: IconProps) {
+export function InstagramIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.163 6.163 0 100 12.326 6.163 6.163 0 000-12.326zm0 10.162a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
@@ -51,6 +51,26 @@ const NETWORKS: { key: keyof SocialLinks; label: string; Icon: (p: IconProps) =>
   { key: "youtube", label: "YouTube", Icon: YoutubeIcon },
   { key: "linkedin", label: "LinkedIn", Icon: LinkedinIcon },
 ];
+
+/**
+ * Só o Instagram, para o cabeçalho (ao lado do carrinho). O rodapé continua
+ * com o conjunto completo (`SocialIcons`). Alvo de toque de 40px (o ícone em
+ * si é 20px) -- mesmo tamanho do botão do carrinho ao lado.
+ */
+export function InstagramLink({ url }: { url?: string | null }) {
+  if (!url) return null;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer nofollow"
+      aria-label="Instagram"
+      className="jc-nav-hover flex size-10 items-center justify-center rounded-full text-foreground"
+    >
+      <InstagramIcon className="size-5" />
+    </a>
+  );
+}
 
 export function SocialIcons({ links, className }: { links: SocialLinks; className?: string }) {
   const active = NETWORKS.filter((n) => links[n.key]);

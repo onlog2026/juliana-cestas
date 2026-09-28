@@ -75,4 +75,12 @@ export const STORE_DEFAULTS: StoreContent = {
       { text: "Descreva aqui a sua política de trocas e devoluções. Este texto é editável no painel, em CMS." },
     ],
   },
+  // Desligados por padrão: a loja só mostra a barra de aviso / os banners
+  // promocionais depois que o dono liga e preenche no painel (CMS).
+  announcement: { enabled: false, text: "" },
+  promo_banners: {
+    enabled: false,
+    wide: { imageUrl: "", href: "", alt: "" },
+    narrow: { imageUrl: "", href: "", alt: "" },
+  },
 };
