@@ -32,8 +32,13 @@ export type CreateOrderResult =
 
 export async function createOrder(
   tenantId: string,
-  input: CheckoutInput
+  input: CheckoutInput,
+  // notify=false: usado pelo carrinho agrupado (createOrderGroup) para não
+  // disparar 1 e-mail + 1 aviso de WhatsApp da loja POR CESTA -- a compra
+  // avulsa (chamador sem opts) continua notificando igual a hoje.
+  opts?: { notify?: boolean }
 ): Promise<CreateOrderResult> {
+  const notify = opts?.notify ?? true;
   const found = await getProductForCheckout(tenantId, input.productSlug);
   if (!found) return { ok: false, error: "Cesta não encontrada." };
 
@@ -216,43 +221,45 @@ export async function createOrder(
     totalCents: quote.totalCents,
     orderUrl: `${siteUrl}/pedido/${order.id}?t=${token}`,
   }, brand);
-  // Melhor esforço: nunca falha o pedido por causa do e-mail (send.ts já
-  // engole os próprios erros e registra no outbox).
-  await sendOrderEmail(tenantId, {
-    orderId: order.id,
-    type: "order_confirmed",
-    toEmail: input.buyerEmail || null,
-    subject,
-    html,
-  });
+  if (notify) {
+    // Melhor esforço: nunca falha o pedido por causa do e-mail (send.ts já
+    // engole os próprios erros e registra no outbox).
+    await sendOrderEmail(tenantId, {
+      orderId: order.id,
+      type: "order_confirmed",
+      toEmail: input.buyerEmail || null,
+      subject,
+      html,
+    });
 
-  // Aviso pro WhatsApp da loja -- também melhor esforço (sendStoreWhatsapp
-  // nunca lança; sem Evolution configurada, só registra "pendente" no outbox).
-  const addressLine =
-    input.deliveryType === "pickup"
-      ? null
-      : [input.street, input.addressNumber, input.complement].filter(Boolean).join(", ") +
-        (input.neighborhood ? ` — ${input.neighborhood}` : "");
-  await sendStoreWhatsapp(tenantId, {
-    orderId: order.id,
-    orderNumber: order.number,
-    text: buildStoreNewOrderText({
+    // Aviso pro WhatsApp da loja -- também melhor esforço (sendStoreWhatsapp
+    // nunca lança; sem Evolution configurada, só registra "pendente" no outbox).
+    const addressLine =
+      input.deliveryType === "pickup"
+        ? null
+        : [input.street, input.addressNumber, input.complement].filter(Boolean).join(", ") +
+          (input.neighborhood ? ` — ${input.neighborhood}` : "");
+    await sendStoreWhatsapp(tenantId, {
+      orderId: order.id,
       orderNumber: order.number,
-      buyerName: input.buyerName,
-      buyerPhone: input.buyerPhone,
-      recipientName: input.recipientName,
-      items,
-      deliveryType: input.deliveryType,
-      addressLine,
-      zoneName: quote.zoneName,
-      deliveryDateLabel: formatDeliveryDateLabel(input.deliveryDate),
-      slotLabel: `${slot.start} e ${slot.end}`,
-      cardRecipient: input.cardRecipient,
-      cardMessage: input.cardMessage,
-      totalCents: quote.totalCents,
-      orderUrl: `${siteUrl}/pedido/${order.id}?t=${token}`,
-    }),
-  });
+      text: buildStoreNewOrderText({
+        orderNumber: order.number,
+        buyerName: input.buyerName,
+        buyerPhone: input.buyerPhone,
+        recipientName: input.recipientName,
+        items,
+        deliveryType: input.deliveryType,
+        addressLine,
+        zoneName: quote.zoneName,
+        deliveryDateLabel: formatDeliveryDateLabel(input.deliveryDate),
+        slotLabel: `${slot.start} e ${slot.end}`,
+        cardRecipient: input.cardRecipient,
+        cardMessage: input.cardMessage,
+        totalCents: quote.totalCents,
+        orderUrl: `${siteUrl}/pedido/${order.id}?t=${token}`,
+      }),
+    });
+  }
 
   return { ok: true, orderId: order.id, number: order.number, token, totalCents: order.total_cents };
 }

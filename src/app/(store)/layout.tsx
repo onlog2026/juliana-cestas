@@ -7,6 +7,7 @@ import { getSeoSettings } from "@/modules/seo/service";
 import { getSiteSettings } from "@/modules/settings/site-settings";
 import { getStoreProfile, getStoreWhatsapp } from "@/modules/settings/store-profile";
 import { getTenantId } from "@/lib/tenant/context";
+import { CartProvider } from "@/modules/cart/cart-context";
 
 // TODO F7: a URL pública de cada loja vai vir de `tenant_domains`. Enquanto
 // esse mapa não existe, a única fonte é o env da loja legada.
@@ -62,12 +63,12 @@ export default async function StoreLayout({ children }: LayoutProps<"/">) {
   // client component, então o número desce por prop a partir daqui.
   const whatsapp = await getStoreWhatsapp(await getTenantId());
   return (
-    <>
+    <CartProvider>
       <LocalBusinessJsonLd />
       <SiteHeader />
       <main className="flex-1 pb-16 md:pb-0">{children}</main>
       <SiteFooter />
       <BottomNav whatsapp={whatsapp} />
-    </>
+    </CartProvider>
   );
 }

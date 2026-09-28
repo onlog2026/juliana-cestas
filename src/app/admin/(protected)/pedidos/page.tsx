@@ -9,6 +9,21 @@ export default async function AdminPedidosPage(props: {
   const { status } = await props.searchParams;
   const orders = await listOrders(status ? { status } : undefined);
 
+  // Selo "🎁 1 de N" ao lado do pedido (carrinho com várias cestas = vários
+  // `orders` com o mesmo group_id). Conta só dentro desta página (as 200 mais
+  // recentes) -- suficiente, já que os pedidos de um grupo nascem em sequência.
+  // `orders` vem do created_at mais recente pro mais antigo; percorre ao
+  // contrário para numerar 1,2,3... na ordem em que as cestas foram criadas.
+  const groupSize = new Map<string, number>();
+  const groupPosition = new Map<string, number>(); // order.id -> posição (1-based)
+  for (let i = orders.length - 1; i >= 0; i--) {
+    const gid = orders[i].group_id;
+    if (!gid) continue;
+    const next = (groupSize.get(gid) ?? 0) + 1;
+    groupSize.set(gid, next);
+    groupPosition.set(orders[i].id, next);
+  }
+
   const filters = [
     { value: "", label: "Todos" },
     { value: "aguardando_pagamento", label: "Aguardando pagamento" },
@@ -60,6 +75,14 @@ export default async function AdminPedidosPage(props: {
                     <Link href={`/admin/pedidos/${order.id}`} className="font-medium text-primary hover:underline">
                       #{order.number}
                     </Link>
+                    {order.group_id && (groupSize.get(order.group_id) ?? 0) > 1 ? (
+                      <span
+                        className="ml-2 inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
+                        title="Carrinho com várias cestas"
+                      >
+                        🎁 {groupPosition.get(order.id)} de {groupSize.get(order.group_id)}
+                      </span>
+                    ) : null}
                   </td>
                   <td className="px-4 py-3 text-foreground">{order.buyer_name}</td>
                   <td className="px-4 py-3 text-muted-foreground">

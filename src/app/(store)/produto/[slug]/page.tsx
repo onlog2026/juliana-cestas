@@ -6,6 +6,7 @@ import { getAllProducts, getProductBySlug } from "@/modules/catalog/service";
 import { ProductCard } from "@/components/loja/product-card";
 import { ProductGallery } from "@/components/loja/product-gallery";
 import { CartaozinhoSection } from "@/components/loja/cartaozinho-section";
+import { AddToCartButton } from "@/components/loja/add-to-cart-button";
 import { Reveal } from "@/components/loja/reveal";
 import { ProductJsonLd } from "@/components/loja/json-ld";
 import { getTenantId } from "@/lib/tenant/context";
@@ -109,6 +110,16 @@ export default async function ProdutoPage(
               <MessageCircle className="size-5" />
               Falar no WhatsApp
             </a>
+          </div>
+
+          <div className="mt-3">
+            <AddToCartButton
+              productSlug={product.slug}
+              productId={product.id}
+              name={product.name}
+              imageUrl={product.image || null}
+              priceCents={Math.round(product.price * 100)}
+            />
           </div>
 
           {product.description ? (

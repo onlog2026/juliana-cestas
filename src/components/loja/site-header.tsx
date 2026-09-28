@@ -9,6 +9,7 @@ import { getStoreProfile } from "@/modules/settings/store-profile";
 import { HeaderSearch } from "@/components/loja/header-search";
 import { HeaderNavMenu } from "@/components/loja/header-nav-menu";
 import { MobileNavMenu } from "@/components/loja/mobile-nav-menu";
+import { CartButton } from "@/components/loja/cart-button";
 import { SocialIcons } from "@/components/loja/social-icons";
 import { HeaderLogo } from "@/components/loja/header-logo-editable";
 
@@ -70,6 +71,7 @@ export async function SiteHeader() {
         </div>
 
         <nav className="ml-auto hidden shrink-0 items-center gap-2 md:flex">
+          <CartButton />
           <Link
             href="/conta"
             className="jc-nav-hover flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-foreground"
@@ -80,14 +82,14 @@ export async function SiteHeader() {
           </Link>
         </nav>
 
-        {/* Hambúrguer só no celular (o menu de categorias do desktop é o
-            HeaderNavMenu abaixo, hidden md:block). ml-auto o empurra pra direita
-            quando a busca e a conta ficam escondidas no mobile. */}
-        {navCategories.length > 0 ? (
-          <div className="ml-auto md:hidden">
-            <MobileNavMenu categories={navCategories} />
-          </div>
-        ) : null}
+        {/* Cluster do celular: carrinho (sempre) + hambúrguer de categorias (só
+            se houver categorias). ml-auto empurra pra direita quando a busca e a
+            conta ficam escondidas no mobile. O menu do desktop é o HeaderNavMenu
+            abaixo (hidden md:block). */}
+        <div className="ml-auto flex items-center gap-1 md:hidden">
+          <CartButton />
+          {navCategories.length > 0 ? <MobileNavMenu categories={navCategories} /> : null}
+        </div>
       </div>
 
       {navCategories.length > 0 ? (

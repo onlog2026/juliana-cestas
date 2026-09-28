@@ -24,6 +24,8 @@ export type AdminOrderRow = {
   delivery_slot_end: string;
   total_cents: number;
   created_at: string;
+  /** Carrinho com várias cestas: todo pedido do mesmo grupo tem o mesmo id aqui. */
+  group_id: string | null;
 };
 
 export async function listOrders(filters?: { status?: string; date?: string }): Promise<AdminOrderRow[]> {
@@ -32,7 +34,7 @@ export async function listOrders(filters?: { status?: string; date?: string }): 
   let query = admin
     .from("orders")
     .select(
-      "id, number, status, payment_status, buyer_name, buyer_phone, recipient_name, delivery_type, delivery_date, delivery_slot_start, delivery_slot_end, total_cents, created_at"
+      "id, number, status, payment_status, buyer_name, buyer_phone, recipient_name, delivery_type, delivery_date, delivery_slot_start, delivery_slot_end, total_cents, created_at, group_id"
     )
     .eq("tenant_id", staff.tenantId)
     .order("created_at", { ascending: false })
@@ -78,7 +80,7 @@ export async function getOrderDetail(orderId: string): Promise<AdminOrderDetail 
   const { data: order, error } = await admin
     .from("orders")
     .select(
-      "id, number, status, payment_status, buyer_name, buyer_phone, buyer_email, buyer_cpf, recipient_name, recipient_phone, delivery_type, street, address_number, complement, neighborhood, city, state, zone_name, delivery_date, delivery_slot_start, delivery_slot_end, card_template, card_recipient, card_sender, card_message, notes, subtotal_cents, addons_cents, delivery_fee_cents, discount_cents, coupon_code, total_cents, created_at"
+      "id, number, status, payment_status, buyer_name, buyer_phone, buyer_email, buyer_cpf, recipient_name, recipient_phone, delivery_type, street, address_number, complement, neighborhood, city, state, zone_name, delivery_date, delivery_slot_start, delivery_slot_end, card_template, card_recipient, card_sender, card_message, notes, subtotal_cents, addons_cents, delivery_fee_cents, discount_cents, coupon_code, total_cents, created_at, group_id"
     )
     .eq("id", orderId)
     .eq("tenant_id", staff.tenantId)
