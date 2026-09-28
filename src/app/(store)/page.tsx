@@ -3,6 +3,9 @@ import { BannerCarousel } from "@/components/loja/banner-carousel";
 import { getActiveBanners } from "@/modules/banners/service";
 import { CategoryShortcuts } from "@/components/loja/category-shortcuts";
 import { FeaturedProducts } from "@/components/loja/featured-products";
+import { ShowcaseRow } from "@/components/loja/showcase-row";
+import { getAllProducts } from "@/modules/catalog/service";
+import { getShowcases } from "@/modules/catalog/showcases";
 import { CartaozinhoSection } from "@/components/loja/cartaozinho-section";
 import { Benefits } from "@/components/loja/benefits";
 import { ReviewsShowcase } from "@/components/loja/reviews/reviews-showcase";
@@ -12,12 +15,18 @@ import { Reveal } from "@/components/loja/reveal";
 import { getTenantId } from "@/lib/tenant/context";
 import { getStoreProfile } from "@/modules/settings/store-profile";
 
+// A home é estática; renova a cada 30 min para as vitrines acompanharem vendas e cliques.
+export const revalidate = 1800;
+
 export default async function Home() {
   const tenantId = await getTenantId();
-  const [banners, profile] = await Promise.all([
+  const [banners, profile, products] = await Promise.all([
     getActiveBanners(tenantId),
     getStoreProfile(tenantId),
+    getAllProducts(tenantId),
   ]);
+  // Vitrines por vendas/cliques: só aparecem com dados suficientes (>= 4 produtos).
+  const showcases = await getShowcases(tenantId, products);
   const storeName = profile.businessName?.trim() || "Cestas de café da manhã";
 
   return (
@@ -50,6 +59,8 @@ export default async function Home() {
           -- saíram da home (decisão do dono, 28/09). */}
       <CategoryShortcuts />
       <FeaturedProducts />
+      <ShowcaseRow title="Mais comprados" products={showcases.bought} />
+      <ShowcaseRow title="Mais clicados" products={showcases.clicked} />
       <Reveal>
         <CartaozinhoSection />
       </Reveal>

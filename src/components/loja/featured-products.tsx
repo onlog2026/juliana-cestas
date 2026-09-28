@@ -1,5 +1,6 @@
 import { getTenantId } from "@/lib/tenant/context";
 import { getAllProducts } from "@/modules/catalog/service";
+import { getSoldUnits } from "@/modules/catalog/showcases";
 import { getContent } from "@/modules/content/service";
 import { ProductCard } from "./product-card";
 import { PromoBanners } from "./promo-banners";
@@ -20,9 +21,10 @@ const GRID_SIZES = "(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw";
  */
 export async function FeaturedProducts() {
   const tenantId = await getTenantId();
-  const [products, promoContent] = await Promise.all([
+  const [products, promoContent, sold] = await Promise.all([
     getAllProducts(tenantId),
     getContent(tenantId, "promo_banners"),
+    getSoldUnits(tenantId),
   ]);
 
   const entries: GridEntry[] = products.map((product, index) => ({
@@ -30,7 +32,7 @@ export async function FeaturedProducts() {
     order: index,
     price: product.price,
     createdAt: product.createdAt ?? "",
-    sold: 0,
+    sold: sold.get(product.id) ?? 0,
     node: <ProductCard product={product} sizes={GRID_SIZES} />,
   }));
 

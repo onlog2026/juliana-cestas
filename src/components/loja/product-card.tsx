@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { TrackedProductLink } from "./tracked-product-link";
 import type { Product } from "@/modules/catalog/product";
 
 const currency = new Intl.NumberFormat("pt-BR", {
@@ -15,8 +15,9 @@ const DEFAULT_SIZES = "(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 90vw";
 
 export function ProductCard({ product, sizes }: { product: Product; sizes?: string }) {
   return (
-    <Link
+    <TrackedProductLink
       href={`/produto/${product.slug}`}
+      productId={product.id}
       className="group block w-full text-left"
     >
       <div className="jc-glow-card relative aspect-[4/5] overflow-hidden rounded-card bg-secondary">
@@ -43,6 +44,6 @@ export function ProductCard({ product, sizes }: { product: Product; sizes?: stri
           {currency.format(product.price)}
         </p>
       </div>
-    </Link>
+    </TrackedProductLink>
   );
 }
