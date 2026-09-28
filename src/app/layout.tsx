@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Figtree, Young_Serif, Playfair_Display, Poppins } from "next/font/google";
 import "./globals.css";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
@@ -47,6 +47,16 @@ const poppins = Poppins({
 // não depende de qual loja (nem de haver uma).
 export const metadata: Metadata = {
   robots: { index: true, follow: true },
+};
+
+// Cor da barra de status do celular: igual ao fundo do cabeçalho (claro) e ao
+// tema escuro. Sem `viewportFit: cover` de propósito -- ele faria a página
+// entrar sob o entalhe do iPhone e exigiria tratar a área segura no topo.
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f6f1e8" },
+    { media: "(prefers-color-scheme: dark)", color: "#15201a" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

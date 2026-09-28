@@ -7,6 +7,7 @@ import { getSeoSettings } from "@/modules/seo/service";
 import { getSiteSettings } from "@/modules/settings/site-settings";
 import { getStoreProfile, getStoreWhatsapp } from "@/modules/settings/store-profile";
 import { getTenantId } from "@/lib/tenant/context";
+import { shortHash } from "@/modules/pwa/version";
 import { CartProvider } from "@/modules/cart/cart-context";
 
 // TODO F7: a URL pública de cada loja vai vir de `tenant_domains`. Enquanto
@@ -40,7 +41,10 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: siteDescription,
     keywords: seo.keywords,
-    icons: siteSettings.faviconUrl ? { icon: siteSettings.faviconUrl } : undefined,
+    icons: siteSettings.faviconUrl
+      ? { icon: siteSettings.faviconUrl, apple: [{ url: `/pwa-icon/180?v=${shortHash(siteSettings.faviconUrl)}`, sizes: "180x180" }] }
+      : undefined,
+    appleWebApp: { capable: true, title: storeName || siteTitle, statusBarStyle: "default" },
     openGraph: {
       title: siteTitle,
       description: siteDescription,
