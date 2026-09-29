@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { changedOrders, sameIdSet } from "@/modules/catalog/product-order";
+import { splitListText } from "@/modules/catalog/list-text";
 
 function slugify(raw: string): string {
   return raw
@@ -259,7 +260,8 @@ export async function updateProductDetails(
       serves: input.serves.trim() || null,
       size: input.size.trim() || null,
       price_cents: input.priceCents,
-      items: input.items,
+      // Vírgula, ponto e vírgula ou linha: cada pedaço vira um item (a mesma regra do formulário).
+      items: splitListText(input.items.join("\n")),
       packaging: input.packaging.trim() || null,
       image_url: input.imageUrl.trim() || null,
       badge: input.badge.trim() || null,

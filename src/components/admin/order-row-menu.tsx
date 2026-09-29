@@ -27,6 +27,9 @@ export function OrderRowMenu({
   const router = useRouter();
   const confirm = useConfirm();
   const [open, setOpen] = useState(false);
+  // Menu com posição FIXA na tela: a caixa da tabela tem rolagem própria (overflow) e cortaria
+  // um menu absoluto, criando uma barra de rolagem por dentro da lista.
+  const [pos, setPos] = useState<{ top?: number; bottom?: number; right: number } | null>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const box = useRef<HTMLDivElement>(null);
@@ -36,9 +39,33 @@ export function OrderRowMenu({
     const close = (e: MouseEvent) => {
       if (box.current && !box.current.contains(e.target as Node)) setOpen(false);
     };
+    // Rolar a página ou redimensionar fecha o menu (senão ele ficaria solto no lugar velho).
+    const dismiss = () => setOpen(false);
     document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
+    window.addEventListener("scroll", dismiss, true);
+    window.addEventListener("resize", dismiss);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      window.removeEventListener("scroll", dismiss, true);
+      window.removeEventListener("resize", dismiss);
+    };
   }, [open]);
+
+  function toggle(e: React.MouseEvent<HTMLButtonElement>) {
+    if (open) {
+      setOpen(false);
+      return;
+    }
+    const r = e.currentTarget.getBoundingClientRect();
+    const right = Math.max(8, window.innerWidth - r.right);
+    // Sem espaço embaixo (~170px do menu), abre PARA CIMA.
+    setPos(
+      window.innerHeight - r.bottom < 180
+        ? { bottom: window.innerHeight - r.top + 4, right }
+        : { top: r.bottom + 4, right }
+    );
+    setOpen(true);
+  }
 
   const encerrado = PEDIDO_ENCERRADO.has(status);
   const choices =
@@ -103,15 +130,18 @@ export function OrderRowMenu({
     <div ref={box} className="relative inline-block">
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggle}
         aria-label={`Ações do pedido ${orderNumber}`}
         aria-expanded={open}
         className="flex size-11 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
       >
         {pending ? <Loader2 className="size-4 animate-spin" /> : <MoreHorizontal className="size-5" />}
       </button>
-      {open ? (
-        <div className="absolute right-0 top-full z-30 mt-1 w-52 overflow-hidden rounded-card border border-border bg-card shadow-lg">
+      {open && pos ? (
+        <div
+          className="fixed z-[70] w-52 overflow-hidden rounded-card border border-border bg-card shadow-lg"
+          style={{ top: pos.top, bottom: pos.bottom, right: pos.right }}
+        >
           <Link href={`/admin/pedidos/${orderId}`} className={item}>
             <Pencil className="size-4" /> Ver e editar
           </Link>
@@ -130,7 +160,7 @@ export function OrderRowMenu({
         </div>
       ) : null}
       {error ? (
-        <p role="alert" className="absolute right-0 top-full z-20 mt-1 w-64 rounded-card border border-destructive/30 bg-card p-2 text-xs text-destructive shadow">
+        <p role="alert" className="fixed bottom-4 right-4 z-[70] w-72 max-w-[calc(100vw-2rem)] rounded-card border border-destructive/30 bg-card p-3 text-sm text-destructive shadow-lg">
           {error}
         </p>
       ) : null}

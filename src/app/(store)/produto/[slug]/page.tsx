@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight, Check, MessageCircle } from "lucide-react";
+import { ChevronRight, Gift, MessageCircle, Package, PackageOpen } from "lucide-react";
 import { getAllProducts, getProductBySlug } from "@/modules/catalog/service";
 import { ProductCard } from "@/components/loja/product-card";
 import { ProductGallery } from "@/components/loja/product-gallery";
@@ -9,6 +9,8 @@ import { CartaozinhoSection } from "@/components/loja/cartaozinho-section";
 import { AddToCartButton } from "@/components/loja/add-to-cart-button";
 import { Reveal } from "@/components/loja/reveal";
 import { ProductJsonLd } from "@/components/loja/json-ld";
+import { ItemIcon } from "@/components/loja/item-icon";
+import { splitListText } from "@/modules/catalog/list-text";
 import { getTenantId } from "@/lib/tenant/context";
 import { getStoreWhatsapp } from "@/modules/settings/store-profile";
 import { LEGACY_TENANT_ID } from "@/lib/tenant/legacy";
@@ -58,6 +60,7 @@ export default async function ProdutoPage(
   );
   const allProducts = await getAllProducts(tenantId);
   const outrasCestas = allProducts.filter((item) => item.id !== product.id);
+  const packagingItems = splitListText(product.packaging);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -139,8 +142,10 @@ export default async function ProdutoPage(
             <p className="mt-6 text-sm leading-relaxed text-muted-foreground">{product.description}</p>
           ) : null}
 
+          {product.items.length > 0 ? (
           <div className="mt-8">
-            <h2 className="text-sm font-semibold text-foreground">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <PackageOpen aria-hidden="true" className="size-4 text-primary" strokeWidth={1.8} />
               O que vem na cesta
             </h2>
             {/* Duas colunas para os itens encaixarem lado a lado e não empurrarem
@@ -150,21 +155,30 @@ export default async function ProdutoPage(
             <ul className="mt-3 grid grid-cols-2 gap-x-5 gap-y-2">
               {product.items.map((item) => (
                 <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                  <ItemIcon name={item} className="mt-0.5 size-4 shrink-0 text-primary" />
                   <span className="min-w-0">{item}</span>
                 </li>
               ))}
             </ul>
           </div>
+          ) : null}
 
+          {packagingItems.length > 0 ? (
           <div className="mt-8">
-            <h2 className="text-sm font-semibold text-foreground">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <Package aria-hidden="true" className="size-4 text-primary" strokeWidth={1.8} />
               Embalagem
             </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {product.packaging}
-            </p>
+            <ul className="mt-3 grid grid-cols-2 gap-x-5 gap-y-2">
+              {packagingItems.map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <Gift aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-primary" strokeWidth={1.6} />
+                  <span className="min-w-0">{item}</span>
+                </li>
+              ))}
+            </ul>
           </div>
+          ) : null}
         </div>
       </div>
 

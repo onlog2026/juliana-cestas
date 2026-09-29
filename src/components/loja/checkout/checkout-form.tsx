@@ -5,7 +5,24 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Loader2, MapPin, MessageCircle, Plus, Store, Tag, Truck, X } from "lucide-react";
+import {
+  CalendarDays,
+  Check,
+  Gift,
+  Loader2,
+  MapPin,
+  MessageCircle,
+  MessageSquareHeart,
+  NotebookPen,
+  PackagePlus,
+  Plus,
+  Store,
+  Tag,
+  Truck,
+  UserRound,
+  X,
+} from "lucide-react";
+import { SectionTitle } from "@/components/loja/section-title";
 import { checkoutInputSchema, type CheckoutInput } from "@/modules/checkout/schemas";
 import { CARD_TEMPLATES, countWords } from "@/modules/cards/templates";
 import { formatCents } from "@/lib/money";
@@ -472,7 +489,10 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
       onSubmit={handleSubmit(onSubmit, () =>
         setSubmitError("Falta preencher ou corrigir algum campo. Revise o formulário e tente de novo.")
       )}
-      className="grid gap-6 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_440px]"
+      // `minmax(0,1fr)` (e não `1fr`/auto): sem isso a coluna do celular cresce até o conteúdo
+      // mais largo do resumo (linha de adicional com `truncate`) e a página vira 442px de largura
+      // num celular de 375px -- o botão "Ir para pagamento" e o total ficavam cortados na direita.
+      className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_440px]"
     >
       <div className="min-w-0 space-y-6">
         {draftRestored ? (
@@ -483,7 +503,7 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
 
         {/* 1. Comprador */}
         <section>
-          <h2 className="font-display text-xl text-foreground">Quem está comprando</h2>
+          <SectionTitle icon={UserRound}>Quem está comprando</SectionTitle>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <Field label="Nome completo" error={errors.buyerName?.message}>
               <input {...register("buyerName")} className={inputClass} placeholder="Seu nome completo" />
@@ -502,7 +522,7 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
 
         {/* 2. Entrega */}
         <section>
-          <h2 className="font-display text-xl text-foreground">Para quem e onde entregar</h2>
+          <SectionTitle icon={MapPin}>Para quem e onde entregar</SectionTitle>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <Field label="Nome de quem vai receber" error={errors.recipientName?.message}>
               <input {...register("recipientName")} className={inputClass} placeholder="Nome de quem recebe" />
@@ -582,7 +602,7 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
 
         {/* 3. Data e hora */}
         <section>
-          <h2 className="font-display text-xl text-foreground">Data e horário</h2>
+          <SectionTitle icon={CalendarDays}>Data e horário</SectionTitle>
           <p className="mt-1 text-sm text-muted-foreground">
             Pedidos com 24 horas de antecedência. Tolerância de até 20 minutos na entrega.
           </p>
@@ -654,7 +674,7 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
         {/* 4. Adicionais (fotos, bolos, embalagens…) -- quantos quiser */}
         {addons.length > 0 ? (
           <section>
-            <h2 className="font-display text-xl text-foreground">Adicionais</h2>
+            <SectionTitle icon={PackagePlus}>Adicionais</SectionTitle>
             <p className="mt-1 text-sm text-muted-foreground">Adicione quantos quiser.</p>
             <div className="mt-4">
               <AddonPicker addons={addons} slugs={addonSlugs} onAdd={addAddon} onRemove={removeAddon} />
@@ -664,7 +684,7 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
 
         {/* 5. Cartão */}
         <section>
-          <h2 className="font-display text-xl text-foreground">Cartãozinho</h2>
+          <SectionTitle icon={MessageSquareHeart}>Cartãozinho</SectionTitle>
           <div className="mt-4 grid grid-cols-3 gap-2.5 sm:grid-cols-5">
             {CARD_TEMPLATES.map((t) => {
               const active = cardTemplate === t.slug;
@@ -728,7 +748,7 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
         {/* 6. Aproveite e leve também (upsell / cross-sell) -- mesmo visual dos adicionais */}
         {upsells.length > 0 ? (
           <section>
-            <h2 className="font-display text-xl text-foreground">Aproveite e leve também</h2>
+            <SectionTitle icon={Gift}>Aproveite e leve também</SectionTitle>
             <p className="mt-1 text-sm text-muted-foreground">
               Complementos que combinam com {product.name}.
             </p>
@@ -770,7 +790,7 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
 
         {/* 7. Observações */}
         <section>
-          <h2 className="font-display text-xl text-foreground">Observações</h2>
+          <SectionTitle icon={NotebookPen}>Observações</SectionTitle>
           <textarea
             {...register("notes")}
             rows={3}
@@ -795,9 +815,9 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
           "Ir para pagamento" nunca sumir quando o card for mais alto que a tela
           e para o overflow não cortar o glow de borda. No mobile o aside não
           tem classe lg -> bloco normal, largura cheia (cara de app). */}
-      <aside className="lg:sticky lg:top-0 lg:flex lg:h-[100dvh] lg:items-center lg:self-start">
+      <aside className="min-w-0 lg:sticky lg:top-0 lg:flex lg:h-[100dvh] lg:items-center lg:self-start">
         <div
-          className="jc-glow-card h-fit w-full space-y-4 rounded-2xl border border-primary/30 bg-card p-5 lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto lg:p-6"
+          className="jc-glow-card h-fit w-full min-w-0 space-y-4 rounded-2xl border border-primary/30 bg-card p-5 lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto lg:p-6"
           style={{ boxShadow: "var(--jc-shadow)" }}
         >
           <div className="flex gap-3">

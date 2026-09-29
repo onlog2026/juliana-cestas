@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Loader2, MapPin, Store, Truck } from "lucide-react";
+import { CalendarDays, Gift, Loader2, MapPin, MessageSquareHeart, PackagePlus, Store, Truck, UserRound } from "lucide-react";
+import { SectionTitle } from "@/components/loja/section-title";
 import type { CartItem } from "@/modules/cart/types";
 import { giftIssues } from "@/modules/cart/validate";
 import type { DaySlots } from "@/modules/delivery/slots";
@@ -303,7 +304,7 @@ export function GiftEditor({ gift, days, cardMaxWords, storeName, onSave, onCanc
     <div className="space-y-6 rounded-2xl border border-primary/30 bg-card p-5">
       {/* 1. Quem recebe */}
       <section>
-        <h3 className="font-display text-lg text-foreground">Quem vai receber</h3>
+        <SectionTitle icon={UserRound} as="h3" size="lg">Quem vai receber</SectionTitle>
         <div className="mt-3 grid gap-4 sm:grid-cols-2">
           <Field label="Nome de quem recebe">
             <input
@@ -326,7 +327,7 @@ export function GiftEditor({ gift, days, cardMaxWords, storeName, onSave, onCanc
 
       {/* 2. Entrega ou retirada */}
       <section>
-        <h3 className="font-display text-lg text-foreground">Entrega ou retirada</h3>
+        <SectionTitle icon={Truck} as="h3" size="lg">Entrega ou retirada</SectionTitle>
         <div className="mt-3 flex flex-wrap gap-3">
           <button type="button" onClick={() => patchDelivery({ type: "delivery" })} className={toggleClass(isDelivery)}>
             <MapPin className="size-4" /> Entrega
@@ -436,7 +437,7 @@ export function GiftEditor({ gift, days, cardMaxWords, storeName, onSave, onCanc
 
       {/* 3. Data e horário */}
       <section>
-        <h3 className="font-display text-lg text-foreground">Quando entregar</h3>
+        <SectionTitle icon={CalendarDays} as="h3" size="lg">Quando entregar</SectionTitle>
         {days === null ? (
           <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="size-4 animate-spin" /> Carregando as datas…
@@ -482,7 +483,7 @@ export function GiftEditor({ gift, days, cardMaxWords, storeName, onSave, onCanc
       {/* 4. Adicionais */}
       {options.addons.length > 0 ? (
         <section>
-          <h3 className="font-display text-lg text-foreground">Adicionais</h3>
+          <SectionTitle icon={PackagePlus} as="h3" size="lg">Adicionais</SectionTitle>
           <div className="mt-3">
             <AddonPicker addons={options.addons} slugs={draft.addonSlugs} onAdd={addAddon} onRemove={removeAddon} />
           </div>
@@ -492,7 +493,7 @@ export function GiftEditor({ gift, days, cardMaxWords, storeName, onSave, onCanc
       {/* 5. Sugestões (upsell) */}
       {options.upsells.length > 0 ? (
         <section>
-          <h3 className="font-display text-lg text-foreground">Leve junto</h3>
+          <SectionTitle icon={Gift} as="h3" size="lg">Leve junto</SectionTitle>
           <div className="mt-3 flex flex-wrap gap-2">
             {options.upsells.map((u) => {
               const active = draft.upsellSlugs.includes(u.slug);
@@ -509,7 +510,7 @@ export function GiftEditor({ gift, days, cardMaxWords, storeName, onSave, onCanc
 
       {/* 6. Cartãozinho */}
       <section>
-        <h3 className="font-display text-lg text-foreground">Cartãozinho</h3>
+        <SectionTitle icon={MessageSquareHeart} as="h3" size="lg">Cartãozinho</SectionTitle>
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
           {CARD_TEMPLATES.map((t) => {
             const active = t.slug === draft.card.template;

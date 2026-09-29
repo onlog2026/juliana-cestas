@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Check } from "lucide-react";
+import { Loader2, Check, ArrowLeft, ArrowRight, Star } from "lucide-react";
 import { updateProductDetails } from "@/modules/catalog/actions";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { GalleryUploadField } from "@/components/admin/gallery-upload-field";
@@ -10,6 +10,8 @@ import { VideoUploadField } from "@/components/admin/video-upload-field";
 import { AiFillButton } from "@/components/admin/ai-fill-button";
 import type { DbProduct } from "@/modules/catalog/service";
 import type { Category } from "@/modules/catalog/categories";
+import { moveExtra, promoteToCover, splitListText } from "@/modules/catalog/list-text";
+import { ItemIcon } from "@/components/loja/item-icon";
 
 function centsToReais(cents: number): string {
   return (cents / 100).toFixed(2).replace(".", ",");
@@ -97,10 +99,7 @@ export function ProductDetailsForm({
         serves,
         size,
         priceCents: reaisToCents(price),
-        items: itemsText
-          .split("\n")
-          .map((i) => i.trim())
-          .filter(Boolean),
+        items: splitListText(itemsText),
         packaging,
         imageUrl,
         badge,
@@ -249,18 +248,92 @@ export function ProductDetailsForm({
 
       <GalleryUploadField label="Fotos extras" values={galleryUrls} onChange={setGalleryUrls} max={4} />
 
+      {galleryUrls.length > 0 && imageUrl ? (
+        <div>
+          <p className="mb-1.5 text-sm font-medium text-foreground">Ordem das fotos</p>
+          <p className="mb-2 text-xs text-muted-foreground">
+            A primeira é a foto principal (a que aparece na home e na lista). Para trocar, toque em{" "}
+            <strong>Tornar principal</strong> na foto desejada; use as setas para ordenar as outras.
+          </p>
+          <ul className="flex flex-wrap gap-3">
+            <li className="w-28">
+              <div className="relative h-28 w-28 overflow-hidden rounded-[10px] border-2 border-primary bg-secondary">
+                {/* eslint-disable-next-line @next/next/no-img-element -- miniatura no painel */}
+                <img src={imageUrl} alt="Foto principal" className="size-full object-cover" />
+                <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">
+                  <Star className="size-3" /> Principal
+                </span>
+              </div>
+            </li>
+            {galleryUrls.map((url, index) => (
+              <li key={url + index} className="w-28">
+                <div className="relative h-28 w-28 overflow-hidden rounded-[10px] border border-border bg-secondary">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- miniatura no painel */}
+                  <img src={url} alt={"Foto extra " + (index + 1)} className="size-full object-cover" />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = promoteToCover(imageUrl, galleryUrls, index);
+                    setImageUrl(next.cover);
+                    setGalleryUrls(next.extras);
+                  }}
+                  className="mt-1.5 flex h-11 w-full items-center justify-center gap-1 rounded-full border border-border text-xs font-medium text-foreground hover:bg-accent"
+                >
+                  <Star className="size-3.5" /> Tornar principal
+                </button>
+                <div className="mt-1 flex gap-1">
+                  <button
+                    type="button"
+                    aria-label="Mover para a esquerda"
+                    disabled={index === 0}
+                    onClick={() => setGalleryUrls(moveExtra(galleryUrls, index, -1))}
+                    className="flex h-11 flex-1 items-center justify-center rounded-full text-muted-foreground hover:bg-accent disabled:opacity-30"
+                  >
+                    <ArrowLeft className="size-4" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Mover para a direita"
+                    disabled={index === galleryUrls.length - 1}
+                    onClick={() => setGalleryUrls(moveExtra(galleryUrls, index, 1))}
+                    className="flex h-11 flex-1 items-center justify-center rounded-full text-muted-foreground hover:bg-accent disabled:opacity-30"
+                  >
+                    <ArrowRight className="size-4" />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       <label className="block">
-        <span className="mb-1.5 block text-sm font-medium text-foreground">O que vem na cesta (um item por linha)</span>
+        <span className="mb-1.5 block text-sm font-medium text-foreground">O que vem na cesta</span>
         <textarea
           value={itemsText}
           onChange={(e) => setItemsText(e.target.value)}
-          rows={6}
+          rows={5}
+          placeholder="Cole tudo junto: queijos nobres, frios artesanais, pães frescos; azeitonas; patês"
           className="w-full resize-none rounded-[10px] border border-border bg-background px-3.5 py-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
+        <span className="mt-1 block text-xs text-muted-foreground">
+          Separe por vírgula, ponto e vírgula ou uma linha para cada item. Cada um vira um item com ícone na página da cesta.
+        </span>
       </label>
+      {splitListText(itemsText).length > 0 ? (
+        <ul className="-mt-2 flex flex-wrap gap-2" aria-label="Prévia dos itens">
+          {splitListText(itemsText).map((item) => (
+            <li key={item} className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-xs text-foreground">
+              <ItemIcon name={item} className="size-3.5 text-primary" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       <label className="block">
-        <span className="mb-1.5 block text-sm font-medium text-foreground">Embalagem (opcional)</span>
+        <span className="mb-1.5 block text-sm font-medium text-foreground">Embalagem (opcional — também pode separar por vírgula)</span>
         <textarea
           value={packaging}
           onChange={(e) => setPackaging(e.target.value)}
@@ -320,7 +393,7 @@ export function ProductDetailsForm({
             <AiFillButton
               productId={product.id}
               nomeAtual={name}
-              itensAtuais={itemsText.split("\n")}
+              itensAtuais={splitListText(itemsText)}
               imagemAtual={imageUrl}
               onGenerated={(c) => {
                 setDescription(c.descricaoLonga);
