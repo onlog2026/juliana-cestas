@@ -23,6 +23,8 @@ import {
   X,
 } from "lucide-react";
 import { SectionTitle } from "@/components/loja/section-title";
+import { TrackBeginCheckout } from "@/components/analytics/track-events";
+import { events } from "@/modules/analytics/events";
 import { checkoutInputSchema, type CheckoutInput } from "@/modules/checkout/schemas";
 import { CARD_TEMPLATES, countWords } from "@/modules/cards/templates";
 import { formatCents } from "@/lib/money";
@@ -477,6 +479,10 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
       } catch {
         /* ignora */
       }
+      // Conversão (uma vez por pedido). Só valor e nome da cesta: nenhum dado do comprador.
+      events.purchase(data.number ?? data.orderId, (data.totalCents ?? 0) / 100, [
+        { id: product.id, name: product.name, price: (data.totalCents ?? 0) / 100 },
+      ]);
       router.push(`/pedido/${data.orderId}?t=${data.token}`);
     } catch {
       setSubmitError("Falha de conexão. Tenta de novo.");
@@ -494,6 +500,7 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
       // num celular de 375px -- o botão "Ir para pagamento" e o total ficavam cortados na direita.
       className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_440px]"
     >
+      <TrackBeginCheckout items={[{ id: product.id, name: product.name, price: product.price_cents / 100 }]} />
       <div className="min-w-0 space-y-6">
         {draftRestored ? (
           <p className="rounded-card border border-border bg-secondary/40 px-4 py-2.5 text-sm text-muted-foreground">

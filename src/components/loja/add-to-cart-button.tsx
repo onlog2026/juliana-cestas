@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShoppingBag, Check } from "lucide-react";
 import { useCart } from "@/modules/cart/cart-context";
+import { events } from "@/modules/analytics/events";
 
 type Props = {
   productSlug: string;
@@ -27,6 +28,7 @@ export function AddToCartButton({ productSlug, productId, name, imageUrl, priceC
       productId,
       display: { name, imageUrl, priceCents },
     });
+    events.addToCart({ id: productId, name, price: priceCents / 100 });
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1800);
   }

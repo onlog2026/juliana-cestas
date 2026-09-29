@@ -10,6 +10,7 @@ import { AddToCartButton } from "@/components/loja/add-to-cart-button";
 import { Reveal } from "@/components/loja/reveal";
 import { ProductJsonLd } from "@/components/loja/json-ld";
 import { ItemIcon } from "@/components/loja/item-icon";
+import { TrackViewItem } from "@/components/analytics/track-events";
 import { splitListText } from "@/modules/catalog/list-text";
 import { getTenantId } from "@/lib/tenant/context";
 import { getStoreWhatsapp } from "@/modules/settings/store-profile";
@@ -64,6 +65,7 @@ export default async function ProdutoPage(
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <TrackViewItem item={{ id: product.id, name: product.name, price: product.price }} />
       <ProductJsonLd
         name={product.name}
         description={`${product.serves} — ${product.packaging}`}
@@ -119,6 +121,8 @@ export default async function ProdutoPage(
             </Link>
             <a
               href={`https://wa.me/${whatsapp}?text=${whatsappMessage}`}
+              data-track="lead"
+              data-track-source="produto"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[var(--jc-whatsapp)] px-7 text-base font-semibold text-[var(--jc-whatsapp)] transition-colors hover:bg-[var(--jc-whatsapp)]/10 active:scale-[0.98]"

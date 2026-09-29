@@ -11,6 +11,7 @@ import {
   setReviewFeatured,
 } from "@/modules/reviews/actions";
 import type { AdminReview, ReviewCounts, ReviewStatus } from "@/modules/reviews/service";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 /**
  * Fila de moderação da lojista.
@@ -67,6 +68,7 @@ export function ReviewsManager({
   const [aviso, setAviso] = useState<string | null>(null);
   const [respondendoId, setRespondendoId] = useState<string | null>(null);
   const [rascunho, setRascunho] = useState("");
+  const confirmar = useConfirm();
 
   function executar(acao: () => Promise<{ ok: true } | { ok: false; error: string }>) {
     setErro(null);
@@ -76,6 +78,21 @@ export function ReviewsManager({
       if (!resultado.ok) setErro(resultado.error);
       else router.refresh();
     });
+  }
+
+  // Foto sem autorização registrada só vai ao ar se a lojista confirmar de propósito.
+  async function aprovar(review: AdminReview) {
+    if (review.photoUrl && !review.photoConsentAt) {
+      const r = await confirmar({
+        title: "Aprovar foto sem autorização registrada?",
+        description:
+          "Esta foto não tem o registro de que o cliente autorizou mostrar no site. Se você aprovar, ela aparece na loja. Prefere recusar?",
+        confirmLabel: "Aprovar mesmo assim",
+        cancelLabel: "Voltar",
+      });
+      if (!r.ok) return;
+    }
+    executar(() => approveReview(review.id));
   }
 
   function enviarConvites() {
@@ -202,6 +219,14 @@ export function ReviewsManager({
               )}
 
               {review.photoUrl ? (
+                <p className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${review.photoConsentAt ? "bg-primary/10 text-primary" : "bg-amber-100 text-amber-800"}`}>
+                  {review.photoConsentAt
+                    ? `Cliente autorizou mostrar a foto em ${new Date(review.photoConsentAt).toLocaleDateString("pt-BR")}`
+                    : "Sem autorização de foto registrada"}
+                </p>
+              ) : null}
+
+              {review.photoUrl ? (
                 <a
                   href={review.photoUrl}
                   target="_blank"
@@ -260,7 +285,7 @@ export function ReviewsManager({
                 {review.status !== "aprovada" ? (
                   <button
                     type="button"
-                    onClick={() => executar(() => approveReview(review.id))}
+                    onClick={() => aprovar(review)}
                     disabled={pending}
                     className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-60"
                   >

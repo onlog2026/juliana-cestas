@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { Stars } from "./stars";
 
 export type CarouselReview = {
@@ -11,6 +11,7 @@ export type CarouselReview = {
   rating: number;
   comment: string | null;
   photoUrl: string | null;
+  verifiedDelivery?: boolean;
   reply: string | null;
   productName: string | null;
 };
@@ -71,7 +72,13 @@ export function ReviewsCarousel({ reviews }: { reviews: CarouselReview[] }) {
             className="flex w-[85%] shrink-0 snap-start flex-col rounded-card border border-border bg-card p-5 sm:w-[46%] lg:w-[31%]"
           >
             <div className="flex items-center justify-between gap-2">
-              <Stars rating={review.rating} />
+              {review.rating > 0 ? (
+                <Stars rating={review.rating} />
+              ) : (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                  <BadgeCheck aria-hidden="true" className="size-3.5" /> Entrega verificada
+                </span>
+              )}
               <Quote aria-hidden="true" className="size-5 shrink-0 text-border" />
             </div>
 
@@ -81,7 +88,7 @@ export function ReviewsCarousel({ reviews }: { reviews: CarouselReview[] }) {
               </p>
             ) : (
               <p className="mt-3 text-sm italic text-muted-foreground">
-                Avaliou com {review.rating} de 5 estrelas.
+                {review.rating > 0 ? `Avaliou com ${review.rating} de 5 estrelas.` : "Compartilhou uma foto da entrega."}
               </p>
             )}
 

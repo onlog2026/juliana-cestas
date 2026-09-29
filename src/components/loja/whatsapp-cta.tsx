@@ -22,6 +22,8 @@ export async function WhatsappCta() {
         </div>
         <a
           href={`https://wa.me/${whatsapp}`}
+          data-track="lead"
+          data-track-source="home"
           target="_blank"
           rel="noopener noreferrer"
           className="jc-shine-cta inline-flex h-12 shrink-0 items-center gap-2 rounded-full bg-[var(--jc-whatsapp)] px-6 text-sm font-semibold text-white transition-transform active:scale-[0.98]"

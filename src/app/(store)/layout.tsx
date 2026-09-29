@@ -9,6 +9,7 @@ import { getStoreProfile, getStoreWhatsapp } from "@/modules/settings/store-prof
 import { getTenantId } from "@/lib/tenant/context";
 import { shortHash } from "@/modules/pwa/version";
 import { CartProvider } from "@/modules/cart/cart-context";
+import { ClickTracker } from "@/components/analytics/track-events";
 
 // TODO F7: a URL pública de cada loja vai vir de `tenant_domains`. Enquanto
 // esse mapa não existe, a única fonte é o env da loja legada.
@@ -69,6 +70,7 @@ export default async function StoreLayout({ children }: LayoutProps<"/">) {
   return (
     <CartProvider>
       <LocalBusinessJsonLd />
+      <ClickTracker />
       <SiteHeader />
       <main className="flex-1 pb-16 md:pb-0">{children}</main>
       <SiteFooter />

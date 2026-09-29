@@ -29,6 +29,8 @@ export function BottomNav({ whatsapp }: { whatsapp: string }) {
       ))}
       <a
         href={`https://wa.me/${whatsapp}`}
+        data-track="lead"
+        data-track-source="rodape"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Falar no WhatsApp"

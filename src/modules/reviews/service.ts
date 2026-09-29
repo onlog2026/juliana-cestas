@@ -22,9 +22,13 @@ export type PublicReview = {
   featured: boolean;
   submittedAt: string | null;
   productName: string | null;
+  /** true = veio da "foto da entrega" (sem nota em estrelas). */
+  verifiedDelivery: boolean;
 };
 
 export type AdminReview = PublicReview & {
+  /** Quando o cliente autorizou mostrar a foto no site (foto da entrega). Nulo = sem registro. */
+  photoConsentAt: string | null;
   status: ReviewStatus;
   customerEmail: string | null;
   orderNumber: number | null;
@@ -209,6 +213,7 @@ function toPublicReview(row: Row): PublicReview {
     featured: row.featured,
     submittedAt: row.submitted_at,
     productName: firstRelated(row.products)?.name ?? null,
+    verifiedDelivery: row.rating === null && Boolean(row.photo_url),
   };
 }
 
@@ -310,6 +315,20 @@ export async function listReviewsAdmin(
   const { data, error } = await query;
   if (error || !data) return [];
 
+  // Autorização da foto: coluna da migração 0052, lida à parte (se não existir, tudo segue sem o selo).
+  const consent = new Map<string, string | null>();
+  try {
+    const ids = (data as unknown as Row[]).map((r) => r.id);
+    const { data: rows, error: consentError } = await admin
+      .from("product_reviews")
+      .select("id, photo_consent_at")
+      .eq("tenant_id", tenantId)
+      .in("id", ids);
+    if (!consentError) for (const r of rows ?? []) consent.set(r.id as string, (r.photo_consent_at as string | null) ?? null);
+  } catch {
+    // sem a coluna: sem selo
+  }
+
   return (data as unknown as Row[]).map((row) => ({
     ...toPublicReview(row),
     // No painel a lojista precisa ver o nome inteiro, não o encurtado.
@@ -319,6 +338,7 @@ export async function listReviewsAdmin(
     orderNumber: firstRelated(row.orders)?.number ?? null,
     invitedAt: row.invited_at ?? null,
     approvedAt: row.approved_at ?? null,
+    photoConsentAt: consent.get(row.id) ?? null,
   }));
 }
 

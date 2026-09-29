@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/modules/cart/cart-context";
+import { events } from "@/modules/analytics/events";
+import { TrackBeginCheckout } from "@/components/analytics/track-events";
 import { checkoutBuyerSchema } from "@/modules/checkout/schemas";
 import type { CartItem } from "@/modules/cart/types";
 import { giftIssues } from "@/modules/cart/validate";
@@ -162,6 +164,12 @@ export function CartPageClient({ storeName, whatsapp }: { storeName: string; wha
         setSubmitError(data.error || "Não foi possível fechar o pedido. Tente de novo.");
         return;
       }
+      // Conversão do carrinho: UM purchase (chave = nº do primeiro pedido), sem dado do comprador.
+      events.purchase(
+        data.orders?.[0]?.number ?? data.groupId ?? "grupo",
+        (data.totalCents ?? 0) / 100,
+        items.map((g) => ({ id: g.productId ?? g.productSlug, name: g.display.name, price: g.display.priceCents / 100 }))
+      );
       setConfirmation({ buyerName: buyer.name, orders: data.orders, totalCents: data.totalCents, gifts: items });
     } catch {
       setSubmitError("Não deu pra fechar o pedido agora. Confira sua internet e tente de novo.");
@@ -172,6 +180,7 @@ export function CartPageClient({ storeName, whatsapp }: { storeName: string; wha
 
   return (
     <div className="space-y-6 pb-28">
+      <TrackBeginCheckout items={items.map((g) => ({ id: g.productId ?? g.productSlug, name: g.display.name, price: g.display.priceCents / 100 }))} />
       {editingGift ? (
         <GiftEditor
           gift={editingGift}

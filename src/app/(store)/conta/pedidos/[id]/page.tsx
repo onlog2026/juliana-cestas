@@ -8,6 +8,8 @@ import { getStoreProfile } from "@/modules/settings/store-profile";
 import { getCardTemplate } from "@/modules/cards/templates";
 import { CardFace } from "@/components/loja/card-face";
 import { StatusBadge } from "@/components/admin/status-badge";
+import { DeliveryExperienceForm } from "@/components/loja/reviews/delivery-experience-form";
+import { experienceAvailable, getMyExperience } from "@/modules/reviews/experience";
 import { formatCents } from "@/lib/money";
 
 export const metadata = { title: "Meu pedido" };
@@ -25,7 +27,11 @@ export default async function ContaPedidoPage(props: PageProps<"/conta/pedidos/[
   if (!order) notFound();
 
   const template = getCardTemplate(order.card_template);
-  const storeName = (await getStoreProfile(tenantId)).businessName?.trim() || "";
+  const profile = await getStoreProfile(tenantId);
+  const storeName = profile.businessName?.trim() || "";
+  // "Foto da entrega": só para pedido ENTREGUE e só depois da migração 0052 (senão nem aparece).
+  const showExperience = order.status === "entregue" && (await experienceAvailable());
+  const myExperience = showExperience ? await getMyExperience(tenantId, order.id) : null;
   const addressLine =
     order.delivery_type === "pickup"
       ? "Retirada na loja"
@@ -84,6 +90,15 @@ export default async function ContaPedidoPage(props: PageProps<"/conta/pedidos/[
         storeName={storeName}
         className="mt-4"
       />
+
+      {showExperience ? (
+        <DeliveryExperienceForm
+          orderId={order.id}
+          storeName={storeName}
+          whatsapp={(profile.phone ?? "").replace(/\D/g, "")}
+          alreadySent={myExperience?.photoUrl ? { photoUrl: myExperience.photoUrl, status: myExperience.status } : null}
+        />
+      ) : null}
 
       <p className="mt-6 flex items-start gap-2 text-xs text-muted-foreground">
         <Check className="mt-0.5 size-3.5 shrink-0" />
