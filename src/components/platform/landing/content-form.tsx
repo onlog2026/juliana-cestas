@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirmText } from "@/components/ui/confirm-dialog";
 import { useState, useTransition } from "react";
 import { Loader2, Check, Plus, Trash2, ArrowUp, ArrowDown, RotateCcw } from "lucide-react";
 import { updatePlatformContent, resetPlatformContent } from "@/modules/platform/landing-actions";
@@ -135,8 +136,10 @@ export function PlatformContentForm({
     });
   }
 
-  function restaura() {
-    if (!confirm("Voltar esta seção para o texto padrão? O que você escreveu aqui será apagado.")) return;
+  const confirmarTexto = useConfirmText();
+
+  async function restaura() {
+    if (!(await confirmarTexto("Voltar esta seção para o texto padrão?\n\nO que você escreveu aqui será apagado.",{ tone: "danger" }))) return;
     setErro(null);
     startTransition(async () => {
       const resultado = await resetPlatformContent(section);

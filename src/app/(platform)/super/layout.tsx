@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
+import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { SuperNav } from "@/components/platform/super-nav";
 import { SuperNavDrawer } from "@/components/platform/super-nav-drawer";
@@ -11,6 +12,7 @@ export default async function SuperLayout({ children }: { children: React.ReactN
   const admin = await requireSuperAdmin();
 
   return (
+    <ConfirmProvider>
     <div className="flex min-h-dvh flex-col bg-secondary/30 md:flex-row">
       {/* Barra do topo só no mobile -- o menu vira drawer, como num app. */}
       <div className="flex items-center justify-between bg-primary px-4 py-3 text-primary-foreground md:hidden">
@@ -55,5 +57,6 @@ export default async function SuperLayout({ children }: { children: React.ReactN
 
       <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
     </div>
+    </ConfirmProvider>
   );
 }

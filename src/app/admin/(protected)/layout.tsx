@@ -6,6 +6,7 @@ import { ADMIN_MENU_MODULES, buildGroupedAdminMenu } from "@/lib/modules/registr
 import { AdminNav } from "@/components/admin/admin-nav";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { MobileNavDrawer } from "@/components/admin/mobile-nav-drawer";
+import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import { PlanBanner } from "@/components/admin/plan-banner";
 
 /**
@@ -47,6 +48,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const menu = buildGroupedAdminMenu(visiveis);
 
   return (
+    <ConfirmProvider>
     <div className="flex min-h-dvh flex-col bg-secondary/30 md:flex-row">
       {/* Barra do topo só no mobile -- o menu vira um drawer, do jeito que
           um app de verdade se comporta, em vez de espremer 8 itens numa
@@ -89,5 +91,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         {children}
       </main>
     </div>
+    </ConfirmProvider>
   );
 }

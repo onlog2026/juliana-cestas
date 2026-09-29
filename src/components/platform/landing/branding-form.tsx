@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirmText } from "@/components/ui/confirm-dialog";
 import { useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { Loader2, Check, Upload, X, RotateCcw } from "lucide-react";
@@ -136,9 +137,10 @@ export function PlatformBrandingForm({
     });
   }
 
-  function restaura() {
-    if (!confirm("Voltar a marca da plataforma para o padrão? A logo e o ícone enviados deixam de ser usados."))
-      return;
+  const confirmarTexto = useConfirmText();
+
+  async function restaura() {
+    if (!(await confirmarTexto("Voltar a marca da plataforma para o padrão?\n\nA logo e o ícone enviados deixam de ser usados.",{ tone: "danger" }))) return;
     setErro(null);
     startTransition(async () => {
       const resultado = await resetPlatformContent("branding");

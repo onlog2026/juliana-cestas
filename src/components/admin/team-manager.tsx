@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Loader2, Mail, Pencil, Plus, RotateCw, Trash2, UserRound, X } from "lucide-react";
@@ -61,10 +62,19 @@ export function TeamManager({
     router.refresh();
   }
 
-  function alternarAtiva(membro: TeamMember) {
+  const ask = useConfirm();
+
+  async function alternarAtiva(membro: TeamMember) {
     setErro(null);
     const desativando = membro.active;
-    if (desativando && !confirm(`Desativar ${membro.name?.trim() || membro.email || "esta pessoa"}?`)) return;
+    if (desativando) {
+      const r = await ask({
+        title: `Desativar ${membro.name?.trim() || membro.email || "esta pessoa"}?`,
+        description: "A pessoa perde o acesso agora, mas você pode reativar depois.",
+        confirmLabel: "Desativar",
+      });
+      if (!r.ok) return;
+    }
 
     startTransition(async () => {
       const resultado = await definirPessoaAtiva({ id: membro.id, active: !membro.active });
@@ -76,16 +86,17 @@ export function TeamManager({
     });
   }
 
-  function excluir(membro: TeamMember) {
+  async function excluir(membro: TeamMember) {
     setErro(null);
     const nome = membro.name?.trim() || membro.email || "esta pessoa";
-    if (
-      !confirm(
-        `Excluir ${nome} da equipe? Essa ação NÃO tem volta -- ao contrário de desativar, não dá para trazer de volta depois. A pessoa perde o acesso a esta loja imediatamente.`
-      )
-    ) {
-      return;
-    }
+    const r = await ask({
+      title: `Excluir ${nome} da equipe?`,
+      description:
+        "Essa ação NÃO tem volta -- ao contrário de desativar, não dá para trazer de volta depois. A pessoa perde o acesso a esta loja imediatamente.",
+      tone: "danger",
+      confirmLabel: "Excluir",
+    });
+    if (!r.ok) return;
 
     startTransition(async () => {
       const resultado = await excluirMembro(membro.id);
@@ -110,9 +121,10 @@ export function TeamManager({
     });
   }
 
-  function cancelar(id: string) {
+  async function cancelar(id: string) {
     setErro(null);
-    if (!confirm("Cancelar este convite? A pessoa não vai perder o acesso se já tiver entrado.")) return;
+    const r = await ask({ title: "Cancelar este convite?", description: "A pessoa não vai perder o acesso se já tiver entrado.", confirmLabel: "Cancelar convite", cancelLabel: "Voltar" });
+    if (!r.ok) return;
     startTransition(async () => {
       const resultado = await cancelarConvite(id);
       if (!resultado.ok) {

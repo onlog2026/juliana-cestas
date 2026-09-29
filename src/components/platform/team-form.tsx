@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirmText } from "@/components/ui/confirm-dialog";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
@@ -122,7 +123,9 @@ export function ToggleAdminAccessButton({
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState<string | null>(null);
 
-  function alternar() {
+  const confirmarTexto = useConfirmText();
+
+  async function alternar() {
     setErro(null);
     setSucesso(null);
 
@@ -132,7 +135,7 @@ export function ToggleAdminAccessButton({
         : `Tirar o acesso de ${email} ao painel da plataforma?\n\nA pessoa deixa de entrar no painel na hora. A conta dela continua existindo — só a permissão sai.`
       : `Devolver o acesso ao painel da plataforma para ${email}?`;
 
-    if (!window.confirm(pergunta)) return;
+    if (!(await confirmarTexto(pergunta, ativo ? { tone: "danger" } : undefined))) return;
 
     startTransition(async () => {
       try {

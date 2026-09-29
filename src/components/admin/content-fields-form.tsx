@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useEffect, useState, useTransition } from "react";
 import { Loader2, Check, RotateCcw } from "lucide-react";
 import { updateContent, resetContent } from "@/modules/content/actions";
@@ -53,8 +54,11 @@ export function ContentFieldsForm({
     });
   }
 
-  function handleReset() {
-    if (!confirm("Voltar esta seção para o texto padrão? O que você escreveu aqui será apagado.")) return;
+  const ask = useConfirm();
+
+  async function handleReset() {
+    const r = await ask({ title: "Voltar ao texto padrão?", description: "O que você escreveu nesta seção será apagado.", tone: "danger", confirmLabel: "Voltar ao padrão" });
+    if (!r.ok) return;
     setError(null);
     startTransition(async () => {
       const result = await resetContent(section);

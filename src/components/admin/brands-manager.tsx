@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -56,6 +57,8 @@ export function BrandsManager({
     });
   }
 
+  const ask = useConfirm();
+
   function excluir(marca: Brand) {
     setError(null);
     startTransition(async () => {
@@ -67,7 +70,13 @@ export function BrandsManager({
           ? `Excluir a marca "${marca.name}"?\n\n${total} ${total === 1 ? "cesta usa" : "cestas usam"} esta marca. ${total === 1 ? "Ela" : "Elas"} NÃO ${total === 1 ? "será apagada" : "serão apagadas"}: ${total === 1 ? "ela" : "elas"} apenas ${total === 1 ? "fica" : "ficam"} sem marca.\n\nNão dá para desfazer.`
           : `Excluir a marca "${marca.name}"? Nenhuma cesta usa esta marca hoje. Não dá para desfazer.`;
 
-      if (!confirm(aviso)) return;
+      const r = await ask({
+        title: `Excluir a marca "${marca.name}"?`,
+        description: <span className="whitespace-pre-line">{aviso}</span>,
+        tone: "danger",
+        confirmLabel: "Excluir",
+      });
+      if (!r.ok) return;
 
       const resultado = await excluirMarca(marca.id);
       if (!resultado.ok) {

@@ -71,6 +71,8 @@ export type AdminOrderDetail = AdminOrderRow & {
   coupon_code: string | null;
   items: { name: string; unit_price_cents: number; qty: number }[];
   events: { id: string; type: string; actor: string; created_at: string; payload: unknown }[];
+  /** Outras cestas do mesmo carrinho (vazio se o pedido não é de um grupo). */
+  siblings: { id: string; number: number; status: string }[];
 };
 
 export async function getOrderDetail(orderId: string): Promise<AdminOrderDetail | null> {
@@ -101,7 +103,19 @@ export async function getOrderDetail(orderId: string): Promise<AdminOrderDetail 
     .eq("tenant_id", staff.tenantId)
     .order("created_at", { ascending: false });
 
-  return { ...order, items: items ?? [], events: events ?? [] };
+  let siblings: AdminOrderDetail["siblings"] = [];
+  if (order.group_id) {
+    const { data: group } = await admin
+      .from("orders")
+      .select("id, number, status")
+      .eq("group_id", order.group_id)
+      .eq("tenant_id", staff.tenantId)
+      .neq("id", orderId)
+      .order("number");
+    siblings = group ?? [];
+  }
+
+  return { ...order, items: items ?? [], events: events ?? [], siblings };
 }
 
 const NEXT_STATUS: Record<string, string | undefined> = {
@@ -452,6 +466,89 @@ export async function excluirPedido(orderId: string): Promise<{ ok: true } | { o
   if (!excluido || excluido.length === 0) {
     return { ok: false, error: "Não foi possível excluir esse pedido agora." };
   }
+
+  revalidatePath("/admin/pedidos");
+  revalidatePath("/admin/entregas");
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+/**
+ * Cancela TODAS as cestas de um carrinho de uma vez. Cada uma segue a mesma
+ * regra do cancelamento individual (pedido já entregue/cancelado fica de fora,
+ * sem erro). Devolve quantas foram canceladas.
+ */
+export async function cancelOrderGroup(
+  orderId: string,
+  reason: string
+): Promise<{ ok: true; cancelled: number } | { ok: false; error: string }> {
+  const staff = await requireStaff();
+  const admin = createAdminClient();
+
+  const { data: order } = await admin
+    .from("orders")
+    .select("id, group_id")
+    .eq("id", orderId)
+    .eq("tenant_id", staff.tenantId)
+    .maybeSingle();
+  if (!order) return { ok: false, error: "Pedido não encontrado." };
+  if (!order.group_id) {
+    const single = await cancelOrder(orderId, reason);
+    return single.ok ? { ok: true, cancelled: 1 } : single;
+  }
+
+  const { data: group } = await admin
+    .from("orders")
+    .select("id, status")
+    .eq("group_id", order.group_id)
+    .eq("tenant_id", staff.tenantId);
+  let cancelled = 0;
+  for (const o of group ?? []) {
+    if (NON_CANCELABLE.has(o.status)) continue;
+    const r = await cancelOrder(o.id, reason);
+    if (r.ok) cancelled += 1;
+  }
+  if (cancelled === 0) return { ok: false, error: "Nenhuma cesta deste carrinho pode mais ser cancelada." };
+  return { ok: true, cancelled };
+}
+
+/**
+ * Exclui TODAS as cestas de um carrinho numa única operação (tudo ou nada).
+ * Mesma trava do pedido individual: se qualquer uma já tem pagamento ou
+ * chamado, o banco recusa o conjunto inteiro e nada é apagado.
+ */
+export async function excluirGrupo(orderId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const staff = await requireStaff();
+  const admin = createAdminClient();
+
+  const { data: order } = await admin
+    .from("orders")
+    .select("id, group_id")
+    .eq("id", orderId)
+    .eq("tenant_id", staff.tenantId)
+    .maybeSingle();
+  if (!order) return { ok: false, error: "Pedido não encontrado." };
+  if (!order.group_id) return excluirPedido(orderId);
+
+  const { data: excluidos, error } = await admin
+    .from("orders")
+    .delete()
+    .eq("group_id", order.group_id)
+    .eq("tenant_id", staff.tenantId)
+    .select("id");
+
+  if (error) {
+    if (error.code === "23503") {
+      return {
+        ok: false,
+        error:
+          "Alguma cesta deste carrinho já tem pagamento gerado ou chamado de suporte, então o carrinho não pode ser excluído (nada foi apagado). Use \"Cancelar\" em vez de excluir: o registro fica guardado.",
+      };
+    }
+    console.error("[pedidos] falha ao excluir o grupo:", error);
+    return { ok: false, error: "Não foi possível excluir o carrinho agora." };
+  }
+  if (!excluidos || excluidos.length === 0) return { ok: false, error: "Não foi possível excluir o carrinho agora." };
 
   revalidatePath("/admin/pedidos");
   revalidatePath("/admin/entregas");

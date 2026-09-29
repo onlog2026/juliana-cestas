@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirmText } from "@/components/ui/confirm-dialog";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus, Trash2, EyeOff, Eye } from "lucide-react";
@@ -85,6 +86,7 @@ function FormularioDoPlano({
 }) {
   const router = useRouter();
   const [pendente, iniciarTransicao] = useTransition();
+  const confirmarTexto = useConfirmText();
   const [valores, setValores] = useState<PlanEditorValues>(inicial);
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState<string | null>(null);
@@ -301,8 +303,8 @@ function FormularioDoPlano({
           <button
             type="button"
             disabled={pendente}
-            onClick={() => {
-              const ok = window.confirm(
+            onClick={async () => {
+              const ok = await confirmarTexto(
                 inicial.isVisible
                   ? `Tirar o plano "${inicial.name}" da vitrine?\n\nQuem já está neste plano continua igual. O plano só deixa de ser oferecido para quem ainda vai assinar.`
                   : `Colocar o plano "${inicial.name}" de volta na vitrine?\n\nEle volta a ser oferecido para novas lojas.`
@@ -332,8 +334,8 @@ function FormularioDoPlano({
             type="button"
             disabled={pendente || travadoPorUso}
             title={travadoPorUso ? fraseDeUso : undefined}
-            onClick={() => {
-              const ok = window.confirm(
+            onClick={async () => {
+              const ok = await confirmarTexto(
                 `Excluir o plano "${inicial.name}" para sempre?\n\nIsso apaga o plano e tudo que ele libera. Não dá para desfazer. Se você só quer parar de vender este plano, use "Tirar da vitrine".`
               );
               if (!ok) return;

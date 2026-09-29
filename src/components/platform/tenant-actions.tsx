@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirmText } from "@/components/ui/confirm-dialog";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
@@ -129,6 +130,7 @@ export function TenantActions({
   planos: PlanoOpcao[];
 }) {
   const router = useRouter();
+  const confirmarTexto = useConfirmText();
   const [pending, startTransition] = useTransition();
 
   // Qual botão está rodando, para não travar a tela inteira nem piscar
@@ -195,8 +197,8 @@ export function TenantActions({
         <button
           type="button"
           disabled={pending}
-          onClick={() => {
-            const ok = window.confirm(
+          onClick={async () => {
+            const ok = await confirmarTexto(
               `Ativar o acesso da loja "${nome}"?\n\nIsso libera o acesso sem criar cobrança. Não gera fatura nem religa assinatura.`
             );
             if (!ok) return;
@@ -253,14 +255,14 @@ export function TenantActions({
             <button
               type="button"
               disabled={pending}
-              onClick={() => {
+              onClick={async () => {
                 const motivo = motivoSuspensao.trim();
                 if (!motivo) {
                   setSucesso(null);
                   setErro({ acao: "vitrine", mensagem: "Escreva o motivo da suspensão antes de continuar." });
                   return;
                 }
-                const ok = window.confirm(
+                const ok = await confirmarTexto(
                   `Suspender a vitrine da loja "${nome}"?\n\nO site da loja sai do ar para os clientes e ninguém consegue comprar. O lojista continua acessando o painel dele normalmente.`
                 );
                 if (!ok) return;
@@ -362,14 +364,14 @@ export function TenantActions({
         <button
           type="button"
           disabled={pending}
-          onClick={() => {
+          onClick={async () => {
             const motivo = cortesiaMotivo.trim();
             if (!motivo) {
               setSucesso(null);
               setErro({ acao: "cortesia", mensagem: "Escreva o motivo da cortesia antes de continuar." });
               return;
             }
-            const ok = window.confirm(
+            const ok = await confirmarTexto(
               `Conceder ${cortesiaDias} dia(s) de cortesia para a loja "${nome}"?\n\nCortesia não cobra nada: nenhuma fatura é criada e a loja fica liberada por esse prazo.`
             );
             if (!ok) return;
@@ -395,8 +397,8 @@ export function TenantActions({
           <button
             type="button"
             disabled={pending}
-            onClick={() => {
-              const ok = window.confirm(
+            onClick={async () => {
+              const ok = await confirmarTexto(
                 `Remover a cortesia da loja "${nome}"?\n\nA loja deixa de ter o acesso liberado de graça e passa a depender da assinatura dela.`
               );
               if (!ok) return;
@@ -430,8 +432,8 @@ export function TenantActions({
         <button
           type="button"
           disabled={pending}
-          onClick={() => {
-            const ok = window.confirm(
+          onClick={async () => {
+            const ok = await confirmarTexto(
               `Trocar o plano da loja "${nome}" para "${novoPlano.trim() || "(nenhum)"}"?\n\nTrocar o plano aqui NÃO altera o valor cobrado no gateway de pagamento.`
             );
             if (!ok) return;

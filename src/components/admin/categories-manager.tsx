@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -77,8 +78,11 @@ export function CategoriesManager({ categories: initialCategories }: { categorie
     router.refresh();
   }
 
-  function handleDelete(id: string) {
-    if (!confirm("Excluir esta categoria? Não dá pra desfazer.")) return;
+  const ask = useConfirm();
+
+  async function handleDelete(id: string) {
+    const r = await ask({ title: "Excluir esta categoria?", description: "Não dá pra desfazer.", tone: "danger", confirmLabel: "Excluir" });
+    if (!r.ok) return;
     setError(null);
     startTransition(async () => {
       const result = await deleteCategory(id);

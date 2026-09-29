@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirmText } from "@/components/ui/confirm-dialog";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Copy, Loader2, Lock, Trash2 } from "lucide-react";
@@ -103,9 +104,12 @@ export function VoucherList({ vouchers }: { vouchers: VoucherItem[] }) {
     }
   }
 
-  function apagar(item: VoucherItem) {
-    const ok = window.confirm(
-      `Apagar a cortesia ${item.code}?\n\nEla some da lista e ninguém mais consegue resgatar esse código. Esta ação não tem volta.`
+  const confirmarTexto = useConfirmText();
+
+  async function apagar(item: VoucherItem) {
+    const ok = await confirmarTexto(
+      `Apagar a cortesia ${item.code}?\n\nEla some da lista e ninguém mais consegue resgatar esse código. Esta ação não tem volta.`,
+      { tone: "danger" }
     );
     if (!ok) return;
     setErro(null);

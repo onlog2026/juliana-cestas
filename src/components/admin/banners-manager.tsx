@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -39,8 +40,11 @@ export function BannersManager({ banners: initialBanners }: { banners: Banner[] 
     });
   }
 
-  function handleDelete(id: string) {
-    if (!confirm("Excluir este banner? Não dá pra desfazer.")) return;
+  const ask = useConfirm();
+
+  async function handleDelete(id: string) {
+    const r = await ask({ title: "Excluir este banner?", description: "Não dá pra desfazer.", tone: "danger", confirmLabel: "Excluir" });
+    if (!r.ok) return;
     setBanners((current) => current.filter((b) => b.id !== id));
     startTransition(() => {
       deleteBanner(id);

@@ -31,10 +31,30 @@ export default async function AdminPedidoDetailPage(props: PageProps<"/admin/ped
           <StatusBadge status={order.status} />
           <MarkPaidButton orderId={order.id} status={order.status} />
           <AdvanceStatusButton orderId={order.id} status={order.status} />
-          <CancelOrderButton orderId={order.id} status={order.status} />
-          <DeleteOrderButton orderId={order.id} orderNumber={order.number} />
+          <CancelOrderButton orderId={order.id} status={order.status} groupCount={order.siblings.length + 1} />
+          <DeleteOrderButton
+            orderId={order.id}
+            orderNumber={order.number}
+            status={order.status}
+            groupCount={order.siblings.length + 1}
+          />
         </div>
       </div>
+
+      {order.siblings.length > 0 ? (
+        <p className="mt-3 rounded-lg bg-secondary/60 px-3 py-2 text-sm text-muted-foreground">
+          Este pedido faz parte de um carrinho com {order.siblings.length + 1} cestas. Outras:{" "}
+          {order.siblings.map((sb, i) => (
+            <span key={sb.id}>
+              {i > 0 ? ", " : ""}
+              <Link href={`/admin/pedidos/${sb.id}`} className="font-medium text-primary hover:underline">
+                #{sb.number}
+              </Link>
+            </span>
+          ))}
+          .
+        </p>
+      ) : null}
 
       <div className="mt-6 rounded-card border border-border bg-card p-5">
         <h2 className="text-sm font-semibold text-foreground">Comprador</h2>

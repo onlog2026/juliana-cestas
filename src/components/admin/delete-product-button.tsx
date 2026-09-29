@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Trash2 } from "lucide-react";
@@ -9,8 +10,11 @@ export function DeleteProductButton({ productId, productName }: { productId: str
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
-  function handleClick() {
-    if (!confirm(`Remover "${productName}" do site? O histórico de pedidos continua intacto.`)) return;
+  const ask = useConfirm();
+
+  async function handleClick() {
+    const r = await ask({ title: `Remover "${productName}" do site?`, description: "O histórico de pedidos continua intacto.", tone: "danger", confirmLabel: "Remover" });
+    if (!r.ok) return;
     startTransition(async () => {
       const result = await deleteProduct(productId);
       if (result.ok) router.push("/admin/produtos");

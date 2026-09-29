@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Clock, Globe, Loader2, Plus, RotateCw, Trash2, TriangleAlert } from "lucide-react";
@@ -90,11 +91,17 @@ export function DomainConnectForm({ domains: initialDomains }: { domains: Tenant
     });
   }
 
-  function aoRemover(dominio: TenantDomain) {
+  const ask = useConfirm();
+
+  async function aoRemover(dominio: TenantDomain) {
     setErro(null);
-    if (!confirm(`Remover o cadastro de "${dominio.host}"? Isso não afeta o registro de DNS que você já criou -- só o cadastro aqui na plataforma.`)) {
-      return;
-    }
+    const r = await ask({
+      title: `Remover o cadastro de "${dominio.host}"?`,
+      description: "Isso não afeta o registro de DNS que você já criou -- só o cadastro aqui na plataforma.",
+      tone: "danger",
+      confirmLabel: "Remover",
+    });
+    if (!r.ok) return;
     startTransition(async () => {
       const resultado = await removerDominio(dominio.id);
       if (!resultado.ok) {

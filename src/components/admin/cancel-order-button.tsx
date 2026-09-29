@@ -2,22 +2,57 @@
 
 import { useState, useTransition } from "react";
 import { Loader2, X } from "lucide-react";
-import { cancelOrder } from "@/modules/orders/actions";
+import { cancelOrder, cancelOrderGroup } from "@/modules/orders/actions";
+import { useConfirm } from "@/components/ui/confirm-dialog";
+import { PEDIDO_ENCERRADO } from "@/modules/orders/rules";
 
-const NON_CANCELABLE = new Set(["entregue", "cancelado", "reembolsado"]);
-
-export function CancelOrderButton({ orderId, status }: { orderId: string; status: string }) {
+export function CancelOrderButton({
+  orderId,
+  status,
+  groupCount = 1,
+}: {
+  orderId: string;
+  status: string;
+  /** Quantas cestas tem o carrinho deste pedido (1 = pedido avulso). */
+  groupCount?: number;
+}) {
+  const confirm = useConfirm();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  if (NON_CANCELABLE.has(status)) return null;
+  if (PEDIDO_ENCERRADO.has(status)) return null;
 
-  function handleCancel() {
-    const reason = window.prompt("Motivo do cancelamento (opcional):") ?? "";
-    if (!window.confirm("Cancelar este pedido? Essa ação não pode ser desfeita.")) return;
+  async function handleCancel() {
+    setError(null);
+    const jaPago = status !== "aguardando_pagamento";
+    const r = await confirm({
+      title: "Cancelar este pedido?",
+      tone: "danger",
+      confirmLabel: "Sim, cancelar",
+      cancelLabel: "Voltar",
+      description: (
+        <>
+          O pedido continua no histórico, mas sai da fila de trabalho. Não dá para desfazer.
+          {jaPago ? (
+            <strong className="mt-2 block text-foreground">
+              Este pedido já foi pago: o reembolso NÃO é automático, é preciso devolver o valor pelo Asaas.
+            </strong>
+          ) : null}
+        </>
+      ),
+      input: { label: "Motivo (opcional)", placeholder: "Ex.: cliente desistiu", optional: true },
+      choices:
+        groupCount > 1
+          ? [
+              { value: "one", label: "Só esta cesta" },
+              { value: "all", label: `Todas as ${groupCount} cestas do carrinho` },
+            ]
+          : undefined,
+    });
+    if (!r.ok) return;
     startTransition(async () => {
-      setError(null);
-      const result = await cancelOrder(orderId, reason);
+      const result =
+        r.choice === "all" ? await cancelOrderGroup(orderId, r.value ?? "") : await cancelOrder(orderId, r.value ?? "");
       if (!result.ok) setError(result.error);
     });
   }
@@ -28,7 +63,7 @@ export function CancelOrderButton({ orderId, status }: { orderId: string; status
         type="button"
         disabled={pending}
         onClick={handleCancel}
-        className="flex h-10 items-center gap-1.5 rounded-full border border-destructive/40 px-4 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
+        className="flex h-11 items-center gap-1.5 rounded-full border border-destructive/40 px-4 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
       >
         {pending ? <Loader2 className="size-4 animate-spin" /> : <X className="size-4" />}
         Cancelar pedido
