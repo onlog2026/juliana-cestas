@@ -131,6 +131,11 @@ export const promoSlotSchema = z.object({
   mobileImageUrl: promoImageUrlSchema.optional(),
   href: safeHrefSchema,
   alt: z.string().trim().max(160),
+  /** Texto por cima da imagem (opcional; conteúdo antigo não tem). */
+  title: z.string().trim().max(60).optional(),
+  subtitle: z.string().trim().max(100).optional(),
+  /** false = imagem limpa (a arte já traz o texto). Padrão: mostra. */
+  showText: z.boolean().optional(),
 });
 
 /**

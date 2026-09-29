@@ -24,18 +24,37 @@ function PromoSlot({ slot, className, sizes }: { slot: Slot; className: string; 
     <Image src={slot.imageUrl} alt={alt} fill sizes={sizes} className={imageClass} />
   );
 
+  const title = slot.title?.trim();
+  const subtitle = slot.subtitle?.trim();
+  const legend =
+    slot.showText !== false && (title || subtitle) ? (
+      <>
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-white [text-shadow:0_2px_12px_rgba(0,0,0,0.5)] sm:p-6">
+          {title ? <p className="line-clamp-2 font-display text-xl leading-tight sm:text-2xl lg:text-3xl">{title}</p> : null}
+          {subtitle ? <p className="mt-1 line-clamp-2 text-sm sm:text-base">{subtitle}</p> : null}
+        </div>
+      </>
+    ) : null;
+  const content = (
+    <>
+      {images}
+      {legend}
+    </>
+  );
+
   const href = slot.href.trim();
-  if (!href) return <div className={boxClass}>{images}</div>;
+  if (!href) return <div className={boxClass}>{content}</div>;
   if (/^https:\/\//i.test(href)) {
     return (
       <a href={href} target="_blank" rel="noopener noreferrer" className={boxClass}>
-        {images}
+        {content}
       </a>
     );
   }
   return (
     <Link href={href} className={boxClass}>
-      {images}
+      {content}
     </Link>
   );
 }

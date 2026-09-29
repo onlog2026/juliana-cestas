@@ -12,6 +12,8 @@ import { SiteBrandingForm } from "@/components/admin/site-branding-form";
 import { ContentAnnouncementForm } from "@/components/admin/content-announcement-form";
 import { StorefrontPreview } from "@/components/admin/storefront-preview";
 import { ContentPromoBannersForm } from "@/components/admin/content-promo-banners-form";
+import { OgImageForm } from "@/components/admin/og-image-form";
+import { getSeoSettings } from "@/modules/seo/service";
 
 export default async function AdminCmsPage() {
   // TRAVA DE SERVIDOR: esconder o item do menu não impede ninguém de
@@ -19,13 +21,14 @@ export default async function AdminCmsPage() {
   // módulo "cms" no plano é levado para a página de oferta.
   // (Esta tela edita banners, categorias e a marca do site.)
   const staff = await requireStaffWithModule("cms");
-  const [links, banners, siteSettings, announcement, promoBanners, products] = await Promise.all([
+  const [links, banners, siteSettings, announcement, promoBanners, products, seoSettings] = await Promise.all([
     getSocialLinks(staff.tenantId),
     getAllBannersAdmin(staff.tenantId),
     getSiteSettings(staff.tenantId),
     getContentForAdmin(staff.tenantId, "announcement"),
     getContentForAdmin(staff.tenantId, "promo_banners"),
     getAllProducts(staff.tenantId),
+    getSeoSettings(staff.tenantId),
   ]);
 
   return (
@@ -102,6 +105,16 @@ export default async function AdminCmsPage() {
             </p>
             <div className="mt-4">
               <SiteBrandingForm settings={siteSettings} />
+            </div>
+          </section>
+
+          <section className="rounded-card border border-border bg-card p-5">
+            <h2 className="font-display text-lg text-foreground">Imagem de compartilhamento</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              A imagem que aparece quando alguém envia o link da loja no WhatsApp, Instagram ou Facebook.
+            </p>
+            <div className="mt-4">
+              <OgImageForm settings={seoSettings} />
             </div>
           </section>
 

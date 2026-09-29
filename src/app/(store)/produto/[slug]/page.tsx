@@ -50,6 +50,8 @@ export async function generateMetadata(
       `${product.name}: cesta ${product.serves ? `${product.serves.charAt(0).toLowerCase()}${product.serves.slice(1)}, ` : ""}feita à mão em Brasília, com entrega no mesmo dia e cartão personalizado. ${currency.format(product.price)}.`
     ),
     alternates: { canonical: `/produto/${slug}` },
+    // Ao compartilhar a cesta no WhatsApp/Facebook, a foto dela vai no cartão.
+    openGraph: product.image ? { type: "website", locale: "pt_BR", images: [{ url: product.image }] } : undefined,
   };
 }
 
@@ -207,7 +209,7 @@ export default async function ProdutoPage(
         <h2 className="font-display text-2xl text-foreground">
           Outras cestas
         </h2>
-        <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4 2xl:grid-cols-6">
+        <div className="mt-6 grid grid-cols-2 gap-x-5 gap-y-10 sm:gap-x-7 lg:grid-cols-4 2xl:grid-cols-6">
           {outrasCestas.map((item) => (
             <Reveal key={item.id}>
               <ProductCard product={item} />

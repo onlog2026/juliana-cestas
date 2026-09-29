@@ -11,9 +11,9 @@ describe("vitrines", () => {
     const s = buildShowcases(products, m({ "id-1": 3, "id-2": 2, "id-3": 1 }), m({}));
     expect(s.bought).toEqual([]);
   });
-  it("ordena por contagem, empate pela ordem da loja, no máximo 5", () => {
+  it("ordena por contagem, empate pela ordem da loja, no máximo 10 (todos os com contagem)", () => {
     const top = pickTop(products, m({ "id-3": 5, "id-1": 5, "id-2": 9, "id-4": 1, "id-5": 1, "id-6": 1 }));
-    expect(top.map((p) => p.id)).toEqual(["id-2", "id-1", "id-3", "id-4", "id-5"]);
+    expect(top.map((p) => p.id)).toEqual(["id-2", "id-1", "id-3", "id-4", "id-5", "id-6"]);
   });
   it("'Mais clicados' não repete os de 'Mais comprados'", () => {
     const sold = m({ "id-1": 4, "id-2": 3, "id-3": 2, "id-4": 1 });

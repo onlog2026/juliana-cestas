@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { saoPauloDateStr } from "@/lib/time/sao-paulo";
 
@@ -402,3 +403,38 @@ export async function lookupInviteByHash(
     productName: firstRelated(row.products)?.name ?? null,
   };
 }
+
+export type ProductRating = { average: number; total: number };
+
+/**
+ * Nota média por produto (só avaliações aprovadas e enviadas). Uma leitura por
+ * requisição; falha = mapa vazio (o card simplesmente não mostra estrelas).
+ * Produto sem avaliação NÃO aparece no mapa: nunca se inventa estrela.
+ */
+export const getProductRatings = cache(async (tenantId: string): Promise<Map<string, ProductRating>> => {
+  const out = new Map<string, ProductRating>();
+  try {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("product_reviews")
+      .select("product_id, rating")
+      .eq("tenant_id", tenantId)
+      .eq("status", "aprovada")
+      .not("submitted_at", "is", null)
+      .not("product_id", "is", null)
+      .limit(2000);
+    if (error || !data) return out;
+    const acc = new Map<string, { sum: number; n: number }>();
+    for (const r of data as { product_id: string | null; rating: number | null }[]) {
+      if (!r.product_id || !r.rating || r.rating < 1 || r.rating > 5) continue;
+      const a = acc.get(r.product_id) ?? { sum: 0, n: 0 };
+      a.sum += r.rating;
+      a.n += 1;
+      acc.set(r.product_id, a);
+    }
+    for (const [id, a] of acc) out.set(id, { average: a.sum / a.n, total: a.n });
+  } catch {
+    /* sem estrelas */
+  }
+  return out;
+});

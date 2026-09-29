@@ -15,7 +15,7 @@ export async function CategoryShortcuts() {
   if (tree.length === 0) return null;
 
   return (
-    <nav aria-label="Categorias" className="mx-auto max-w-[1800px] px-4 pt-6 sm:px-6 lg:px-8 2xl:px-12">
+    <nav aria-label="Categorias" className="mx-auto max-w-[1800px] px-4 pt-1 sm:px-6 lg:px-8 2xl:px-12">
       <ul className="flex snap-x gap-4 overflow-x-auto pb-4 pt-3 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden">
         {tree.map((category) => (
           <li key={category.id} className="shrink-0 snap-start">

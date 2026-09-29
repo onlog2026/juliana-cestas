@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { getImageProps } from "next/image";
 import Link from "next/link";
@@ -121,7 +121,11 @@ function BannerPicture({
  * retrato no celular) calculavam esse "4%" contra larguras muito diferentes
  * -- por isso o tamanho configurado nunca batia com o que aparecia de verdade.
  */
-export function BannerCarousel({ banners }: { banners: Banner[] }) {
+/**
+ * `children` = a linha de ações que fica logo abaixo do banner (ex.: botão
+ * "Nossas cestas"). As bolinhas do carrossel moram nessa linha, ao lado dela.
+ */
+export function BannerCarousel({ banners, children }: { banners: Banner[]; children?: ReactNode }) {
   const router = useRouter();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -243,6 +247,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
   }
 
   return (
+    <>
     <section
       className="relative w-full overflow-hidden bg-secondary/40"
       onMouseEnter={() => setPaused(true)}
@@ -351,21 +356,6 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
           </button>
         ) : null}
 
-        {count > 1 && !editing ? (
-          <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
-            {banners.map((banner, i) => (
-              <button
-                key={banner.id}
-                type="button"
-                onClick={() => setIndex(i)}
-                aria-label={`Ver banner ${i + 1} de ${count}`}
-                className={`h-2 rounded-full transition-all ${
-                  i === index ? "w-6 bg-white" : "w-2 bg-white/50"
-                }`}
-              />
-            ))}
-          </div>
-        ) : null}
       </div>
 
       {editing && draft ? (
@@ -465,5 +455,25 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
         </div>
       ) : null}
     </section>
+    <div className="mx-auto flex max-w-[1800px] flex-wrap items-center gap-x-4 gap-y-1 px-4 pt-4 sm:px-6 lg:px-8 2xl:px-12">
+      {children}
+      {count > 1 && !editing ? (
+        <div className="flex items-center" role="group" aria-label="Escolher banner">
+          {banners.map((banner, i) => (
+            <button
+              key={banner.id}
+              type="button"
+              onClick={() => setIndex(i)}
+              aria-label={`Ver banner ${i + 1} de ${count}`}
+              aria-current={i === index}
+              className="flex h-11 items-center px-1.5"
+            >
+              <span className={`block h-2 rounded-full transition-all ${i === index ? "w-6 bg-primary" : "w-2 bg-primary/30"}`} />
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+    </>
   );
 }

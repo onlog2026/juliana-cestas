@@ -99,7 +99,7 @@ export default async function CategoriaPage(props: PageProps<"/categoria/[slug]"
       ) : null}
 
       {products.length > 0 ? (
-        <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+        <div className="mt-8 grid grid-cols-2 gap-x-5 gap-y-10 sm:gap-x-7 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
           {products.map((product) => (
             <Reveal key={product.id}>
               <ProductCard product={product} />

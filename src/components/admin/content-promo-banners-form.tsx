@@ -17,6 +17,9 @@ function slotPayload(slot: Slot): Slot {
     ...(slot.mobileImageUrl ? { mobileImageUrl: slot.mobileImageUrl } : {}),
     href: slot.href.trim(),
     alt: slot.alt.trim(),
+    ...(slot.title?.trim() ? { title: slot.title.trim() } : {}),
+    ...(slot.subtitle?.trim() ? { subtitle: slot.subtitle.trim() } : {}),
+    ...(slot.showText === false ? { showText: false } : {}),
   };
 }
 
@@ -55,6 +58,36 @@ function SlotFields({
           placeholder="/categoria/frios  ou  https://…"
           className={inputClass}
         />
+      </label>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-1.5 block text-sm font-medium text-foreground">Título por cima da imagem</span>
+          <input
+            value={slot.title ?? ""}
+            onChange={(e) => onChange({ ...slot, title: e.target.value.slice(0, 60) })}
+            placeholder="Ex.: Especial Dia das Crianças"
+            className={inputClass}
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-sm font-medium text-foreground">Subtítulo (opcional)</span>
+          <input
+            value={slot.subtitle ?? ""}
+            onChange={(e) => onChange({ ...slot, subtitle: e.target.value.slice(0, 100) })}
+            placeholder="Ex.: Entrega no mesmo dia"
+            className={inputClass}
+          />
+        </label>
+      </div>
+      <label className="flex min-h-11 items-center gap-2 text-sm text-foreground">
+        <input
+          type="checkbox"
+          checked={slot.showText !== false}
+          onChange={(e) => onChange({ ...slot, showText: e.target.checked })}
+          className="size-4"
+        />
+        Mostrar o texto por cima da imagem
       </label>
 
       <label className="block">

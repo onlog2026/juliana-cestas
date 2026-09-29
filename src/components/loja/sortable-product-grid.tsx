@@ -174,7 +174,7 @@ export function SortableProductGrid({
         {announce}
       </p>
 
-      <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6">{cells}</div>
+      <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 sm:gap-x-7 lg:grid-cols-5 2xl:grid-cols-6">{cells}</div>
 
       {hiddenCount > 0 ? (
         <div className="mt-8 flex justify-center">

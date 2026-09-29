@@ -2,7 +2,7 @@ import type { Product } from "@/modules/catalog/product";
 
 /** Uma vitrine só aparece com pelo menos isto de produtos (senão fica estranha). */
 export const MIN_SHOWCASE = 4;
-export const SHOWCASE_SIZE = 5;
+export const SHOWCASE_SIZE = 10;
 
 /** Produtos ordenados por contagem (desc; empate = ordem manual da loja), só com contagem > 0. */
 export function pickTop(products: Product[], counts: Map<string, number>, exclude: Set<string> = new Set()): Product[] {

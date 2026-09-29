@@ -1,4 +1,7 @@
 import Image from "next/image";
+import { Star } from "lucide-react";
+import { getTenantId } from "@/lib/tenant/context";
+import { getProductRatings } from "@/modules/reviews/service";
 import { TrackedProductLink } from "./tracked-product-link";
 import { ProductRibbon } from "./product-ribbon";
 import type { Product } from "@/modules/catalog/product";
@@ -14,7 +17,8 @@ const currency = new Intl.NumberFormat("pt-BR", {
 // borraria a foto. Por isso o `sizes` é decidido por quem conhece a grade.
 const DEFAULT_SIZES = "(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 90vw";
 
-export function ProductCard({ product, sizes }: { product: Product; sizes?: string }) {
+export async function ProductCard({ product, sizes }: { product: Product; sizes?: string }) {
+  const rating = (await getProductRatings(await getTenantId())).get(product.id);
   return (
     <TrackedProductLink
       href={`/produto/${product.slug}`}
@@ -43,15 +47,33 @@ export function ProductCard({ product, sizes }: { product: Product; sizes?: stri
       {product.ribbon ? <ProductRibbon {...product.ribbon} size={88} /> : null}
       </div>
 
-      {/* Nome em no máximo 2 linhas e a linha de "serve" sempre reservada: o preço
-          fica SEMPRE no fundo do cartão (mt-auto), na mesma altura em todos os
-          cartões da linha, mesmo com nomes de tamanhos diferentes. */}
+      {/* Nome + "para N pessoas" na MESMA linha (até 2 linhas), estrelas reais (só com
+          avaliação aprovada) e preço logo abaixo. O bloco de preço fica no fundo do card
+          (mt-auto) só para alinhar a linha quando o vizinho tem nome de 2 linhas. */}
       <div className="mt-3 flex flex-1 flex-col gap-1">
-        <p className="line-clamp-2 min-h-[2.75rem] text-[15px] font-semibold leading-snug text-foreground">
+        <p className="line-clamp-2 text-[15px] font-semibold leading-snug text-foreground">
           {product.name}
+          {product.serves ? (
+            <span className="ml-1.5 whitespace-nowrap text-xs font-normal text-muted-foreground">· {product.serves}</span>
+          ) : null}
         </p>
-        <p className="min-h-4 text-xs text-muted-foreground">{product.serves}</p>
-        <p className="mt-auto flex flex-wrap items-baseline gap-x-2 pt-0.5 text-lg font-bold tabular-nums text-foreground">
+        {rating ? (
+          <p
+            className="flex items-center gap-1 text-xs text-muted-foreground"
+            aria-label={`Nota ${rating.average.toFixed(1).replace(".", ",")} de 5, ${rating.total} ${rating.total === 1 ? "avaliação" : "avaliações"}`}
+          >
+            <span className="flex" aria-hidden="true">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <Star
+                  key={n}
+                  className={`size-3.5 ${n <= Math.round(rating.average) ? "fill-[var(--jc-gold)] text-[var(--jc-gold)]" : "text-border"}`}
+                />
+              ))}
+            </span>
+            <span className="tabular-nums">({rating.total})</span>
+          </p>
+        ) : null}
+        <p className="mt-auto flex flex-wrap items-baseline gap-x-2 text-lg font-bold tabular-nums text-foreground">
           {product.compareAtPrice ? (
             <s className="text-sm font-normal text-muted-foreground" aria-label={`de ${currency.format(product.compareAtPrice)}`}>
               {currency.format(product.compareAtPrice)}
