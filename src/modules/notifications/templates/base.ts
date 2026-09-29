@@ -17,6 +17,7 @@ export const NEUTRAL_BRAND: EmailBrand = {
   // TODO F7: virá de tenant_domains
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "",
   replyTo: null,
+  whatsapp: null,
 };
 
 /**

@@ -21,6 +21,8 @@ export function ProductCard({ product, sizes }: { product: Product; sizes?: stri
       productId={product.id}
       className="group flex h-full w-full flex-col text-left"
     >
+      {/* A fita da flag passa 6px da borda (efeito de dobra): por isso mora FORA do recorte da foto. */}
+      <div className="relative">
       <div className="jc-glow-card relative aspect-[4/5] overflow-hidden rounded-card bg-secondary">
         <Image
           src={product.image}
@@ -29,12 +31,13 @@ export function ProductCard({ product, sizes }: { product: Product; sizes?: stri
           sizes={sizes ?? DEFAULT_SIZES}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
-        {product.ribbon ? <ProductRibbon {...product.ribbon} size={88} /> : null}
         {product.badge ? (
           <span className={`absolute top-3 rounded-full ${product.ribbon ? "right-3" : "left-3"} bg-[var(--jc-gold)] px-2.5 py-1 text-xs font-semibold text-[#1f2a24]`}>
             {product.badge}
           </span>
         ) : null}
+      </div>
+      {product.ribbon ? <ProductRibbon {...product.ribbon} size={88} /> : null}
       </div>
 
       {/* Nome em no máximo 2 linhas e a linha de "serve" sempre reservada: o preço

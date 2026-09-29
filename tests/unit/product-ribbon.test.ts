@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { createElement } from "react";
 import { cleanup, render } from "@testing-library/react";
-import { ProductRibbon, ribbonFontSize, ribbonLines } from "@/components/loja/product-ribbon";
+import { ProductRibbon, RIBBON_OVERHANG, ribbonFontSize, ribbonLines, shade } from "@/components/loja/product-ribbon";
 
 afterEach(() => cleanup());
 
@@ -22,14 +22,22 @@ describe("ProductRibbon", () => {
     expect(ribbonFontSize(["Novo"], 88)).toBe(11);
   });
 
-  it("renderiza o texto para leitor de tela e a faixa decorativa com as cores", () => {
+  it("a dobra usa uma versão mais escura da cor da tarja", () => {
+    expect(shade("#ffffff", 0.5)).toBe("#808080");
+    expect(shade("#000000")).toBe("#000000");
+    expect(shade("#b3261e")).not.toBe("#b3261e");
+  });
+
+  it("renderiza texto para leitor de tela, a fita (passando da borda) e as 2 dobras", () => {
     const { container } = render(createElement(ProductRibbon, { label: "Black Friday", bg: "#111111", text: "#f5c518", size: 88 }));
     expect(container.querySelector(".sr-only")!.textContent).toBe("Black Friday");
     const deco = container.querySelector('[aria-hidden="true"]') as HTMLElement;
-    expect(deco.style.width).toBe("88px");
-    const band = deco.firstElementChild as HTMLElement;
+    // caixa = foto (88) + o que a fita passa da borda; começa fora do canto
+    expect(deco.style.width).toBe(`${88 + RIBBON_OVERHANG}px`);
+    expect(deco.style.left).toBe(`-${RIBBON_OVERHANG}px`);
+    expect(deco.style.top).toBe(`-${RIBBON_OVERHANG}px`);
+    const band = deco.querySelector(".-rotate-45") as HTMLElement;
     expect(band.style.background).toContain("rgb(17, 17, 17)");
-    expect(band.className).toContain("-rotate-45");
-    expect(band.textContent).toBe("BlackFriday".replace("BlackFriday", "BlackFriday"));
+    expect(deco.querySelectorAll("polygon")).toHaveLength(2);
   });
 });

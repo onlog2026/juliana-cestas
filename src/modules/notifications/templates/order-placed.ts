@@ -1,7 +1,18 @@
 // E-mail "pedido efetuado": um pedido avulso OU o resumo de um carrinho com
 // várias cestas (uma linha por cesta). Arquivo puro (só importa ./shell).
 
-import { ctaButton, emailShell, escapeHtml, firstName, formatBrl, htmlToText, type ShellBrand, type ShellOptions } from "./shell";
+import {
+  ctaButton,
+  emailShell,
+  escapeHtml,
+  firstName,
+  formatBrl,
+  htmlToText,
+  secondaryButton,
+  whatsappLink,
+  type ShellBrand,
+  type ShellOptions,
+} from "./shell";
 
 export type PlacedOrderLine = {
   orderNumber: number;
@@ -48,6 +59,13 @@ export function orderPlacedEmail(params: OrderPlacedParams, brand: ShellBrand, o
     )
     .join("");
 
+  // Pagamento combinado pelo WhatsApp da loja (decisão do dono): mensagem já pronta com o(s) número(s).
+  const numbers = orders.map((o) => `#${o.orderNumber}`).join(", ");
+  const payLink = whatsappLink(
+    brand,
+    many ? `Olá! Quero finalizar o pagamento dos meus pedidos ${numbers}.` : `Olá! Quero finalizar o pagamento do meu pedido ${numbers}.`
+  );
+
   const intro = many
     ? `<p style="margin:0 0 14px;">Que alegria! Recebemos os seus <strong>${orders.length} presentes</strong> e já anotamos cada detalhe com carinho.</p>`
     : `<p style="margin:0 0 14px;">Que alegria receber o seu pedido! Já anotamos cada detalhe com carinho.</p>`;
@@ -64,6 +82,7 @@ export function orderPlacedEmail(params: OrderPlacedParams, brand: ShellBrand, o
     </table>
     <p style="margin:18px 0 0;">Assim que o pagamento for confirmado, avisamos você por aqui. Se precisar mudar algo, é só nos chamar.</p>
     ${ctaButton(orderUrl, many ? "Acompanhar meus pedidos" : "Acompanhar meu pedido")}
+    ${payLink ? `<br/>${secondaryButton(payLink, "Finalizar o pagamento pelo WhatsApp")}` : ""}
   `;
 
   const html = emailShell(bodyHtml, brand, {

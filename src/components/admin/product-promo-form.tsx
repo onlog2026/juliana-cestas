@@ -9,8 +9,10 @@ import { ProductRibbon } from "@/components/loja/product-ribbon";
 const inputClass =
   "h-11 rounded-[10px] border border-border bg-background px-3.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
-function centsToInput(cents: number | null): string {
-  return cents ? (cents / 100).toFixed(2).replace(".", ",") : "";
+const brl = (cents: number) => (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+function centsToInput(cents: number): string {
+  return (cents / 100).toFixed(2).replace(".", ",");
 }
 
 function inputToCents(raw: string): number | null {
@@ -21,8 +23,9 @@ function inputToCents(raw: string): number | null {
 }
 
 /**
- * "Promoção e flag" da cesta: preço "de" + uma flag. Mostra a prévia da tarja
- * exatamente como fica na foto, e o % de desconto calculado.
+ * "Promoção e flag" da cesta. O dono digita o PREÇO PROMOCIONAL (menor que o
+ * normal): a cesta passa a custar esse valor e o normal aparece riscado, com o %
+ * de desconto automático. Apagar o campo termina a promoção e devolve o normal.
  */
 export function ProductPromoForm({
   productId,
@@ -34,39 +37,52 @@ export function ProductPromoForm({
   available,
 }: {
   productId: string;
+  /** Preço que a cesta cobra HOJE (com promoção ativa, é o promocional). */
   priceCents: number;
   imageUrl: string | null;
+  /** Preço normal guardado ("de"); só existe com promoção ativa. */
   initialCompareAtCents: number | null;
   initialFlagId: string | null;
   flags: FlagsConfig;
   /** false = a migração 0051 ainda não rodou (o formulário avisa em vez de falhar). */
   available: boolean;
 }) {
-  const [compare, setCompare] = useState(centsToInput(initialCompareAtCents));
+  const promoActive = Boolean(initialCompareAtCents && initialCompareAtCents > priceCents);
+  const normalCents = promoActive ? (initialCompareAtCents as number) : priceCents;
+
+  const [promo, setPromo] = useState(promoActive ? centsToInput(priceCents) : "");
   const [flagId, setFlagId] = useState(initialFlagId ?? "");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  const compareCents = inputToCents(compare);
-  const pct = discountPercent(priceCents, compareCents);
-  const ribbon = resolveRibbon({ priceCents, compareAtCents: compareCents, flagId: flagId || null }, flags);
-  const invalidCompare = compareCents !== null && compareCents <= priceCents;
+  const promoCents = inputToCents(promo);
+  const invalid = promoCents !== null && (promoCents >= normalCents || promoCents < 500);
+  const validPromo = promoCents !== null && !invalid ? promoCents : null;
+  const pct = validPromo !== null ? discountPercent(validPromo, normalCents) : null;
+  const ribbon = resolveRibbon(
+    {
+      priceCents: validPromo ?? normalCents,
+      compareAtCents: validPromo !== null ? normalCents : null,
+      flagId: flagId || null,
+    },
+    flags
+  );
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSaved(false);
-    if (invalidCompare) {
-      setError('O preço "de" precisa ser maior que o preço atual.');
+    if (invalid) {
+      setError(
+        promoCents !== null && promoCents < 500
+          ? "O preço mínimo é R$ 5,00."
+          : "O preço promocional precisa ser MENOR que o preço normal."
+      );
       return;
     }
     startTransition(async () => {
-      const result = await updateProductPromo({
-        productId,
-        compareAtPriceCents: compareCents,
-        flagId: flagId || null,
-      });
+      const result = await updateProductPromo({ productId, promoPriceCents: promoCents, flagId: flagId || null });
       if (!result.ok) setError(result.error);
       else setSaved(true);
     });
@@ -81,26 +97,37 @@ export function ProductPromoForm({
         </p>
       ) : null}
 
+      <p className="rounded-lg bg-secondary/60 p-3 text-sm text-foreground">
+        Preço normal da cesta: <strong>{brl(normalCents)}</strong>
+        {promoActive ? (
+          <>
+            {" "}
+            · em promoção por <strong>{brl(priceCents)}</strong>
+          </>
+        ) : null}
+      </p>
+
       <label className="block">
-        <span className="mb-1.5 block text-sm font-medium text-foreground">Preço &quot;de&quot; (R$) — opcional</span>
+        <span className="mb-1.5 block text-sm font-medium text-foreground">Preço promocional (R$) — opcional</span>
         <input
-          value={compare}
+          value={promo}
           onChange={(e) => {
-            setCompare(e.target.value);
+            setPromo(e.target.value);
             setSaved(false);
           }}
           inputMode="decimal"
-          placeholder="Ex.: 300,00"
+          placeholder={`Menor que ${centsToInput(normalCents)}`}
+          aria-invalid={invalid}
           className={inputClass}
           style={{ width: "100%" }}
         />
         <span className="mt-1 block text-xs text-muted-foreground">
-          O preço atual da cesta ({(priceCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}) é o
-          &quot;por&quot;.{" "}
-          {pct ? (
-            <strong className="text-foreground">Desconto de {pct}% aparece automático.</strong>
+          {pct && validPromo !== null ? (
+            <strong className="text-foreground">
+              A cesta passa a custar {brl(validPromo)} (de {brl(normalCents)}) — desconto de {pct}% aparece automático.
+            </strong>
           ) : (
-            "Deixe vazio se não há promoção."
+            "Digite um valor MENOR que o normal: é o que o cliente vai pagar. Apague o campo para terminar a promoção."
           )}
         </span>
       </label>
@@ -129,11 +156,13 @@ export function ProductPromoForm({
 
       <div>
         <p className="mb-1.5 text-sm font-medium text-foreground">Prévia</p>
-        <div className="relative h-36 w-36 overflow-hidden rounded-card bg-secondary">
-          {imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- prévia pequena no painel
-            <img src={imageUrl} alt="" className="size-full object-cover" />
-          ) : null}
+        <div className="relative ml-2 mt-2 h-36 w-36">
+          <div className="relative size-full overflow-hidden rounded-card bg-secondary">
+            {imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- prévia pequena no painel
+              <img src={imageUrl} alt="" className="size-full object-cover" />
+            ) : null}
+          </div>
           {ribbon ? <ProductRibbon {...ribbon} size={80} /> : null}
         </div>
         {!ribbon ? <p className="mt-1 text-xs text-muted-foreground">Sem tarja para este produto.</p> : null}

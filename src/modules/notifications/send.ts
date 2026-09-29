@@ -29,6 +29,8 @@ export type EmailBrand = {
   logoUrl: string | null;
   siteUrl: string;
   replyTo: string | null;
+  /** WhatsApp da loja (só dígitos), para o botão e o rodapé dos e-mails. */
+  whatsapp?: string | null;
 };
 
 /**
@@ -38,12 +40,16 @@ export type EmailBrand = {
  */
 export async function getEmailBrand(tenantId: string): Promise<EmailBrand> {
   const [profile, site] = await Promise.all([getStoreProfile(tenantId), getSiteSettings(tenantId)]);
+  // TODO F7: virá de tenant_domains
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
   return {
     storeName: profile.businessName?.trim() || "",
-    logoUrl: site.logoHeaderUrl || null,
-    // TODO F7: virá de tenant_domains
-    siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "",
+    // Logo do e-mail = PNG transparente gerado em /email-logo (a logo do site é WebP,
+    // que o Gmail desenha com fundo preto). Sem endereço do site, cai no nome em texto.
+    logoUrl: site.logoHeaderUrl && siteUrl ? `${siteUrl}/email-logo` : null,
+    siteUrl,
     replyTo: profile.email?.trim() || null,
+    whatsapp: (profile.phone ?? "").replace(/\D/g, "") || null,
   };
 }
 

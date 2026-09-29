@@ -12,6 +12,8 @@ export type ShellBrand = {
   storeName: string;
   logoUrl: string | null;
   siteUrl: string;
+  /** WhatsApp da loja (só dígitos, com ou sem 55). Sem ele, o e-mail não mostra WhatsApp. */
+  whatsapp?: string | null;
 };
 
 export type ShellOptions = {
@@ -66,6 +68,36 @@ export function firstName(fullName: string): string {
   return first;
 }
 
+/** Número no formato internacional para o wa.me (celular BR com 10-11 dígitos ganha o 55). */
+export function whatsappDigits(raw: string | null | undefined): string | null {
+  const digits = (raw ?? "").replace(/\D/g, "");
+  if (digits.length < 10) return null;
+  return digits.length <= 11 ? `55${digits}` : digits;
+}
+
+/** "(61) 99989-4889" a partir do número (com ou sem 55). */
+export function formatPhoneBr(raw: string | null | undefined): string {
+  let d = (raw ?? "").replace(/\D/g, "");
+  if (d.length > 11 && d.startsWith("55")) d = d.slice(2);
+  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return d;
+}
+
+/** Link do WhatsApp da loja com mensagem pronta; null se a loja não tem número. */
+export function whatsappLink(brand: ShellBrand, message?: string): string | null {
+  const phone = whatsappDigits(brand.whatsapp);
+  if (!phone) return null;
+  return `https://wa.me/${phone}${message ? `?text=${encodeURIComponent(message)}` : ""}`;
+}
+
+/** Botão secundário (contorno verde) -- ex.: "Pagar pelo WhatsApp" ao lado do botão principal. */
+export function secondaryButton(href: string, label: string): string {
+  const url = safeUrl(href);
+  if (!url) return "";
+  return `<a href="${escapeHtml(url)}" style="display:inline-block;margin-top:12px;padding:12px 28px;background-color:#ffffff;color:${OLIVE};text-decoration:none;border-radius:999px;font-weight:600;font-size:15px;border:2px solid ${OLIVE};">${escapeHtml(label)}</a>`;
+}
+
 export function ctaButton(href: string, label: string): string {
   const url = safeUrl(href);
   if (!url) return "";
@@ -93,6 +125,11 @@ export function emailShell(bodyHtml: string, brand: ShellBrand, opts: ShellOptio
     ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${escapeHtml(opts.preheader)}</div>`
     : "";
 
+  const waLink = whatsappLink(brand);
+  const whatsappFooter = waLink
+    ? `<br/><a href="${escapeHtml(waLink)}" style="font-size:13px;color:#556b2f;text-decoration:none;font-weight:600;">WhatsApp: ${escapeHtml(formatPhoneBr(brand.whatsapp))}</a>`
+    : "";
+
   return `<!doctype html>
 <html lang="pt-BR">
   <body style="margin:0;padding:0;background-color:#f6f1e8;font-family:Arial,Helvetica,sans-serif;">
@@ -115,7 +152,7 @@ export function emailShell(bodyHtml: string, brand: ShellBrand, opts: ShellOptio
             </tr>
             <tr>
               <td style="padding:18px 32px 24px;text-align:center;border-top:1px solid #e6e0d2;">
-                <span style="font-size:12px;color:#8a7d5f;">${storeName}</span>
+                <span style="font-size:12px;color:#8a7d5f;">${storeName}</span>${whatsappFooter}
               </td>
             </tr>
           </table>

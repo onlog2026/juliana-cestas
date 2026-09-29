@@ -470,14 +470,17 @@ async function avisarPagamento(env: Ambiente, tenantId: string, orderId: string)
   }
 
   // Marca da loja (nome + logo), lida por REST -- este arquivo não importa nada de "@/".
-  const perfilRes = await db(env, `store_profile?tenant_id=eq.${t}&select=business_name&limit=1`, { method: "GET" });
+  const perfilRes = await db(env, `store_profile?tenant_id=eq.${t}&select=business_name,phone&limit=1`, { method: "GET" });
   const siteRes = await db(env, `site_settings?tenant_id=eq.${t}&select=logo_header_url&limit=1`, { method: "GET" });
-  const perfil = perfilRes.ok ? ((await lerJson<Array<{ business_name: string | null }>>(perfilRes)) ?? [])[0] : undefined;
+  const perfil = perfilRes.ok ? ((await lerJson<Array<{ business_name: string | null; phone: string | null }>>(perfilRes)) ?? [])[0] : undefined;
   const site = siteRes.ok ? ((await lerJson<Array<{ logo_header_url: string | null }>>(siteRes)) ?? [])[0] : undefined;
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim();
   const marca = {
     storeName: (perfil?.business_name ?? "").trim(),
-    logoUrl: site?.logo_header_url ?? null,
-    siteUrl: (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim(),
+    // PNG transparente servido pela própria loja (WebP transparente fica com fundo preto no Gmail).
+    logoUrl: site?.logo_header_url && siteUrl ? `${siteUrl}/email-logo` : null,
+    siteUrl,
+    whatsapp: (perfil?.phone ?? "").replace(/\D/g, "") || null,
   };
 
   const { subject: assunto, html, text } = orderPaidEmail(

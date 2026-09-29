@@ -57,6 +57,8 @@ export function ProductGallery({
 
   return (
     <div>
+      {/* Fita da flag fora do recorte da foto (ela passa 6px da borda: efeito de dobra). */}
+      <div className="relative">
       <div
         className="jc-glow-card jc-pop group relative aspect-square overflow-hidden rounded-card bg-secondary"
         onMouseEnter={() => setPaused(true)}
@@ -69,7 +71,6 @@ export function ProductGallery({
           <Image src={current.url} alt={imageAlt || name} fill priority sizes="(min-width: 768px) 45vw, 100vw" className="object-cover" />
         ) : null}
 
-        {ribbon ? <ProductRibbon {...ribbon} size={120} /> : null}
         {badge ? (
           <span className={`absolute top-4 rounded-full bg-[var(--jc-gold)] px-3 py-1 text-xs font-semibold text-[#1f2a24] ${ribbon ? "right-4" : "left-4"}`}>
             {badge}
@@ -111,6 +112,8 @@ export function ProductGallery({
             </div>
           </>
         ) : null}
+      </div>
+      {ribbon ? <ProductRibbon {...ribbon} size={120} /> : null}
       </div>
 
       {count > 1 ? (

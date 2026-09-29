@@ -125,45 +125,61 @@ export async function saveProductOrder(
 }
 
 /**
- * Promoção do produto: preço "de" (o "por" é o preço atual) e a flag escolhida.
- * O preço cobrado no checkout continua sendo `price_cents` -- o "de" é só
- * exibição (riscado na vitrine, com % de desconto automático).
+ * Promoção do produto. O dono digita o PREÇO PROMOCIONAL (menor que o normal):
+ *  - a cesta passa a custar esse valor em TODA a loja (vitrine, carrinho e
+ *    checkout leem `price_cents`);
+ *  - o preço normal fica guardado em `compare_at_price_cents` e aparece riscado
+ *    ("de R$ 300 por R$ 259") com o % de desconto automático;
+ *  - apagar o preço promocional (`null`) devolve o preço normal e limpa o "de".
+ * Repetir a mesma chamada não muda nada (o normal nunca é sobrescrito pelo promocional).
  */
 export async function updateProductPromo(input: {
   productId: string;
-  compareAtPriceCents: number | null;
+  promoPriceCents: number | null;
   flagId: string | null;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const staff = await requireStaff();
   const admin = createAdminClient();
 
-  const { data: product } = await admin
+  const { data: product, error: readError } = await admin
     .from("products")
-    .select("id, slug, price_cents")
+    .select("id, slug, price_cents, compare_at_price_cents")
     .eq("id", input.productId)
     .eq("tenant_id", staff.tenantId)
     .maybeSingle();
+  if (readError) {
+    // 42703 = coluna inexistente: a migração 0051 ainda não foi rodada no banco.
+    if (readError.code === "42703") {
+      return { ok: false, error: "Falta rodar o SQL 0051 no Supabase para guardar promoções. Me avise que eu te passo." };
+    }
+    return { ok: false, error: "Não foi possível ler a cesta." };
+  }
   if (!product) return { ok: false, error: "Cesta não encontrada." };
 
-  const compare = input.compareAtPriceCents;
-  if (compare !== null) {
-    if (!Number.isInteger(compare) || compare <= 0) return { ok: false, error: "Preço \"de\" inválido." };
-    if (compare <= product.price_cents) {
-      return { ok: false, error: "O preço \"de\" precisa ser MAIOR que o preço atual da cesta." };
+  // Preço NORMAL = o "de" guardado (se ainda for maior que o atual) ou o preço atual.
+  const stored = product.compare_at_price_cents as number | null;
+  const normalCents = stored && stored > product.price_cents ? stored : product.price_cents;
+
+  const promo = input.promoPriceCents;
+  let newPrice = normalCents;
+  let newCompare: number | null = null;
+  if (promo !== null) {
+    if (!Number.isInteger(promo) || promo <= 0) return { ok: false, error: "Preço promocional inválido." };
+    if (promo < 500) return { ok: false, error: "O preço mínimo é R$ 5,00." };
+    if (promo >= normalCents) {
+      return { ok: false, error: "O preço promocional precisa ser MENOR que o preço normal da cesta." };
     }
+    newPrice = promo;
+    newCompare = normalCents;
   }
   const flagId = input.flagId && /^[a-z0-9-]{1,40}$/.test(input.flagId) ? input.flagId : null;
 
   const { error } = await admin
     .from("products")
-    .update({ compare_at_price_cents: compare, flag_id: flagId })
+    .update({ price_cents: newPrice, compare_at_price_cents: newCompare, flag_id: flagId })
     .eq("id", input.productId)
     .eq("tenant_id", staff.tenantId);
   if (error) {
-    // 42703 = coluna inexistente: a migração 0051 ainda não foi rodada no banco.
-    if (error.code === "42703") {
-      return { ok: false, error: "Falta rodar o SQL 0051 no Supabase para guardar promoções. Me avise que eu te passo." };
-    }
     console.error("[catalog] falha ao salvar a promoção:", error);
     return { ok: false, error: "Não foi possível salvar a promoção." };
   }
@@ -172,6 +188,7 @@ export async function updateProductPromo(input: {
   revalidatePath("/categoria/[slug]", "page");
   revalidatePath(`/produto/${product.slug}`);
   revalidatePath(`/admin/produtos/${product.id}`);
+  revalidatePath("/admin/produtos");
   return { ok: true };
 }
 
