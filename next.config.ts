@@ -15,6 +15,12 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
+    // 29/09/2026: a Vercel passou a responder 402 (OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED)
+    // no /_next/image -- a cota de otimização de imagens do plano acabou e as
+    // fotos da home apareciam quebradas. Enquanto o plano não é ampliado, as
+    // imagens vão direto do arquivo original (já em .webp, ~170 KB cada) e não
+    // dependem da cota. Para voltar a otimizar: remover esta linha.
+    unoptimized: true,
     // Sem isso, TODA imagem vinda do Storage do Supabase (logo, favicon, foto
     // de produto/banner enviada pelo painel) volta 400
     // INVALID_IMAGE_OPTIMIZE_REQUEST do /_next/image e aparece quebrada na
