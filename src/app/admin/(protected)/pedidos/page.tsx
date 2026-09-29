@@ -2,6 +2,7 @@ import Link from "next/link";
 import { listOrders } from "@/modules/orders/actions";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { formatCents } from "@/lib/money";
+import { OrderRowMenu } from "@/components/admin/order-row-menu";
 
 export default async function AdminPedidosPage(props: {
   searchParams: Promise<{ status?: string }>;
@@ -57,7 +58,8 @@ export default async function AdminPedidosPage(props: {
       {orders.length === 0 ? (
         <p className="mt-8 text-sm text-muted-foreground">Nenhum pedido encontrado.</p>
       ) : (
-        <div className="mt-4 overflow-x-auto rounded-card border border-border bg-card">
+        <>
+        <div className="mt-4 hidden overflow-x-auto rounded-card border border-border bg-card md:block">
           <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs text-muted-foreground">
@@ -66,6 +68,7 @@ export default async function AdminPedidosPage(props: {
                 <th className="px-4 py-3 font-medium">Entrega</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 text-right font-medium">Total</th>
+                <th className="w-14 px-2 py-3"><span className="sr-only">Ações</span></th>
               </tr>
             </thead>
             <tbody>
@@ -95,11 +98,52 @@ export default async function AdminPedidosPage(props: {
                   <td className="px-4 py-3 text-right font-medium text-foreground">
                     {formatCents(order.total_cents)}
                   </td>
+                  <td className="px-2 py-1 text-right">
+                    <OrderRowMenu
+                      orderId={order.id}
+                      orderNumber={order.number}
+                      status={order.status}
+                      groupCount={order.group_id ? (groupSize.get(order.group_id) ?? 1) : 1}
+                    />
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
+        <ul className="mt-4 space-y-3 md:hidden">
+          {orders.map((order) => (
+            <li key={order.id} className="rounded-card border border-border bg-card p-3">
+              <div className="flex items-start justify-between gap-2">
+                <Link href={`/admin/pedidos/${order.id}`} className="min-w-0 flex-1">
+                  <span className="font-medium text-primary">#{order.number}</span>
+                  {order.group_id && (groupSize.get(order.group_id) ?? 0) > 1 ? (
+                    <span className="ml-2 rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                      🎁 {groupPosition.get(order.id)} de {groupSize.get(order.group_id)}
+                    </span>
+                  ) : null}
+                  <span className="mt-0.5 block truncate text-sm text-foreground">{order.buyer_name}</span>
+                  <span className="block text-xs text-muted-foreground">
+                    Entrega {order.delivery_date.split("-").reverse().slice(0, 2).join("/")} ·{" "}
+                    {order.delivery_slot_start.slice(0, 5)}
+                  </span>
+                </Link>
+                <OrderRowMenu
+                  orderId={order.id}
+                  orderNumber={order.number}
+                  status={order.status}
+                  groupCount={order.group_id ? (groupSize.get(order.group_id) ?? 1) : 1}
+                />
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <StatusBadge status={order.status} />
+                <span className="text-sm font-semibold text-foreground">{formatCents(order.total_cents)}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </>
       )}
     </div>
   );

@@ -72,25 +72,6 @@ const ICONS: Record<string, LucideIcon> = {
   Headset,
 };
 
-// Uma cor por departamento (só um toque no ícone e na linha lateral), para
-// diferenciar visualmente sem brigar com a paleta verde/dourada da loja.
-const ACCENT_TEXT: Record<string, string> = {
-  vendas: "text-emerald-600",
-  catalogo: "text-amber-600",
-  marketing: "text-rose-500",
-  loja: "text-indigo-500",
-  financeiro: "text-green-700",
-  config: "text-slate-500",
-};
-const ACCENT_BORDER: Record<string, string> = {
-  vendas: "border-emerald-200",
-  catalogo: "border-amber-200",
-  marketing: "border-rose-200",
-  loja: "border-indigo-200",
-  financeiro: "border-green-200",
-  config: "border-slate-200",
-};
-
 function isActivePath(pathname: string, href: string): boolean {
   // "Início" (/admin) só casa exato; senão qualquer rota do painel o marcaria.
   // Os demais casam a sub-rota também (ex.: /admin/pedidos/123 marca "Pedidos").
@@ -104,11 +85,11 @@ function NavLink({ item, active }: { item: AdminMenuItem; active: boolean }) {
     <Link
       href={item.href}
       aria-current={active ? "page" : undefined}
-      className={`flex items-center gap-2.5 rounded-[10px] px-3 py-2 text-sm font-medium transition-colors ${
-        active ? "bg-accent text-primary" : "text-foreground hover:bg-accent"
+      className={`flex min-h-11 items-center gap-2 rounded-md px-2.5 text-[13px] font-medium transition-colors md:min-h-8 ${
+        active ? "bg-accent text-primary" : "text-foreground/85 hover:bg-accent"
       }`}
     >
-      <Icon className="size-4 shrink-0" /> <span className="min-w-0 truncate">{item.label}</span>
+      <Icon className={`size-4 shrink-0 ${active ? "text-primary" : "text-muted-foreground"}`} /> <span className="min-w-0 truncate">{item.label}</span>
     </Link>
   );
 }
@@ -126,32 +107,28 @@ export function AdminNav({ menu }: { menu: GroupedAdminMenu }) {
   const [open, setOpen] = useState<Record<string, boolean>>({});
 
   return (
-    <nav className="flex flex-col gap-1">
+    <nav className="flex flex-col gap-0.5">
       {menu.standalone.map((item) => (
         <NavLink key={item.href} item={item} active={isActivePath(pathname, item.href)} />
       ))}
 
       {menu.groups.map((group) => {
-        const GroupIcon = ICONS[group.iconName] ?? LayoutDashboard;
         const isOpen = open[group.id] ?? group.id === activeGroupId;
-        const accentText = ACCENT_TEXT[group.id] ?? "text-muted-foreground";
-        const accentBorder = ACCENT_BORDER[group.id] ?? "border-border";
         return (
-          <div key={group.id} className="mt-1.5">
+          <div key={group.id} className="mt-3">
             <button
               type="button"
               onClick={() => setOpen((prev) => ({ ...prev, [group.id]: !isOpen }))}
               aria-expanded={isOpen}
-              className="flex w-full items-center gap-2 rounded-[10px] px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground transition-colors hover:bg-accent"
+              className="flex min-h-9 w-full items-center gap-2 rounded-md px-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:bg-accent md:min-h-7"
             >
-              <GroupIcon className={`size-4 shrink-0 ${accentText}`} />
               <span className="flex-1 text-left">{group.label}</span>
               <ChevronDown
                 className={`size-3.5 shrink-0 transition-transform ${isOpen ? "" : "-rotate-90"}`}
               />
             </button>
             {isOpen ? (
-              <div className={`ml-4 mt-0.5 flex flex-col gap-0.5 border-l-2 pl-2 ${accentBorder}`}>
+              <div className="mt-0.5 flex flex-col gap-0.5">
                 {group.items.map((item) => (
                   <NavLink key={item.href} item={item} active={isActivePath(pathname, item.href)} />
                 ))}

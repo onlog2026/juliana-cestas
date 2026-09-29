@@ -53,14 +53,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {/* Barra do topo só no mobile -- o menu vira um drawer, do jeito que
           um app de verdade se comporta, em vez de espremer 8 itens numa
           linha horizontal. */}
-      <div className="flex items-center justify-between border-b border-border bg-card px-4 py-3 md:hidden">
+      <div className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-card px-4 py-2 md:hidden">
         <Link href="/admin" className="font-display text-lg text-primary">
           {storeName || "Painel de gestão"}
         </Link>
         <MobileNavDrawer menu={menu} staffEmail={staff.email} storeName={storeName} />
       </div>
 
-      <aside className="hidden shrink-0 md:flex md:w-56 md:flex-col md:border-r md:border-border md:bg-card md:px-4 md:py-6">
+      <aside className="hidden shrink-0 md:flex md:w-[220px] md:flex-col md:border-r md:border-border md:bg-card md:px-3 md:py-4">
         <div>
           <Link href="/admin" className="font-display text-lg text-primary">
             {storeName || "Painel de gestão"}
@@ -68,17 +68,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           {storeName ? <p className="text-xs text-muted-foreground">Painel de gestão</p> : null}
         </div>
 
-        <div className="mt-8 min-h-0 flex-1 overflow-y-auto">
+        <div className="mt-5 min-h-0 flex-1 overflow-y-auto">
           <AdminNav menu={menu} />
         </div>
 
-        <div className="mt-auto pt-8">
+        <div className="mt-auto pt-4">
           <p className="truncate text-xs text-muted-foreground">{staff.email}</p>
           <LogoutButton />
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
+      <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">
         {/* Em modo degradado (leitura falhou) não afirmamos nada sobre a
             assinatura: seria um aviso baseado em dado que não temos. */}
         {entitlements.degradado ? null : (
