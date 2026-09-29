@@ -83,3 +83,62 @@ export const PROMO_AFTER_ITEMS = {
 export function promoInsertIndex(itemCount: number, afterItems: number): number {
   return Math.min(afterItems, itemCount);
 }
+
+/* ───────────── Filtros (categoria + faixa de preço), feitos no navegador ───────────── */
+
+export type PriceBandKey = "ate-150" | "150-300" | "acima-300";
+
+/** Faixas em reais; `max` exclusivo, exceto a última (sem teto). */
+export const PRICE_BANDS: { key: PriceBandKey; label: string; min: number; max: number }[] = [
+  { key: "ate-150", label: "Até R$ 150", min: 0, max: 150.01 },
+  { key: "150-300", label: "R$ 150 a R$ 300", min: 150.01, max: 300.01 },
+  { key: "acima-300", label: "Acima de R$ 300", min: 300.01, max: Infinity },
+];
+
+export function isPriceBandKey(value: string): value is PriceBandKey {
+  return PRICE_BANDS.some((b) => b.key === value);
+}
+
+export type GridFilter = { category: string | null; band: PriceBandKey | null };
+export const NO_FILTER: GridFilter = { category: null, band: null };
+
+/** O que o filtro precisa saber de um produto. */
+export type FilterableMeta = { price: number; categoryId?: string };
+
+/**
+ * `categoryIds` = ids da categoria escolhida + das subcategorias (o servidor
+ * resolve e manda pronto). Sem categoria/faixa = devolve tudo.
+ */
+export function filterEntries<T extends FilterableMeta>(
+  entries: readonly T[],
+  filter: GridFilter,
+  categoryIds: ReadonlyMap<string, readonly string[]>
+): T[] {
+  const ids = filter.category ? new Set(categoryIds.get(filter.category) ?? []) : null;
+  const band = filter.band ? PRICE_BANDS.find((b) => b.key === filter.band) : null;
+  return entries.filter((e) => {
+    if (ids && (!e.categoryId || !ids.has(e.categoryId))) return false;
+    if (band && !(e.price >= band.min && e.price < band.max)) return false;
+    return true;
+  });
+}
+
+/** Lê `#filtro=cat:frios,preco:ate-150` (ignora lixo). `validCategories` = slugs aceitos. */
+export function parseFilterHash(hash: string, validCategories: ReadonlySet<string>): GridFilter {
+  const match = /(?:^#|&)filtro=([^&]*)/.exec(hash);
+  const out: GridFilter = { category: null, band: null };
+  if (!match) return out;
+  for (const part of decodeURIComponent(match[1]).split(",")) {
+    const [k, v] = part.split(":");
+    if (k === "cat" && v && validCategories.has(v)) out.category = v;
+    if (k === "preco" && v && isPriceBandKey(v)) out.band = v;
+  }
+  return out;
+}
+
+export function serializeFilter(filter: GridFilter): string {
+  const parts: string[] = [];
+  if (filter.category) parts.push(`cat:${filter.category}`);
+  if (filter.band) parts.push(`preco:${filter.band}`);
+  return parts.join(",");
+}

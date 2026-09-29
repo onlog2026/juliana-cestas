@@ -5,6 +5,7 @@ import { getProductRatings } from "@/modules/reviews/service";
 import { TrackedProductLink } from "./tracked-product-link";
 import { ProductRibbon } from "./product-ribbon";
 import type { Product } from "@/modules/catalog/product";
+import { MAT_CLASS, MAT_HOVER_CLASS, MAT_INNER_RADIUS } from "./card-mat";
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -28,8 +29,8 @@ export async function ProductCard({ product, sizes }: { product: Product; sizes?
       {/* A fita da flag passa 6px da borda (efeito de dobra): por isso mora FORA do recorte da foto. */}
       <div className="relative">
       {/* Passe-partout: uma borda branca fina entre a linha do card e a foto (destaca a foto sem pesar). */}
-      <div className="rounded-card border border-border/70 bg-card p-1.5 shadow-[0_1px_2px_rgba(31,42,36,0.05)] transition-shadow duration-300 group-hover:shadow-[0_10px_24px_-14px_rgba(31,42,36,0.35)]">
-      <div className="jc-glow-card relative aspect-[4/5] overflow-hidden rounded-[10px] bg-secondary">
+      <div className={`${MAT_CLASS} ${MAT_HOVER_CLASS}`}>
+      <div className={`jc-glow-card relative aspect-[4/5] overflow-hidden ${MAT_INNER_RADIUS} bg-secondary`}>
         <Image
           src={product.image}
           alt={product.name}

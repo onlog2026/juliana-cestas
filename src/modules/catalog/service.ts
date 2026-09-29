@@ -71,7 +71,7 @@ export type DbProductAddonAdmin = DbProductAddon & { active: boolean };
 const ADDON_COLUMNS = "id, slug, name, price_cents, image_url, group_name, note, sort_order";
 
 const PUBLIC_PRODUCT_COLUMNS =
-  "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, gallery_urls, video_url, description, short_description, seo_title, seo_description, image_alt, created_at";
+  "id, slug, name, serves, size, price_cents, items, packaging, image_url, badge, gallery_urls, video_url, description, short_description, seo_title, seo_description, image_alt, created_at, category_id";
 
 function mapPublicProduct(p: {
   id: string;
@@ -92,6 +92,7 @@ function mapPublicProduct(p: {
   seo_description?: string | null;
   image_alt?: string | null;
   created_at?: string | null;
+  category_id?: string | null;
 }): Product {
   return {
     id: p.id,
@@ -112,6 +113,7 @@ function mapPublicProduct(p: {
     seoDescription: p.seo_description ?? undefined,
     imageAlt: p.image_alt ?? undefined,
     createdAt: p.created_at ?? undefined,
+    categoryId: p.category_id ?? undefined,
   };
 }
 

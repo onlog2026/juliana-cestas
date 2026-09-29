@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { StoreContent } from "@/modules/content/types";
+import { MAT_CLASS, MAT_HOVER_CLASS, MAT_INNER_RADIUS } from "./card-mat";
 
 type Slot = StoreContent["promo_banners"]["wide"];
 
@@ -11,7 +12,8 @@ type Slot = StoreContent["promo_banners"]["wide"];
  */
 function PromoSlot({ slot, className, sizes }: { slot: Slot; className: string; sizes: string }) {
   const alt = slot.alt.trim() || "Promoção";
-  const boxClass = `group relative block overflow-hidden rounded-card bg-secondary ${className}`;
+  // Moldura branca interna igual à dos cards; a foto (e o texto) ficam no recorte interno.
+  const boxClass = `group relative block ${MAT_CLASS} ${MAT_HOVER_CLASS} ${className}`;
   const imageClass = "object-cover transition-transform duration-300 group-hover:scale-105";
 
   // Foto própria para o celular (opcional): a do computador esconde no celular.
@@ -37,10 +39,10 @@ function PromoSlot({ slot, className, sizes }: { slot: Slot; className: string; 
       </>
     ) : null;
   const content = (
-    <>
+    <div className={`absolute inset-1.5 overflow-hidden ${MAT_INNER_RADIUS} bg-secondary`}>
       {images}
       {legend}
-    </>
+    </div>
   );
 
   const href = slot.href.trim();

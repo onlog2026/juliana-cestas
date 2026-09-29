@@ -90,3 +90,41 @@ describe("dados estruturados", () => {
     expect(l.itemListElement[0].url).toBe("https://l.com/produto/a");
   });
 });
+
+import { parseRecent, pushRecent, RECENT_MAX } from "@/modules/catalog/recent";
+
+describe("vistos recentemente", () => {
+  it("mais recente primeiro, sem repetir e com limite", () => {
+    expect(pushRecent(["a", "b", "c"], "b")).toEqual(["b", "a", "c"]);
+    const many = Array.from({ length: 20 }, (_, i) => `s${i}`);
+    expect(pushRecent(many, "novo")).toHaveLength(RECENT_MAX);
+    expect(pushRecent(many, "novo")[0]).toBe("novo");
+  });
+  it("lixo no storage vira lista vazia ou só textos válidos", () => {
+    expect(parseRecent(null)).toEqual([]);
+    expect(parseRecent("{nao json")).toEqual([]);
+    expect(parseRecent('{"a":1}')).toEqual([]);
+    expect(parseRecent('["ok",3,"","x"]')).toEqual(["ok", "x"]);
+  });
+});
+
+import { coBought } from "@/modules/catalog/co-bought";
+
+describe("quem comprou também levou", () => {
+  const rows = [
+    { order_id: "o1", product_id: "A" },
+    { order_id: "o1", product_id: "B" },
+    { order_id: "o2", product_id: "A" },
+    { order_id: "o2", product_id: "B" },
+    { order_id: "o2", product_id: "C" },
+    { order_id: "o3", product_id: "D" },
+  ];
+  it("ordena por frequência, sem o próprio produto nem pedidos de outros", () => {
+    expect(coBought(rows, "A")).toEqual(["B", "C"]);
+    expect(coBought(rows, "A", 1)).toEqual(["B"]);
+  });
+  it("produto sem pedido devolve vazio", () => {
+    expect(coBought(rows, "Z")).toEqual([]);
+    expect(coBought([], "A")).toEqual([]);
+  });
+});

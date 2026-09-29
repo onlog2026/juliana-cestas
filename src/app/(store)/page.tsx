@@ -15,6 +15,9 @@ import { Reveal } from "@/components/loja/reveal";
 import { getTenantId } from "@/lib/tenant/context";
 import { getStoreProfile } from "@/modules/settings/store-profile";
 import { ItemListJsonLd, WebSiteJsonLd } from "@/components/loja/json-ld";
+import { TrustBar } from "@/components/loja/trust-bar";
+import { RecentlyViewed } from "@/components/loja/recently-viewed";
+import { toLiteProducts } from "@/components/loja/lite-product";
 
 // A home é estática; renova a cada 30 min para as vitrines acompanharem vendas e cliques.
 export const revalidate = 1800;
@@ -48,6 +51,7 @@ export default async function Home() {
           Nossas cestas
         </Link>
       </BannerCarousel>
+      <TrustBar />
       {/* Atalhos das categorias reais + UMA grade de produtos. Os blocos
           antigos "CategoryTiles" (lista de produtos com nome de categoria) e
           "Collections" (seleção por preço, conteúdo de semente de quando a
@@ -57,6 +61,7 @@ export default async function Home() {
       <FeaturedProducts />
       <ShowcaseRow title="Mais comprados" products={showcases.bought} />
       <ShowcaseRow title="Mais clicados" products={showcases.clicked} />
+      <RecentlyViewed products={toLiteProducts(products)} />
       <Reveal>
         <CartaozinhoSection />
       </Reveal>

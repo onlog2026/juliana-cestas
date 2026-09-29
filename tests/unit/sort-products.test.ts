@@ -85,3 +85,42 @@ describe("posição dos banners promocionais", () => {
     expect(promoInsertIndex(0, PROMO_AFTER_ITEMS.mobile)).toBe(0);
   });
 });
+
+import { filterEntries, parseFilterHash, serializeFilter, NO_FILTER } from "@/modules/catalog/sort-products";
+
+describe("filtros da grade", () => {
+  const items = [
+    { price: 100, categoryId: "c1" },
+    { price: 150, categoryId: "c2" },
+    { price: 200, categoryId: "c1" },
+    { price: 350, categoryId: "c3" },
+    { price: 40 },
+  ];
+  const cats = new Map([
+    ["cestas", ["c1", "c3"]],
+    ["frios", ["c2"]],
+  ]);
+
+  it("sem filtro devolve tudo", () => {
+    expect(filterEntries(items, NO_FILTER, cats)).toHaveLength(5);
+  });
+  it("categoria inclui as subcategorias e ignora produto sem categoria", () => {
+    expect(filterEntries(items, { category: "cestas", band: null }, cats).map((i) => i.price)).toEqual([100, 200, 350]);
+  });
+  it("faixas de preço: R$150 exato entra em 'até 150'; acima de 300 sem teto", () => {
+    expect(filterEntries(items, { category: null, band: "ate-150" }, cats).map((i) => i.price)).toEqual([100, 150, 40]);
+    expect(filterEntries(items, { category: null, band: "150-300" }, cats).map((i) => i.price)).toEqual([200]);
+    expect(filterEntries(items, { category: null, band: "acima-300" }, cats).map((i) => i.price)).toEqual([350]);
+  });
+  it("categoria + faixa combinam (E)", () => {
+    expect(filterEntries(items, { category: "cestas", band: "150-300" }, cats).map((i) => i.price)).toEqual([200]);
+  });
+  it("hash: aceita válido, ignora lixo e categoria inexistente", () => {
+    const valid = new Set(["cestas", "frios"]);
+    expect(parseFilterHash("#filtro=cat:frios,preco:ate-150", valid)).toEqual({ category: "frios", band: "ate-150" });
+    expect(parseFilterHash("#filtro=cat:xxx,preco:zzz", valid)).toEqual(NO_FILTER);
+    expect(parseFilterHash("#ordem=novidades&filtro=cat:cestas", valid)).toEqual({ category: "cestas", band: null });
+    expect(parseFilterHash("", valid)).toEqual(NO_FILTER);
+    expect(serializeFilter({ category: "frios", band: null })).toBe("cat:frios");
+  });
+});

@@ -16,6 +16,11 @@ import { clampTitle, pickDescription } from "@/modules/seo/meta";
 import { getTenantId } from "@/lib/tenant/context";
 import { getStoreWhatsapp } from "@/modules/settings/store-profile";
 import { LEGACY_TENANT_ID } from "@/lib/tenant/legacy";
+import { getDeliverySettings } from "@/modules/delivery/settings";
+import { getAlsoBought } from "@/modules/catalog/also-bought";
+import { DeliveryToday } from "@/components/loja/delivery-today";
+import { RecentlyViewed, TrackRecentlyViewed } from "@/components/loja/recently-viewed";
+import { toLiteProducts } from "@/components/loja/lite-product";
 
 export const revalidate = 300;
 
@@ -67,12 +72,21 @@ export default async function ProdutoPage(
   const whatsappMessage = encodeURIComponent(
     `Olá! Quero encomendar a ${product.name} (${currency.format(product.price)}).`
   );
-  const allProducts = await getAllProducts(tenantId);
+  const [allProducts, delivery, alsoIds] = await Promise.all([
+    getAllProducts(tenantId),
+    getDeliverySettings(tenantId).catch(() => null),
+    getAlsoBought(tenantId, product.id).catch(() => []),
+  ]);
   const outrasCestas = allProducts.filter((item) => item.id !== product.id);
+  // Só aparece com co-compra REAL de pelo menos 2 cestas (nunca palpite).
+  const alsoBought = alsoIds
+    .map((id) => allProducts.find((item) => item.id === id))
+    .filter((item): item is (typeof allProducts)[number] => Boolean(item));
   const packagingItems = splitListText(product.packaging);
 
   return (
     <div className="mx-auto max-w-[1800px] px-4 py-8 sm:px-6 lg:px-8 2xl:px-12">
+      <TrackRecentlyViewed slug={product.slug} />
       <TrackViewItem item={{ id: product.id, name: product.name, price: product.price }} />
       <ProductJsonLd
         name={product.name}
@@ -127,7 +141,21 @@ export default async function ProdutoPage(
             ) : null}
           </p>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          {delivery ? (
+            <p className="mt-5 text-sm font-medium text-foreground">
+              <DeliveryToday
+                settings={{
+                  slotMinutes: delivery.slotMinutes,
+                  leadTimeHours: delivery.leadTimeHours,
+                  horizonDays: delivery.horizonDays,
+                  hours: delivery.hours,
+                  blockedDates: delivery.blockedDates,
+                }}
+              />
+            </p>
+          ) : null}
+
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <Link
               href={`/checkout/${product.slug}`}
               className="jc-btn-primary jc-shine-cta inline-flex h-12 items-center justify-center rounded-full bg-primary px-7 text-base font-semibold text-primary-foreground"
@@ -204,6 +232,19 @@ export default async function ProdutoPage(
       <div className="mt-16 -mx-4 sm:-mx-6 lg:-mx-8">
         <CartaozinhoSection />
       </div>
+
+      {alsoBought.length >= 2 ? (
+        <div className="mt-16">
+          <h2 className="font-display text-2xl text-foreground">Quem comprou esta cesta também levou</h2>
+          <div className="mt-6 grid grid-cols-2 gap-x-5 gap-y-10 sm:gap-x-7 lg:grid-cols-4 2xl:grid-cols-6">
+            {alsoBought.map((item) => (
+              <ProductCard key={item.id} product={item} />
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      <RecentlyViewed products={toLiteProducts(allProducts)} excludeSlug={product.slug} />
 
       <div className="mt-16">
         <h2 className="font-display text-2xl text-foreground">

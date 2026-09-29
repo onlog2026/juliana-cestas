@@ -64,6 +64,8 @@ export function sumValue(items: TrackItem[]): number {
 }
 
 export const events = {
+  /** Filtro da grade (sem dado pessoal): tipo "categoria" ou "preco" + o valor escolhido. */
+  filterProducts: (kind: "categoria" | "preco", value: string) => track("filter_products", { filter_kind: kind, filter_value: value }),
   viewItem: (item: TrackItem) =>
     track("view_item", { currency: "BRL", value: item.price, items: toGaItems([item]) }),
   addToCart: (item: TrackItem) =>

@@ -24,15 +24,15 @@ const STEP_MS = 3500;
  * mouse por cima, foco de teclado, toque ou aba escondida. Quem pede "menos
  * movimento" no sistema não tem rolagem automática (só as setas).
  */
-export function ShowcaseCarousel({ title, items }: { title: string; items: Item[] }) {
+export function ShowcaseCarousel({ title, items, shuffle: doShuffle = true }: { title: string; items: Item[]; shuffle?: boolean }) {
   const [list, setList] = useState(items);
   const trackRef = useRef<HTMLUListElement>(null);
   const pausedRef = useRef(false);
   const [canScroll, setCanScroll] = useState(false);
 
   useEffect(() => {
-    setList(shuffle(items));
-  }, [items]);
+    setList(doShuffle ? shuffle(items) : items);
+  }, [items, doShuffle]);
 
   const step = useCallback((dir: 1 | -1) => {
     const el = trackRef.current;
