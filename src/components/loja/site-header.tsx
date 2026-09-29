@@ -63,7 +63,7 @@ export async function SiteHeader() {
         sticky causa jank de rolagem no mobile (mesma família do blur que a
         regra da casa proíbe em fixed/sticky). */}
     <header className="sticky top-0 z-40 border-b border-border bg-background">
-      <div className="mx-auto flex max-w-7xl items-center gap-8 px-4 py-2 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-2 sm:px-6 md:gap-8 lg:px-8">
         {/* Sem altura fixa de propósito: a lojista agora escolhe o tamanho da
             logo (controle na própria home), então a barra precisa acompanhar
             -- `py-2` reproduz exatamente a altura de antes (96px) no tamanho

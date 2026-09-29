@@ -36,7 +36,7 @@ export function AddToCartButton({ productSlug, productId, name, imageUrl, priceC
       <button
         type="button"
         onClick={handleClick}
-        className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-primary px-7 text-base font-semibold text-primary transition-colors hover:bg-primary/10 active:scale-[0.98]"
+        className="jc-btn-outline inline-flex h-12 items-center justify-center gap-2 rounded-full px-7 text-base font-semibold text-primary"
       >
         {justAdded ? <Check className="size-5" /> : <ShoppingBag className="size-5" />}
         {justAdded ? "Adicionada!" : "Adicionar ao carrinho"}

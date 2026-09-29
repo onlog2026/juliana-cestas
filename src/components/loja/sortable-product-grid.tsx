@@ -133,7 +133,7 @@ export function SortableProductGrid({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-2xl text-foreground">{title}</h2>
         {entries.length > 1 ? (
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          <label className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
             <span>Ordenar por</span>
             <select
               value={sort}

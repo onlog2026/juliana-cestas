@@ -97,7 +97,7 @@ export default async function ProdutoPage(
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link
               href={`/checkout/${product.slug}`}
-              className="jc-shine-cta inline-flex h-12 items-center justify-center rounded-full bg-primary px-7 text-base font-semibold text-primary-foreground transition-transform hover:bg-primary/90 active:scale-[0.98]"
+              className="jc-btn-primary jc-shine-cta inline-flex h-12 items-center justify-center rounded-full bg-primary px-7 text-base font-semibold text-primary-foreground"
             >
               Comprar
             </Link>

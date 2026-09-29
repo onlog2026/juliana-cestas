@@ -41,13 +41,13 @@ export default async function Home() {
       <div className="mx-auto flex max-w-7xl flex-wrap gap-3 px-4 pt-6 sm:px-6 lg:px-8">
         <Link
           href="/categoria/cafe-da-manha"
-          className="inline-flex h-12 items-center rounded-full bg-primary px-7 text-base font-semibold text-primary-foreground transition-transform hover:bg-primary/90 active:scale-[0.98]"
+          className="jc-btn-primary jc-shine-cta inline-flex h-12 items-center rounded-full bg-primary px-7 text-base font-semibold text-primary-foreground"
         >
           Ver cestas
         </Link>
         <Link
           href="#nossas-cestas"
-          className="inline-flex h-12 items-center rounded-full border border-[color-mix(in_oklch,var(--primary),transparent_70%)] px-7 text-base font-semibold text-primary transition-colors hover:bg-accent"
+          className="jc-btn-outline inline-flex h-12 items-center rounded-full px-7 text-base font-semibold text-primary"
         >
           Nossas cestas
         </Link>

@@ -16,14 +16,15 @@ export async function CategoryShortcuts() {
 
   return (
     <nav aria-label="Categorias" className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
-      <ul className="flex snap-x gap-4 overflow-x-auto pb-2 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden">
+      <ul className="flex snap-x gap-4 overflow-x-auto pb-4 pt-3 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden">
         {tree.map((category) => (
           <li key={category.id} className="shrink-0 snap-start">
             <Link
               href={`/categoria/${category.slug}`}
-              className="group flex w-20 flex-col items-center gap-2 text-center sm:w-24"
+              className="group flex w-[5.5rem] flex-col items-center gap-2 text-center sm:w-28"
             >
-              <span className="relative flex size-16 items-center justify-center overflow-hidden rounded-full border border-border bg-secondary transition-transform duration-200 group-hover:scale-105 sm:size-20">
+              <span className="jc-ring">
+                <span className="relative flex size-16 items-center justify-center overflow-hidden rounded-full border-2 border-background bg-secondary sm:size-20">
                 {category.imageUrl ? (
                   <Image
                     src={category.imageUrl}
@@ -37,6 +38,7 @@ export async function CategoryShortcuts() {
                     {category.name.trim().charAt(0).toUpperCase()}
                   </span>
                 )}
+                </span>
               </span>
               <span className="text-xs font-medium leading-tight text-foreground">{category.name}</span>
             </Link>

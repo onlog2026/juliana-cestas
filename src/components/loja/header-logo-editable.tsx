@@ -91,7 +91,7 @@ export function HeaderLogo({
     // estreita -- senão uma logo larga (até 320px) + nome longo empurram a
     // largura da página no mobile. A <img> mantém `shrink-0`; o nome ganha
     // `truncate`.
-    <div className="relative flex min-w-0 items-center">
+    <div className="relative flex min-w-0 flex-1 items-center md:flex-none">
       <Link
         href="/"
         className="flex min-w-0 items-center gap-2.5 font-display text-2xl text-primary"
@@ -106,8 +106,11 @@ export function HeaderLogo({
         <img
           src={logoHeaderUrl || "/logo/juliana-present-icon.svg"}
           alt={storeName}
-          style={{ height: `${alturaExibida}px` }}
-          className="w-auto max-w-[320px] shrink-0 object-contain"
+          // No celular a logo tem altura menor (64px) e LARGURA limitada ao que sobra
+          // ao lado do carrinho e do menu (152px = margens + os 2 botões): antes, a logo
+          // de 320px passava por baixo do ícone do carrinho em telas de 360-390px.
+          style={{ "--logo-h": `${alturaExibida}px` } as React.CSSProperties}
+          className="h-[min(var(--logo-h),64px)] w-auto max-w-[calc(100vw-9.5rem)] shrink-0 object-contain object-left md:h-[var(--logo-h)] md:max-w-[320px]"
         />
         {/* O nome em texto só aparece quando NÃO há logo-imagem própria: a
             logo da loja já traz o nome escrito, então repetir "Juliana Cestas"
