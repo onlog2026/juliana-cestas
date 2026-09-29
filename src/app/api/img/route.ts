@@ -16,7 +16,8 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const raw = searchParams.get("url") ?? "";
   const w = Number(searchParams.get("w"));
-  const q = Math.min(90, Math.max(40, Number(searchParams.get("q")) || 75));
+  // Só 3 qualidades: menos variações = mais acerto de cache e menos CPU gasta por quem tentar abusar.
+  const q = [60, 75, 90].reduce((best, v) => (Math.abs(v - (Number(searchParams.get("q")) || 75)) < Math.abs(best - (Number(searchParams.get("q")) || 75)) ? v : best), 75);
 
   let target: URL;
   try {
