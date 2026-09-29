@@ -63,7 +63,7 @@ export function iconByName(name: string): LucideIcon {
 
 /**
  * A largura e o respiro padrão de uma seção da loja — os mesmos valores que as
- * seções de hoje usam (`max-w-7xl`, `px-4 sm:px-6 lg:px-8`). Existe para que
+ * seções de hoje usam (`max-w-[1800px]`, `px-4 sm:px-6 lg:px-8 2xl:px-12`). Existe para que
  * bloco novo não invente margem própria e a página não fique com degraus.
  */
-export const SECTION_SHELL = "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8";
+export const SECTION_SHELL = "mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-8 2xl:px-12";

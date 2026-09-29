@@ -25,7 +25,7 @@ export async function Collections() {
     : null;
 
   return (
-    <Reveal className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <Reveal className="mx-auto max-w-[1800px] px-4 py-10 sm:px-6 lg:px-8 2xl:px-12">
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         {maxPriceCents === undefined ? null : (
           <div className="rounded-card border border-border bg-card p-6 sm:p-8">

@@ -64,7 +64,7 @@ export default async function ProdutoPage(
   const packagingItems = splitListText(product.packaging);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[1800px] px-4 py-8 sm:px-6 lg:px-8 2xl:px-12">
       <TrackViewItem item={{ id: product.id, name: product.name, price: product.price }} />
       <ProductJsonLd
         name={product.name}
@@ -194,7 +194,7 @@ export default async function ProdutoPage(
         <h2 className="font-display text-2xl text-foreground">
           Outras cestas
         </h2>
-        <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4 2xl:grid-cols-6">
           {outrasCestas.map((item) => (
             <Reveal key={item.id}>
               <ProductCard product={item} />

@@ -23,7 +23,9 @@ export function ProductCard({ product, sizes }: { product: Product; sizes?: stri
     >
       {/* A fita da flag passa 6px da borda (efeito de dobra): por isso mora FORA do recorte da foto. */}
       <div className="relative">
-      <div className="jc-glow-card relative aspect-[4/5] overflow-hidden rounded-card bg-secondary">
+      {/* Passe-partout: uma borda branca fina entre a linha do card e a foto (destaca a foto sem pesar). */}
+      <div className="rounded-card border border-border/70 bg-card p-1.5 shadow-[0_1px_2px_rgba(31,42,36,0.05)] transition-shadow duration-300 group-hover:shadow-[0_10px_24px_-14px_rgba(31,42,36,0.35)]">
+      <div className="jc-glow-card relative aspect-[4/5] overflow-hidden rounded-[10px] bg-secondary">
         <Image
           src={product.image}
           alt={product.name}
@@ -36,6 +38,7 @@ export function ProductCard({ product, sizes }: { product: Product; sizes?: stri
             {product.badge}
           </span>
         ) : null}
+      </div>
       </div>
       {product.ribbon ? <ProductRibbon {...product.ribbon} size={88} /> : null}
       </div>

@@ -25,7 +25,7 @@ export async function ReviewsShowcase({ limit = 12 }: { limit?: number } = {}) {
   if (reviews.length === 0) return null;
 
   return (
-    <section id="avaliacoes" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <section id="avaliacoes" className="mx-auto max-w-[1800px] px-4 py-10 sm:px-6 lg:px-8 2xl:px-12">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-display text-2xl text-foreground">Quem já recebeu conta</h2>

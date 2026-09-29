@@ -12,7 +12,7 @@ export async function WhatsappCta() {
   ]);
 
   return (
-    <section className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
+    <section className="mx-auto max-w-[1800px] px-4 pb-14 sm:px-6 lg:px-8 2xl:px-12">
       <div className="flex flex-col items-center gap-4 rounded-card bg-primary px-6 py-10 text-center text-primary-foreground sm:flex-row sm:justify-between sm:text-left">
         <div>
           <p className="font-display text-2xl">{content.title}</p>

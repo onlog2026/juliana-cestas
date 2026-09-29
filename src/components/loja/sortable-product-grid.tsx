@@ -32,9 +32,9 @@ export type GridEntry = SortableMeta & {
  * ("Destaques"), igual ao HTML do servidor, então não há troca de conteúdo na
  * hidratação. A escolha fica na URL como `#ordem=...` (sem recarregar).
  *
- * Grade: 2 colunas no celular, 3 no tablet, 5 no computador; até `maxVisible`
- * produtos (6 linhas × 5). Os banners promocionais entram DEPOIS DA 3ª LINHA
- * de cada largura (6, 9 e 15 produtos), cada um visível só no seu breakpoint.
+ * Grade: 2 colunas no celular, 3 no tablet, 5 no computador e 6 em tela
+ * muito larga (>= 1536px); até `maxVisible` produtos. Os banners promocionais entram
+ * DEPOIS DA 3ª LINHA de cada largura (6, 9, 15 e 18 produtos), cada um visível só no seu breakpoint.
  */
 export function SortableProductGrid({
   title,
@@ -78,7 +78,7 @@ export function SortableProductGrid({
   const visible = showAll ? sorted : sorted.slice(0, maxVisible);
   const hiddenCount = sorted.length - visible.length;
 
-  // Monta as células da grade: produtos + 3 cópias do bloco de banners, cada uma
+  // Monta as células da grade: produtos + 4 cópias do bloco de banners, cada uma
   // visível em UMA faixa de largura (o CSS esconde as outras; imagens de itens
   // escondidos com loading=lazy não são baixadas).
   const promoSlots = promo
@@ -89,7 +89,12 @@ export function SortableProductGrid({
           at: promoInsertIndex(visible.length, PROMO_AFTER_ITEMS.tablet),
           className: "hidden sm:block lg:hidden",
         },
-        { key: "promo-d", at: promoInsertIndex(visible.length, PROMO_AFTER_ITEMS.desktop), className: "hidden lg:block" },
+        {
+          key: "promo-d",
+          at: promoInsertIndex(visible.length, PROMO_AFTER_ITEMS.desktop),
+          className: "hidden lg:block 2xl:hidden",
+        },
+        { key: "promo-w", at: promoInsertIndex(visible.length, PROMO_AFTER_ITEMS.wide), className: "hidden 2xl:block" },
       ]
     : [];
 
@@ -114,14 +119,29 @@ export function SortableProductGrid({
   // Sobra na última linha do computador (5 colunas): o banner ocupa as colunas
   // vazias. Linha fechada (resto 0) = nada a preencher. A largura vai em `style`
   // porque o Tailwind não gera classe `col-span-N` montada em tempo de execução.
-  const gapColumns = fillColumns(visible.length);
+  // Cada largura tem a sua conta (5 colunas de 1024 a 1535px; 6 a partir de 1536px) e a sua
+  // cópia do bloco, visível só na sua faixa.
+  const gapColumns = fillColumns(visible.length, 5);
   if (fill && gapColumns > 0) {
     cells.push(
       <div
         key="fill"
-        className="hidden lg:block"
+        className="hidden lg:block 2xl:hidden"
         style={{ gridColumn: `span ${gapColumns} / span ${gapColumns}` }}
         data-fill-slot={gapColumns}
+      >
+        {fill}
+      </div>
+    );
+  }
+  const gapColumnsWide = fillColumns(visible.length, 6);
+  if (fill && gapColumnsWide > 0) {
+    cells.push(
+      <div
+        key="fill-wide"
+        className="hidden 2xl:block"
+        style={{ gridColumn: `span ${gapColumnsWide} / span ${gapColumnsWide}` }}
+        data-fill-slot-wide={gapColumnsWide}
       >
         {fill}
       </div>
@@ -154,7 +174,7 @@ export function SortableProductGrid({
         {announce}
       </p>
 
-      <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">{cells}</div>
+      <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6">{cells}</div>
 
       {hiddenCount > 0 ? (
         <div className="mt-8 flex justify-center">

@@ -49,7 +49,7 @@ export default async function CategoriaPage(props: PageProps<"/categoria/[slug]"
   const products = await getProductsByCategoryIds(tenantId, ids);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[1800px] px-4 py-8 sm:px-6 lg:px-8 2xl:px-12">
       <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
         <Link href="/" className="transition-colors hover:text-primary">
           Início
@@ -86,7 +86,7 @@ export default async function CategoriaPage(props: PageProps<"/categoria/[slug]"
       ) : null}
 
       {products.length > 0 ? (
-        <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
           {products.map((product) => (
             <Reveal key={product.id}>
               <ProductCard product={product} />

@@ -49,7 +49,7 @@ export function HeaderNavMenu({ categories }: { categories: NavCategory[] }) {
   if (categories.length === 0) return null;
 
   return (
-    <nav className="mx-auto flex max-w-7xl items-center gap-4 overflow-x-auto px-4 py-2.5 text-sm font-medium text-foreground sm:px-6 lg:px-8">
+    <nav className="mx-auto flex max-w-[1800px] items-center gap-4 overflow-x-auto px-4 py-2.5 text-sm font-medium text-foreground sm:px-6 lg:px-8 2xl:px-12">
       {categories.map((category) => (
         <div
           key={category.slug}

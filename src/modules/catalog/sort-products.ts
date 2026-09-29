@@ -75,6 +75,8 @@ export const PROMO_AFTER_ITEMS = {
   tablet: 9,
   /** 5 colunas (computador) × 3 linhas */
   desktop: 15,
+  /** 6 colunas (tela muito larga, >= 1536px) × 3 linhas */
+  wide: 18,
 } as const;
 
 /** Posição real de inserção: se a lista é menor que a 3ª linha, vai para o fim. */

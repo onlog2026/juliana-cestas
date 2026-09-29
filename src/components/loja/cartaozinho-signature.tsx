@@ -24,7 +24,7 @@ export function CartaozinhoSignature({
 
   return (
     <section className="bg-secondary/40">
-      <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:px-8">
+      <div className="mx-auto grid max-w-[1800px] items-center gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:px-8 2xl:px-12">
         <div>
           <h2 className="font-display text-3xl text-foreground">{title}</h2>
           <p className="mt-3 max-w-md text-muted-foreground">{body}</p>

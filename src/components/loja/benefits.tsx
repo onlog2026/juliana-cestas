@@ -29,7 +29,7 @@ export async function Benefits() {
 
   return (
     <Reveal className="border-y border-border bg-secondary/40">
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-10 sm:px-6 md:grid-cols-4 lg:px-8">
+      <div className="mx-auto grid max-w-[1800px] grid-cols-2 gap-6 px-4 py-10 sm:px-6 md:grid-cols-4 lg:px-8 2xl:px-12">
         {content.items.map((benefit) => {
           const Icon = icons[benefit.icon];
           return (

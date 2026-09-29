@@ -39,7 +39,7 @@ export async function SiteFooter() {
     // pb-20 no mobile: o BottomNav fixo (h-16 = 64px) cobriria o fim do rodapé;
     // o respiro tira o texto de baixo do menu. No desktop (md) não há BottomNav.
     <footer className="border-t border-border bg-secondary/60 pb-20 md:pb-0">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr] lg:px-8">
+      <div className="mx-auto grid max-w-[1800px] gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr] lg:px-8 2xl:px-12">
         <div>
           {siteSettings.logoFooterUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- pode ser GIF animado
@@ -101,7 +101,7 @@ export async function SiteFooter() {
           ) : null}
         </div>
       </div>
-      <div className="border-t border-border px-4 py-5 text-center text-xs text-muted-foreground sm:px-6 lg:px-8">
+      <div className="border-t border-border px-4 py-5 text-center text-xs text-muted-foreground sm:px-6 lg:px-8 2xl:px-12">
         © {new Date().getFullYear()}{storeName ? ` ${storeName}` : ""}. Brasília, DF.
       </div>
     </footer>

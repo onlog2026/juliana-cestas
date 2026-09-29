@@ -18,7 +18,7 @@ export function AnnouncementBar({ announcement }: { announcement: StoreContent["
   const isExternal = /^https:\/\//i.test(href);
 
   const content = (
-    <span className="mx-auto block max-w-7xl px-4 py-2 text-center text-[13px] font-medium leading-snug sm:px-6 lg:px-8">
+    <span className="mx-auto block max-w-[1800px] px-4 py-2 text-center text-[13px] font-medium leading-snug sm:px-6 lg:px-8 2xl:px-12">
       {text}
     </span>
   );

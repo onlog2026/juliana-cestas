@@ -36,7 +36,10 @@ describe("banner que preenche o espaço vazio", () => {
     expect(slot.style.gridColumn).toBe("span 3 / span 3");
     expect(slot.className).toContain("hidden");
     expect(slot.className).toContain("lg:block");
-    expect(slot.parentElement!.lastElementChild).toBe(slot);
+    // os blocos de banner são os DOIS últimos itens (5 colunas e 6 colunas), nessa ordem
+    const wide = container.querySelector("[data-fill-slot-wide]");
+    expect(slot.parentElement!.lastElementChild).toBe(wide);
+    expect(slot.nextElementSibling).toBe(wide);
   });
 
   it("linha completa (30) ou sem banner cadastrado: nada de bloco vazio", () => {
@@ -45,6 +48,25 @@ describe("banner que preenche o espaço vazio", () => {
     cleanup();
     const none = render(createElement(SortableProductGrid, { title: "t", entries: entries(27) }));
     expect(none.container.querySelector("[data-fill-slot]")).toBeNull();
+  });
+
+  it("tela muito larga (6 colunas) tem a sua própria conta e a sua cópia do bloco", () => {
+    // 25 produtos: 5 colunas fecham a linha (nada a preencher); 6 colunas deixam 5 vazias.
+    const { container } = render(
+      createElement(SortableProductGrid, { title: "t", entries: entries(25), fill: createElement("i", null, "BANNER") })
+    );
+    expect(container.querySelector("[data-fill-slot]")).toBeNull();
+    const wide = container.querySelector("[data-fill-slot-wide]") as HTMLElement;
+    expect(wide.getAttribute("data-fill-slot-wide")).toBe("5");
+    expect(wide.style.gridColumn).toBe("span 5 / span 5");
+    expect(wide.className).toContain("2xl:block");
+    // e a versão de 5 colunas some nessa largura
+    cleanup();
+    const c27 = render(
+      createElement(SortableProductGrid, { title: "t", entries: entries(27), fill: createElement("i", null, "BANNER") })
+    );
+    expect((c27.container.querySelector("[data-fill-slot]") as HTMLElement).className).toContain("2xl:hidden");
+    expect(fillColumns(27, 6)).toBe(3);
   });
 
   it("tamanho recomendado calculado pelo número de produtos", () => {

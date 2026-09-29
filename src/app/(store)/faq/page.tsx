@@ -31,7 +31,7 @@ export default async function FaqPage() {
   const title = faq.title?.trim() || FALLBACK_TITLE;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[1800px] px-4 pt-8 sm:px-6 lg:px-8 2xl:px-12">
       <nav
         aria-label="Breadcrumb"
         className="flex items-center gap-1.5 text-sm text-muted-foreground"

@@ -59,8 +59,9 @@ export function ProductGallery({
     <div>
       {/* Fita da flag fora do recorte da foto (ela passa 6px da borda: efeito de dobra). */}
       <div className="relative">
+      <div className="rounded-card border border-border/70 bg-card p-1.5 shadow-[0_1px_2px_rgba(31,42,36,0.05)]">
       <div
-        className="jc-glow-card jc-pop group relative aspect-square overflow-hidden rounded-card bg-secondary"
+        className="jc-glow-card jc-pop group relative aspect-square overflow-hidden rounded-[10px] bg-secondary"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -112,6 +113,7 @@ export function ProductGallery({
             </div>
           </>
         ) : null}
+      </div>
       </div>
       {ribbon ? <ProductRibbon {...ribbon} size={120} /> : null}
       </div>

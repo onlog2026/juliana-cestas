@@ -75,7 +75,7 @@ describe("opções de ordenação", () => {
 
 describe("posição dos banners promocionais", () => {
   it("depois da 3ª linha de cada largura (2, 3 e 5 colunas)", () => {
-    expect(PROMO_AFTER_ITEMS).toEqual({ mobile: 6, tablet: 9, desktop: 15 });
+    expect(PROMO_AFTER_ITEMS).toEqual({ mobile: 6, tablet: 9, desktop: 15, wide: 18 });
   });
 
   it("lista menor que a 3ª linha: o banner vai para o fim, nunca some", () => {

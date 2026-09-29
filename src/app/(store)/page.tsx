@@ -38,7 +38,7 @@ export default async function Home() {
         {storeName} — cestas de café da manhã, presentes e kits comemorativos feitos à mão
       </h1>
       <BannerCarousel banners={banners} />
-      <div className="mx-auto flex max-w-7xl flex-wrap gap-3 px-4 pt-6 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-[1800px] flex-wrap gap-3 px-4 pt-6 sm:px-6 lg:px-8 2xl:px-12">
         <Link
           href="/categoria/cafe-da-manha"
           className="jc-btn-primary jc-shine-cta inline-flex h-12 items-center rounded-full bg-primary px-7 text-base font-semibold text-primary-foreground"

@@ -8,7 +8,7 @@ import { SortableProductGrid, type GridEntry } from "./sortable-product-grid";
 
 // Grade de 2 colunas (celular) / 3 (tablet) / 5 (computador): o cartão ocupa
 // ~50vw / ~33vw / ~20vw. Pedir mais que isso só baixaria bytes à toa.
-const GRID_SIZES = "(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw";
+const GRID_SIZES = "(min-width: 1536px) 16vw, (min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw";
 
 /**
  * "Nossas cestas": a grade principal da home. O servidor monta os cartões
@@ -42,7 +42,7 @@ export async function FeaturedProducts() {
     promoContent.enabled && Boolean(promoContent.wide.imageUrl || promoContent.narrow.imageUrl);
 
   return (
-    <section id="nossas-cestas" className="mx-auto scroll-mt-32 max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <section id="nossas-cestas" className="mx-auto scroll-mt-32 max-w-[1800px] px-4 py-10 sm:px-6 lg:px-8 2xl:px-12">
       <span id="mais-pedidas" aria-hidden="true" />
       <SortableProductGrid
         title="Nossas cestas"

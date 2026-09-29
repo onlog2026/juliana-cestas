@@ -49,7 +49,7 @@ export async function loadHero(tenantId: string): Promise<HeroData> {
 function QuickLinks({ links }: { links: HeroProps["quickLinks"] }) {
   if (links.length === 0) return null;
   return (
-    <div className="mx-auto flex max-w-7xl flex-wrap gap-3 px-4 pt-6 sm:px-6 lg:px-8">
+    <div className="mx-auto flex max-w-[1800px] flex-wrap gap-3 px-4 pt-6 sm:px-6 lg:px-8 2xl:px-12">
       {links.map((link) => (
         <Link
           key={`${link.href}-${link.label}`}
