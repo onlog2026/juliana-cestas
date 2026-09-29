@@ -4,6 +4,7 @@ import { generatePublicToken, hashToken } from "@/modules/orders/token";
 import { sendOrderEmail, getEmailBrand } from "@/modules/notifications/send";
 import { reviewInviteEmail } from "@/modules/notifications/templates/review-invite";
 import { sanitizeName } from "@/modules/reviews/service";
+import { saoPauloDateStr } from "@/lib/time/sao-paulo";
 
 /**
  * CONVITE PARA AVALIAR.
@@ -46,7 +47,9 @@ type OrderRow = {
 
 export async function createReviewInvite(
   tenantId: string,
-  orderId: string
+  orderId: string,
+  /** true = reenvio manual: manda de novo mesmo que já tenha saído um convite. */
+  options: { resend?: boolean } = {}
 ): Promise<InviteResult> {
   const admin = createAdminClient();
 
@@ -60,14 +63,42 @@ export async function createReviewInvite(
 
   if (orderError || !order) return { ok: false, error: "Pedido não encontrado." };
 
-  // 1ª camada de idempotência.
+  // 1ª camada de idempotência. A linha da avaliação existir NÃO prova que o
+  // convite chegou: antes de o envio de e-mails estar configurado, a linha era
+  // criada e o e-mail nunca saía (foi o caso do pedido #1010) -- e o pedido
+  // ficava preso para sempre. Por isso só conta como "já convidado" se a pessoa
+  // já respondeu OU se o e-mail realmente saiu (notificação 'sent').
   const { data: existente } = await admin
     .from("product_reviews")
-    .select("id")
+    .select("id, submitted_at")
     .eq("tenant_id", tenantId)
     .eq("order_id", orderId)
     .maybeSingle();
-  if (existente) return { ok: true, alreadyInvited: true };
+  if (existente) {
+    if (existente.submitted_at) return { ok: true, alreadyInvited: true };
+    if (!options.resend) {
+      const { data: enviado } = await admin
+        .from("notifications")
+        .select("id")
+        .eq("tenant_id", tenantId)
+        .eq("order_id", orderId)
+        .eq("type", "review_invite")
+        .eq("status", "sent")
+        .limit(1);
+      if (enviado && enviado.length > 0) return { ok: true, alreadyInvited: true };
+    }
+    // Convite que nunca saiu (ou reenvio pedido): token NOVO (só o hash fica no
+    // banco, o antigo não dá para recuperar) e envia de novo.
+    const token = generatePublicToken();
+    const { error: renewError } = await admin
+      .from("product_reviews")
+      .update({ invite_token_hash: hashToken(token), invited_at: new Date().toISOString() })
+      .eq("id", existente.id)
+      .eq("tenant_id", tenantId);
+    if (renewError) return { ok: false, error: "Não foi possível renovar o convite de avaliação." };
+    await sendInvite(tenantId, order, token);
+    return { ok: true, alreadyInvited: false };
+  }
 
   // O que a pessoa comprou — entra no e-mail para ela lembrar do pedido, e o
   // produto vira o alvo da avaliação quando a compra tem um produto só.
@@ -107,8 +138,23 @@ export async function createReviewInvite(
   // insert que "deu certo" sem devolver linha é gravação que não aconteceu.
   if (!inserido) return { ok: false, error: "O convite não foi gravado." };
 
+  await sendInvite(tenantId, order, token, itemNames);
+  return { ok: true, alreadyInvited: false };
+}
+
+/** Monta e envia o e-mail de convite (com o nome dos itens, quando disponível). */
+async function sendInvite(tenantId: string, order: OrderRow, token: string, knownItemNames?: string[]) {
+  let itemNames = knownItemNames;
+  if (!itemNames) {
+    const { data: itens } = await createAdminClient()
+      .from("order_items")
+      .select("name, kind")
+      .eq("tenant_id", tenantId)
+      .eq("order_id", order.id);
+    itemNames = (itens ?? []).filter((i) => i.kind === "product").map((i) => i.name as string);
+  }
   const brand = await getEmailBrand(tenantId);
-  const { subject, html } = reviewInviteEmail(
+  const { subject, html, text } = reviewInviteEmail(
     {
       orderNumber: order.number,
       buyerName: order.buyer_name,
@@ -117,16 +163,14 @@ export async function createReviewInvite(
     },
     brand
   );
-
   await sendOrderEmail(tenantId, {
-    orderId,
+    orderId: order.id,
     type: "review_invite",
     toEmail: order.buyer_email,
     subject,
     html,
+    text,
   });
-
-  return { ok: true, alreadyInvited: false };
 }
 
 export type DispatchSummary = {
@@ -137,50 +181,110 @@ export type DispatchSummary = {
   falhas: number;
 };
 
+/** Janela padrão: só pedidos entregues nos últimos 7 dias (nunca "o histórico inteiro"). */
+export const REVIEW_WINDOW_DAYS = 7;
+
 /**
- * Varre os pedidos ENTREGUES que ainda não têm avaliação e manda o convite.
+ * Varre os pedidos ENTREGUES recentemente que ainda não foram convidados e manda
+ * a pesquisa de avaliação.
  *
- * Existe por dois motivos: (a) cobre os pedidos que já foram entregues ANTES
- * de este módulo existir, e (b) é a rede de segurança para qualquer entrega em
- * que o disparo automático tenha falhado (e-mail é sempre melhor esforço).
- * Chamar de novo não duplica nada — `createReviewInvite` é idempotente.
+ *  - `deliveredBeforeToday` (rotina diária): só pedidos entregues ANTES de hoje
+ *    (relógio de Brasília) -- a pesquisa sai "no dia seguinte", nunca no mesmo dia
+ *    em que a cesta chegou.
+ *  - Janela de `REVIEW_WINDOW_DAYS` dias: o botão manual do painel também respeita,
+ *    para não disparar pesquisa para cliente que recebeu há meses.
+ *  - UMA pesquisa por carrinho: se um pedido do mesmo grupo já foi convidado (ou
+ *    respondeu), os outros não recebem outra.
+ *  - Convite que nunca saiu de verdade (linha sem e-mail enviado) é reenviado com
+ *    token novo. Chamar de novo não duplica: quem já recebeu é pulado.
  */
 export async function dispatchPendingReviewInvites(
   tenantId: string,
-  options: { limit?: number } = {}
+  options: { limit?: number; deliveredWithinDays?: number; deliveredBeforeToday?: boolean } = {}
 ): Promise<DispatchSummary> {
   const limit = Math.min(Math.max(options.limit ?? 50, 1), 200);
+  const days = Math.min(Math.max(options.deliveredWithinDays ?? REVIEW_WINDOW_DAYS, 1), 60);
   const admin = createAdminClient();
   const resumo: DispatchSummary = { enviados: 0, semEmail: 0, falhas: 0 };
 
-  const { data: entregues, error } = await admin
-    .from("orders")
-    .select("id, buyer_email")
-    .eq("tenant_id", tenantId)
-    .eq("status", DELIVERED_STATUS)
-    .order("created_at", { ascending: false })
-    .limit(limit);
-
-  if (error || !entregues || entregues.length === 0) return resumo;
-
-  const ids = entregues.map((o) => o.id as string);
-  const { data: jaConvidados } = await admin
-    .from("product_reviews")
+  // 1) Quando cada pedido foi entregue (evento `status_entregue`), dentro da janela.
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  let eventos = admin
+    .from("order_events")
     .select("order_id")
     .eq("tenant_id", tenantId)
-    .in("order_id", ids);
+    .eq("type", "status_entregue")
+    .gte("created_at", since);
+  if (options.deliveredBeforeToday) {
+    // Meia-noite de hoje em Brasília (UTC-3, sem horário de verão desde 2019).
+    eventos = eventos.lt("created_at", `${saoPauloDateStr()}T00:00:00-03:00`);
+  }
+  const { data: eventosData, error: eventosError } = await eventos.limit(500);
+  if (eventosError || !eventosData || eventosData.length === 0) return resumo;
+  const candidatos = [...new Set(eventosData.map((e) => e.order_id as string))];
 
-  const convidados = new Set((jaConvidados ?? []).map((r) => r.order_id as string));
+  const { data: entregues } = await admin
+    .from("orders")
+    .select("id, buyer_email, group_id")
+    .eq("tenant_id", tenantId)
+    .eq("status", DELIVERED_STATUS)
+    .in("id", candidatos)
+    .order("created_at", { ascending: true })
+    .limit(limit);
+  if (!entregues || entregues.length === 0) return resumo;
 
+  // 2) Todos os pedidos dos mesmos carrinhos (para "uma pesquisa por carrinho").
+  const grupos = [...new Set(entregues.map((o) => o.group_id as string | null).filter((g): g is string => Boolean(g)))];
+  const irmaos = new Map<string, string[]>(); // group_id -> ids de todos os pedidos do grupo
+  if (grupos.length > 0) {
+    const { data: doGrupo } = await admin
+      .from("orders")
+      .select("id, group_id")
+      .eq("tenant_id", tenantId)
+      .in("group_id", grupos);
+    for (const o of doGrupo ?? []) {
+      const lista = irmaos.get(o.group_id as string) ?? [];
+      lista.push(o.id as string);
+      irmaos.set(o.group_id as string, lista);
+    }
+  }
+
+  const todosIds = [...new Set([...entregues.map((o) => o.id as string), ...[...irmaos.values()].flat()])];
+  const [{ data: avaliacoes }, { data: enviados }] = await Promise.all([
+    admin.from("product_reviews").select("order_id, submitted_at").eq("tenant_id", tenantId).in("order_id", todosIds),
+    admin
+      .from("notifications")
+      .select("order_id")
+      .eq("tenant_id", tenantId)
+      .eq("type", "review_invite")
+      .eq("status", "sent")
+      .in("order_id", todosIds),
+  ]);
+  // "Resolvido" = a pessoa respondeu OU o e-mail de fato saiu.
+  const resolvidos = new Set<string>([
+    ...(avaliacoes ?? []).filter((r) => r.submitted_at).map((r) => r.order_id as string),
+    ...(enviados ?? []).map((r) => r.order_id as string),
+  ]);
+
+  const gruposAtendidos = new Set<string>();
   for (const pedido of entregues) {
-    if (convidados.has(pedido.id as string)) continue;
+    const id = pedido.id as string;
+    const grupo = (pedido.group_id as string | null) ?? null;
+    if (resolvidos.has(id)) continue;
+    if (grupo) {
+      if (gruposAtendidos.has(grupo)) continue;
+      // Outro pedido do carrinho já foi convidado/respondeu: não manda segunda pesquisa.
+      if ((irmaos.get(grupo) ?? []).some((irmao) => resolvidos.has(irmao))) continue;
+    }
     if (!pedido.buyer_email) {
       resumo.semEmail += 1;
       continue;
     }
-    const r = await createReviewInvite(tenantId, pedido.id as string);
-    if (r.ok && !r.alreadyInvited) resumo.enviados += 1;
-    else if (!r.ok) resumo.falhas += 1;
+    const r = await createReviewInvite(tenantId, id);
+    if (r.ok && !r.alreadyInvited) {
+      resumo.enviados += 1;
+      if (grupo) gruposAtendidos.add(grupo);
+    } else if (!r.ok) resumo.falhas += 1;
   }
 
   return resumo;

@@ -29,7 +29,7 @@ export default async function AdminPedidoDetailPage(props: PageProps<"/admin/ped
         <h1 className="font-display text-2xl text-foreground">Pedido #{order.number}</h1>
         <div className="flex items-center gap-3">
           <StatusBadge status={order.status} />
-          <MarkPaidButton orderId={order.id} status={order.status} />
+          <MarkPaidButton orderId={order.id} status={order.status} groupCount={order.siblings.length + 1} />
           <AdvanceStatusButton orderId={order.id} status={order.status} />
           <CancelOrderButton orderId={order.id} status={order.status} groupCount={order.siblings.length + 1} />
           <DeleteOrderButton

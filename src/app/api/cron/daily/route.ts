@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { reportError } from "@/lib/platform/report-error";
 import { runAutomations } from "@/modules/automations/run";
+import { dispatchPendingReviewInvites, REVIEW_WINDOW_DAYS } from "@/modules/reviews/invite";
 
 /**
  * ROTINA DIÁRIA DA PLATAFORMA.
@@ -384,6 +385,47 @@ async function suspenderVitrines(env: Ambiente, agora: Date): Promise<ResultadoT
   };
 }
 
+// ── Tarefa 4: pesquisa de avaliação no dia seguinte à entrega ───────────────
+
+/**
+ * Para cada loja ativa, manda a pesquisa de avaliação dos pedidos entregues ANTES
+ * de hoje (Brasília) e dentro dos últimos ${REVIEW_WINDOW_DAYS} dias. Uma pesquisa por carrinho; quem
+ * já respondeu ou já recebeu é pulado (rodar duas vezes não duplica nada).
+ */
+async function enviarPesquisas(env: Ambiente): Promise<ResultadoTarefa> {
+  const lojas = await selecionar<{ id: string }>(env, "tenants?select=id&status=eq.active");
+  let enviadas = 0;
+  let falhas = 0;
+  for (const loja of lojas) {
+    try {
+      const r = await dispatchPendingReviewInvites(loja.id, {
+        limit: 50,
+        deliveredWithinDays: REVIEW_WINDOW_DAYS,
+        deliveredBeforeToday: true,
+      });
+      enviadas += r.enviados;
+      falhas += r.falhas;
+    } catch (erro) {
+      falhas += 1;
+      await reportError({
+        tenantId: loja.id,
+        module: "rotina_diaria",
+        action: "review_surveys",
+        level: "error",
+        message: "Não foi possível enviar as pesquisas de avaliação desta loja.",
+        detail: { lojaId: loja.id, erro },
+      });
+    }
+  }
+  return {
+    tarefa: "review_surveys",
+    alteradas: enviadas,
+    ignoradas: 0,
+    falhas,
+    resumo: `${enviadas} pesquisa(s) de avaliação enviada(s); ${falhas} falha(s).`,
+  };
+}
+
 // ── Porta de entrada ────────────────────────────────────────────────────────
 
 function json(corpo: unknown, status: number): Response {
@@ -465,6 +507,7 @@ async function executarRotina(request: Request): Promise<Response> {
     { nome: "expire_trials", executar: () => expirarTestes(env, agora) },
     { nome: "storefront_grace", executar: () => suspenderVitrines(env, agora) },
     { nome: "automacoes_carrinho_abandonado", executar: () => runAutomations(env) },
+    { nome: "review_surveys", executar: () => enviarPesquisas(env) },
   ]) {
     try {
       resultados.push(await tarefa.executar());

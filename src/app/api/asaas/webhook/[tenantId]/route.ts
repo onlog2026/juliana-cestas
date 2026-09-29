@@ -1,4 +1,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
+// Único import de projeto permitido aqui: um arquivo PURO (só importa ./shell, que não importa nada).
+// Coberto por teste (tests/unit/webhook-imports.test.ts) para nunca virar um import de "@/".
+import { orderPaidEmail } from "../../../../../modules/notifications/templates/order-paid";
 
 /**
  * Webhook do Asaas — a porta por onde o dinheiro entra.
@@ -432,15 +435,6 @@ async function processar(
   return { ok: true, motivo: `aplicado_${situacao}`, orderId: pagamento.order_id };
 }
 
-/** Escapa texto que vai para dentro do HTML do e-mail. */
-function esc(valor: string): string {
-  return valor
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
 /**
  * Grava no outbox `notifications` (a mesma fila que o resto do sistema usa) e
  * manda pela Resend por REST. Sem chave/remetente configurado, a linha fica
@@ -448,23 +442,52 @@ function esc(valor: string): string {
  * já faz hoje.
  */
 async function avisarPagamento(env: Ambiente, tenantId: string, orderId: string): Promise<void> {
+  const t = encodeURIComponent(tenantId);
+  const o = encodeURIComponent(orderId);
+
   const pedidoRes = await db(
     env,
-    `orders?id=eq.${encodeURIComponent(orderId)}&tenant_id=eq.${encodeURIComponent(tenantId)}&select=number,buyer_name,buyer_email,total_cents&limit=1`,
+    `orders?id=eq.${o}&tenant_id=eq.${t}&select=number,buyer_name,buyer_email,recipient_name,total_cents&limit=1`,
     { method: "GET" }
   );
   if (!pedidoRes.ok) return;
   const pedidos =
-    (await lerJson<Array<{ number: number; buyer_name: string; buyer_email: string | null; total_cents: number }>>(pedidoRes)) ?? [];
+    (await lerJson<
+      Array<{ number: number; buyer_name: string; buyer_email: string | null; recipient_name: string; total_cents: number }>
+    >(pedidoRes)) ?? [];
   const pedido = pedidos[0];
   if (!pedido?.buyer_email) return;
 
-  const total = (pedido.total_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-  const assunto = `Pagamento confirmado — pedido #${pedido.number}`;
-  const html =
-    `<p>Oi, ${esc(pedido.buyer_name)}!</p>` +
-    `<p>Recebemos o pagamento do seu pedido <strong>#${pedido.number}</strong>, no valor de ${esc(total)}.</p>` +
-    `<p>Agora é com a gente: vamos preparar tudo e avisar quando sair para entrega.</p>`;
+  // Já avisado (pagamento marcado à mão no painel + este webhook no mesmo minuto)?
+  const jaRes = await db(
+    env,
+    `notifications?tenant_id=eq.${t}&order_id=eq.${o}&type=eq.order_paid&status=in.(pending,sent)&select=id&limit=1`,
+    { method: "GET" }
+  );
+  if (jaRes.ok) {
+    const ja = (await lerJson<Array<{ id: string }>>(jaRes)) ?? [];
+    if (ja.length > 0) return;
+  }
+
+  // Marca da loja (nome + logo), lida por REST -- este arquivo não importa nada de "@/".
+  const perfilRes = await db(env, `store_profile?tenant_id=eq.${t}&select=business_name&limit=1`, { method: "GET" });
+  const siteRes = await db(env, `site_settings?tenant_id=eq.${t}&select=logo_header_url&limit=1`, { method: "GET" });
+  const perfil = perfilRes.ok ? ((await lerJson<Array<{ business_name: string | null }>>(perfilRes)) ?? [])[0] : undefined;
+  const site = siteRes.ok ? ((await lerJson<Array<{ logo_header_url: string | null }>>(siteRes)) ?? [])[0] : undefined;
+  const marca = {
+    storeName: (perfil?.business_name ?? "").trim(),
+    logoUrl: site?.logo_header_url ?? null,
+    siteUrl: (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim(),
+  };
+
+  const { subject: assunto, html, text } = orderPaidEmail(
+    {
+      buyerName: pedido.buyer_name,
+      orders: [{ orderNumber: pedido.number, recipientName: pedido.recipient_name, totalCents: pedido.total_cents }],
+      ctaUrl: marca.siteUrl || undefined,
+    },
+    marca
+  );
 
   const apiKey = (process.env.RESEND_API_KEY ?? "").trim();
   const emailFrom = (process.env.EMAIL_FROM ?? "").trim();
@@ -472,7 +495,7 @@ async function avisarPagamento(env: Ambiente, tenantId: string, orderId: string)
   const linha = {
     tenant_id: tenantId,
     order_id: orderId,
-    type: "order_confirmed",
+    type: "order_paid",
     to_email: pedido.buyer_email,
     subject: assunto,
     html,
@@ -487,17 +510,19 @@ async function avisarPagamento(env: Ambiente, tenantId: string, orderId: string)
     return;
   }
 
+  // O registro no outbox é acessório: se o banco recusar (tipo novo antes da
+  // migração 0050), o e-mail sai do mesmo jeito.
   const criada = await db(env, "notifications", {
     method: "POST",
     prefer: "return=representation",
     body: { ...linha, status: "pending" },
   });
-  const criadas = (await lerJson<Array<{ id: string }>>(criada)) ?? [];
+  const criadas = (criada.ok ? await lerJson<Array<{ id: string }>>(criada) : null) ?? [];
 
   const envio = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
-    body: JSON.stringify({ from: emailFrom, to: pedido.buyer_email, subject: assunto, html }),
+    body: JSON.stringify({ from: emailFrom, to: pedido.buyer_email, subject: assunto, html, text }),
     cache: "no-store",
   });
 

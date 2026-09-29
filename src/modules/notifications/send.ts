@@ -10,8 +10,13 @@ import { getWhatsappClient } from "@/modules/notifications/whatsapp-config";
 // (automação de carrinho abandonado, migração 0037). Os dois CHECKs do banco
 // já aceitam esses valores -- sem eles aqui, o TypeScript obrigaria um cast
 // em `reviews/invite.ts` e `automations/run.ts`.
+// `order_paid` (pagamento confirmado) e `order_group_confirmed` (resumo do carrinho)
+// entram no CHECK do banco pela migração 0050. Antes dela o registro no outbox é
+// recusado, mas o e-mail SAI do mesmo jeito (ver `send`).
 type OrderNotificationType =
   | "order_confirmed"
+  | "order_paid"
+  | "order_group_confirmed"
   | "out_for_delivery"
   | "delivered"
   | "review_invite"
@@ -49,8 +54,10 @@ async function send(tenantId: string, params: {
   toEmail: string | null;
   subject: string;
   html: string;
+  /** Versão em texto puro (melhora a entrega e a leitura em clientes sem HTML). */
+  text?: string;
 }) {
-  const { type, orderId, ticketId, toEmail, subject, html } = params;
+  const { type, orderId, ticketId, toEmail, subject, html, text } = params;
   if (!toEmail) return;
 
   const supabase = createAdminClient();
@@ -75,11 +82,15 @@ async function send(tenantId: string, params: {
     return;
   }
 
-  const { data: inserted } = await supabase
+  const { data: inserted, error: insertError } = await supabase
     .from("notifications")
     .insert({ ...row, status: "pending" })
     .select("id")
     .single();
+  // O registro no outbox é acessório: se o banco recusar (ex.: tipo novo antes da
+  // migração 0050), o e-mail sai mesmo assim -- perder o aviso ao cliente por causa
+  // do livro-caixa seria pior que ficar sem o registro.
+  if (insertError) console.error("[notifications] outbox recusou a linha:", insertError.message);
 
   try {
     // Resposta do cliente vai pro e-mail da lojista, não pro remetente global.
@@ -90,6 +101,7 @@ async function send(tenantId: string, params: {
       to: toEmail,
       subject,
       html,
+      text,
       replyTo: brand.replyTo ?? undefined,
     });
     if (error) throw new Error(error.message);
@@ -117,6 +129,7 @@ export async function sendOrderEmail(
     toEmail: string | null;
     subject: string;
     html: string;
+    text?: string;
   }
 ) {
   await send(tenantId, { ...params, orderId: params.orderId });

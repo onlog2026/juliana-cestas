@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createOrder } from "@/modules/checkout/create-order";
+import { notifyGroupPlaced } from "@/modules/notifications/events";
 import type { CheckoutInput } from "@/modules/checkout/schemas";
 
 export type GroupOrderSummary = { orderId: string; number: number; token: string; totalCents: number };
@@ -68,6 +69,9 @@ export async function createOrderGroup(
       totalCents: result.totalCents,
     });
   }
+
+  // Um único e-mail-resumo com todas as cestas (melhor esforço: nunca falha o pedido).
+  await notifyGroupPlaced(tenantId, { groupId, firstOrderId: created[0].orderId, token: created[0].token });
 
   const totalCents = created.reduce((sum, o) => sum + o.totalCents, 0);
   return { ok: true, groupId, orders: created, totalCents };

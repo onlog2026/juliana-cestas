@@ -7,7 +7,7 @@ import { requireStaff } from "@/lib/auth/require-staff";
 import { sendOrderEmail, getEmailBrand } from "@/modules/notifications/send";
 import { outForDeliveryEmail } from "@/modules/notifications/templates/out-for-delivery";
 import { deliveredEmail } from "@/modules/notifications/templates/delivered";
-import { createReviewInvite } from "@/modules/reviews/invite";
+import { notifyOrderPaid } from "@/modules/notifications/events";
 import { dataDeEntregaValida, podeAlterarPedido } from "@/modules/orders/rules";
 
 export type AdminOrderRow = {
@@ -177,7 +177,9 @@ export async function advanceOrderStatus(
       buyerName: order.buyer_name,
       recipientName: order.recipient_name,
       addressLine,
-      orderUrl: `${siteUrl}/pedido/${order.id}`,
+      // O link de acompanhamento exige o token secreto (que só existe no e-mail de
+      // confirmação); sem ele a página dava 404. Aqui o botão leva ao site da loja.
+      orderUrl: siteUrl,
     }, brand);
     await sendOrderEmail(staff.tenantId, {
       orderId,
@@ -188,28 +190,22 @@ export async function advanceOrderStatus(
     });
   } else if (nextStatus === "entregue") {
     const brand = await getEmailBrand(staff.tenantId);
-    const { subject, html } = deliveredEmail({ orderNumber: order.number, buyerName: order.buyer_name }, brand);
+    const { subject, html, text } = deliveredEmail(
+      { orderNumber: order.number, buyerName: order.buyer_name, shopUrl: siteUrl || undefined },
+      brand
+    );
     await sendOrderEmail(staff.tenantId, {
       orderId,
       type: "delivered",
       toEmail: order.buyer_email,
       subject,
       html,
+      text,
     });
 
-    // Convite de avaliação: só DEPOIS de entregue. Pedir opinião de uma cesta
-    // que ainda não chegou irrita quem comprou -- e quem ouve a reclamação é
-    // a lojista. `createReviewInvite` é idempotente: se o convite já foi
-    // enviado para este pedido, não manda de novo.
-    //
-    // Falhar aqui NÃO pode desfazer a entrega, que já está gravada: o convite
-    // é um extra, o status é o fato. Se der erro, fica registrado e o painel
-    // de avaliações tem o botão "Enviar convites pendentes" para recuperar.
-    try {
-      await createReviewInvite(staff.tenantId, orderId);
-    } catch (erro) {
-      console.error("[orders] falha ao criar o convite de avaliação:", erro);
-    }
+    // A pesquisa de avaliação NÃO sai aqui: sai no dia seguinte, pela rotina diária
+    // (`api/cron/daily` -> `dispatchPendingReviewInvites`), com o agradecimento acima
+    // já entregue no mesmo dia. Pedir opinião no minuto da entrega apressa o cliente.
   }
 
   revalidatePath("/admin/pedidos");
@@ -224,7 +220,9 @@ export async function advanceOrderStatus(
  * confirma manualmente depois de ver o Pix/link pago por fora.
  */
 export async function markOrderPaid(
-  orderId: string
+  orderId: string,
+  /** false = quem chamou avisa o cliente depois (marcar um carrinho inteiro = 1 e-mail só). */
+  notify = true
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const staff = await requireStaff();
   const admin = createAdminClient();
@@ -259,10 +257,53 @@ export async function markOrderPaid(
     payload: { manual: true },
   });
 
+  // E-mail "pagamento confirmado" (melhor esforço: nunca desfaz o pagamento).
+  if (notify) await notifyOrderPaid(staff.tenantId, [orderId]);
+
   revalidatePath("/admin/pedidos");
   revalidatePath(`/admin/pedidos/${orderId}`);
   revalidatePath("/admin");
   return { ok: true };
+}
+
+/**
+ * Marca como pago TODOS os pedidos ainda em aberto do carrinho e manda UM só
+ * e-mail de confirmação com todas as cestas. Pedidos já pagos/encerrados são
+ * ignorados sem erro.
+ */
+export async function markGroupPaid(
+  orderId: string
+): Promise<{ ok: true; paid: number } | { ok: false; error: string }> {
+  const staff = await requireStaff();
+  const admin = createAdminClient();
+
+  const { data: order } = await admin
+    .from("orders")
+    .select("id, group_id")
+    .eq("id", orderId)
+    .eq("tenant_id", staff.tenantId)
+    .maybeSingle();
+  if (!order) return { ok: false, error: "Pedido não encontrado." };
+  if (!order.group_id) {
+    const single = await markOrderPaid(orderId);
+    return single.ok ? { ok: true, paid: 1 } : single;
+  }
+
+  const { data: group } = await admin
+    .from("orders")
+    .select("id, status")
+    .eq("group_id", order.group_id)
+    .eq("tenant_id", staff.tenantId)
+    .order("number");
+  const paidIds: string[] = [];
+  for (const o of group ?? []) {
+    if (o.status !== "aguardando_pagamento" && o.status !== "novo") continue;
+    const r = await markOrderPaid(o.id, false);
+    if (r.ok) paidIds.push(o.id);
+  }
+  if (paidIds.length === 0) return { ok: false, error: "Nenhum pedido deste carrinho está aguardando pagamento." };
+  await notifyOrderPaid(staff.tenantId, paidIds);
+  return { ok: true, paid: paidIds.length };
 }
 
 const NON_CANCELABLE = new Set(["entregue", "cancelado", "reembolsado"]);
