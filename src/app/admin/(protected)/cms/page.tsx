@@ -9,6 +9,7 @@ import { SocialLinksForm } from "@/components/admin/social-links-form";
 import { BannersManager } from "@/components/admin/banners-manager";
 import { SiteBrandingForm } from "@/components/admin/site-branding-form";
 import { ContentAnnouncementForm } from "@/components/admin/content-announcement-form";
+import { StorefrontPreview } from "@/components/admin/storefront-preview";
 import { ContentPromoBannersForm } from "@/components/admin/content-promo-banners-form";
 
 export default async function AdminCmsPage() {
@@ -31,6 +32,16 @@ export default async function AdminCmsPage() {
       <p className="mt-1 text-sm text-muted-foreground">
         Conteúdo do site que você pode editar sem mexer em código.
       </p>
+
+      <section className="mt-6 rounded-card border border-border bg-card p-5 xl:p-6">
+        <h2 className="font-display text-lg text-foreground">Prévia da loja</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Veja como a loja aparece no celular e no computador. Mostra a versão publicada.
+        </p>
+        <div className="mt-4">
+          <StorefrontPreview />
+        </div>
+      </section>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-2">
         <div className="space-y-6">
