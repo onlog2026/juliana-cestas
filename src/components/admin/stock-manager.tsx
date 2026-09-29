@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Loader2, Minus, Plus, ScanLine, TriangleAlert } from "lucide-react";
+import { AlertTriangle, Loader2, Minus, Plus, ScanLine, Search, TriangleAlert } from "lucide-react";
 import { formatCents } from "@/lib/money";
 import { registrarMovimento } from "@/modules/inventory/actions";
 import {
@@ -11,7 +11,8 @@ import {
   requerMotivo,
   type StockMovementKind,
 } from "@/modules/inventory/movements";
-import type { LinhaEstoque } from "@/modules/inventory/service";
+import type { LinhaEstoque, MovimentoEstoque } from "@/modules/inventory/service";
+import { normalizeSearch } from "@/modules/catalog/product-order";
 
 /**
  * Ícone vem daqui, do lado do cliente, escolhido por uma STRING. Passar o
@@ -79,7 +80,7 @@ function MovimentoForm({
   }
 
   return (
-    <form onSubmit={enviar} className="mt-3 space-y-3 rounded-[10px] border border-border bg-background p-4">
+    <form onSubmit={enviar} className="mt-3 space-y-3 rounded-[10px] border border-border bg-background p-3">
       <div>
         <p className="text-sm font-medium text-foreground">
           {MOVEMENT_LABELS[kind]} — {produto.name}
@@ -94,7 +95,7 @@ function MovimentoForm({
         </p>
       ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3">
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium text-foreground">
             {kind === "ajuste" ? "Quantidade contada na prateleira" : "Quantidade"}
@@ -163,12 +164,50 @@ function MovimentoForm({
   );
 }
 
-export function StockManager({ produtos }: { produtos: LinhaEstoque[] }) {
+function dataCurta(iso: string): string {
+  const [y, m, d] = iso.slice(0, 10).split("-");
+  return y && m && d ? `${d}/${m}/${y}` : iso;
+}
+
+/**
+ * Estoque em 2 colunas (computador): à esquerda a lista de cestas com busca;
+ * à direita UM só formulário de movimentação, da cesta selecionada, com as
+ * últimas movimentações dela. No celular as colunas empilham (lista, depois o
+ * formulário, e a tela rola até ele ao escolher a cesta).
+ */
+export function StockManager({
+  produtos,
+  movimentos = [],
+}: {
+  produtos: LinhaEstoque[];
+  movimentos?: MovimentoEstoque[];
+}) {
   const router = useRouter();
-  const [aberto, setAberto] = useState<{ produtoId: string; kind: StockMovementKind } | null>(null);
+  const [selecionadoId, setSelecionadoId] = useState<string | null>(null);
+  const [kind, setKind] = useState<StockMovementKind>("entrada");
+  const [versao, setVersao] = useState(0);
+  const [busca, setBusca] = useState("");
+  const painelRef = useRef<HTMLDivElement>(null);
+
+  const filtrados = useMemo(() => {
+    const q = normalizeSearch(busca);
+    return q ? produtos.filter((p) => normalizeSearch(p.name).includes(q)) : produtos;
+  }, [produtos, busca]);
+
+  const selecionado = produtos.find((p) => p.id === selecionadoId) ?? null;
+  const recentes = selecionado ? movimentos.filter((m) => m.productId === selecionado.id).slice(0, 6) : [];
+
+  function escolher(id: string) {
+    setSelecionadoId(id);
+    setVersao((v) => v + 1);
+    // No celular o formulário fica ABAIXO da lista: leva a tela até ele.
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      requestAnimationFrame(() => painelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    }
+  }
 
   function concluir() {
-    setAberto(null);
+    setVersao((v) => v + 1);
     router.refresh();
   }
 
@@ -181,73 +220,142 @@ export function StockManager({ produtos }: { produtos: LinhaEstoque[] }) {
   }
 
   return (
-    <div className="divide-y divide-border rounded-card border border-border bg-card">
-      {produtos.map((produto) => {
-        const abertoAqui = aberto?.produtoId === produto.id;
-        return (
-          <div key={produto.id} className="px-4 py-3.5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-foreground">
-                  {produto.name}
-                  {!produto.active ? (
-                    <span className="ml-2 rounded-full bg-secondary px-2 py-0.5 text-xs font-normal text-muted-foreground">
-                      inativa
-                    </span>
-                  ) : null}
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {produto.stockQuantity === null ? (
-                    <span>Estoque ilimitado (sob encomenda)</span>
-                  ) : (
-                    <span className={produto.abaixoDoMinimo ? "font-medium text-destructive" : undefined}>
-                      {produto.abaixoDoMinimo ? (
-                        <AlertTriangle className="mr-1 inline size-3 align-[-2px]" />
-                      ) : null}
-                      {produto.stockQuantity} em estoque
-                      {produto.lowStockThreshold !== null ? ` · mínimo ${produto.lowStockThreshold}` : ""}
-                    </span>
-                  )}
-                  {" · "}
-                  Custo: {produto.costCents === null ? "—" : formatCents(produto.costCents)}
-                  {" · "}
-                  Parado: {produto.valorParadoCents === null ? "—" : formatCents(produto.valorParadoCents)}
-                </p>
-              </div>
+    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
+      <div>
+        <label className="relative mb-3 block" style={{ maxWidth: 420 }}>
+          <span className="sr-only">Buscar cesta</span>
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar cesta"
+            className="h-11 rounded-full border border-border bg-card pl-10 pr-4 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            style={{ width: "100%" }}
+          />
+        </label>
 
-              <div className="flex flex-wrap gap-1.5">
-                {ORDEM.map((kind) => {
-                  const Icone = ICONES[kind];
-                  const ativo = abertoAqui && aberto?.kind === kind;
-                  return (
-                    <button
-                      key={kind}
-                      type="button"
-                      onClick={() => setAberto(ativo ? null : { produtoId: produto.id, kind })}
-                      className={`inline-flex h-9 items-center gap-1.5 rounded-[10px] border px-3 text-xs font-medium transition-colors ${
-                        ativo
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-card text-foreground hover:bg-accent"
-                      }`}
-                    >
-                      <Icone className="size-3.5" /> {MOVEMENT_LABELS[kind]}
-                    </button>
-                  );
-                })}
-              </div>
+        {filtrados.length === 0 ? (
+          <p className="rounded-card border border-dashed border-border p-5 text-center text-sm text-muted-foreground">
+            Nenhuma cesta encontrada.
+          </p>
+        ) : (
+          <ul className="divide-y divide-border rounded-card border border-border bg-card">
+            {filtrados.map((produto) => {
+              const ativo = produto.id === selecionadoId;
+              return (
+                <li key={produto.id}>
+                  <button
+                    type="button"
+                    onClick={() => escolher(produto.id)}
+                    aria-pressed={ativo}
+                    className={`flex min-h-14 w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors ${
+                      ativo ? "bg-primary/10" : "hover:bg-accent"
+                    }`}
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium text-foreground">
+                        {produto.name}
+                        {!produto.active ? (
+                          <span className="ml-2 rounded-full bg-secondary px-2 py-0.5 text-xs font-normal text-muted-foreground">
+                            inativa
+                          </span>
+                        ) : null}
+                      </span>
+                      <span className="block truncate text-xs text-muted-foreground">
+                        Custo: {produto.costCents === null ? "—" : formatCents(produto.costCents)}
+                        {" · "}
+                        Parado: {produto.valorParadoCents === null ? "—" : formatCents(produto.valorParadoCents)}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-right text-xs">
+                      {produto.stockQuantity === null ? (
+                        <span className="text-muted-foreground">Ilimitado</span>
+                      ) : (
+                        <span
+                          className={
+                            produto.abaixoDoMinimo ? "font-semibold text-destructive" : "font-medium text-foreground"
+                          }
+                        >
+                          {produto.abaixoDoMinimo ? (
+                            <AlertTriangle className="mr-1 inline size-3 align-[-2px]" />
+                          ) : null}
+                          {produto.stockQuantity} un.
+                          {produto.lowStockThreshold !== null ? (
+                            <span className="block font-normal text-muted-foreground">
+                              mín. {produto.lowStockThreshold}
+                            </span>
+                          ) : null}
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+
+      <div ref={painelRef} className="scroll-mt-4 lg:sticky lg:top-4">
+        {selecionado ? (
+          <div className="rounded-card border border-border bg-card p-4">
+            <p className="text-sm font-semibold text-foreground">{selecionado.name}</p>
+            <div className="mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-4 lg:grid-cols-2">
+              {ORDEM.map((k) => {
+                const Icone = ICONES[k];
+                const ativo = kind === k;
+                return (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => {
+                      setKind(k);
+                      setVersao((v) => v + 1);
+                    }}
+                    aria-pressed={ativo}
+                    className={`inline-flex h-11 items-center justify-center gap-1.5 rounded-[10px] border px-3 text-xs font-medium transition-colors ${
+                      ativo
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-card text-foreground hover:bg-accent"
+                    }`}
+                  >
+                    <Icone className="size-3.5" /> {MOVEMENT_LABELS[k]}
+                  </button>
+                );
+              })}
             </div>
 
-            {abertoAqui && aberto ? (
-              <MovimentoForm
-                produto={produto}
-                kind={aberto.kind}
-                onPronto={concluir}
-                onCancelar={() => setAberto(null)}
-              />
+            <MovimentoForm
+              key={`${selecionado.id}-${kind}-${versao}`}
+              produto={selecionado}
+              kind={kind}
+              onPronto={concluir}
+              onCancelar={() => setSelecionadoId(null)}
+            />
+
+            {recentes.length > 0 ? (
+              <div className="mt-4">
+                <p className="text-xs font-semibold text-foreground">Últimas movimentações desta cesta</p>
+                <ul className="mt-2 space-y-1.5">
+                  {recentes.map((m) => (
+                    <li key={m.id} className="flex justify-between gap-2 text-xs text-muted-foreground">
+                      <span>
+                        {dataCurta(m.createdAt)} · {MOVEMENT_LABELS[m.kind]}{" "}
+                        {m.kind === "ajuste" ? `(contou ${m.quantity})` : m.quantity}
+                      </span>
+                      <span className="font-medium text-foreground">saldo {m.balanceAfter}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ) : null}
           </div>
-        );
-      })}
+        ) : (
+          <p className="rounded-card border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground">
+            Escolha uma cesta na lista para lançar entrada, saída, ajuste ou perda.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

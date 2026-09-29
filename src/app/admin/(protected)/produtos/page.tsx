@@ -30,6 +30,7 @@ export default async function AdminProdutosPage() {
     active: product.active,
     imageUrl: product.image_url,
     categoryLabel: categoryLabel(product.category_id),
+    sku: product.sku,
     priceLabel: formatCents(product.price_cents),
     deliveryLabel: product.delivery_fee_cents > 0 ? formatCents(product.delivery_fee_cents) : "grátis",
     stock: product.stock_quantity,
@@ -60,8 +61,8 @@ export default async function AdminProdutosPage() {
       </div>
 
       <p className="mt-4 text-xs text-muted-foreground">
-        Use as setas ↑↓ para ordenar. A ordem aqui é a mesma que aparece na loja
-        (home “Nossas cestas”, categorias e cestas relacionadas).
+        Use as setas ↑↓ ou digite o número da posição para ordenar. A ordem aqui é a
+        mesma que aparece na loja (home “Nossas cestas”, categorias e cestas relacionadas).
       </p>
       <ProductsList products={rows} />
     </div>

@@ -95,7 +95,7 @@ export default async function AdminEstoquePage(props: {
   });
 
   return (
-    <div className="max-w-[1100px]">
+    <div className="max-w-[1400px]">
       <h1 className="font-display text-2xl text-foreground">Estoque</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         O saldo nunca é digitado direto: ele é o resultado dos lançamentos abaixo. Toda entrada, saída, ajuste
@@ -132,7 +132,7 @@ export default async function AdminEstoquePage(props: {
       <div className="mt-6">
         <h2 className="text-sm font-semibold text-foreground">Cestas e lançamentos</h2>
         <div className="mt-3">
-          <StockManager produtos={produtosOrdenados} />
+          <StockManager produtos={produtosOrdenados} movimentos={movimentos} />
         </div>
       </div>
 

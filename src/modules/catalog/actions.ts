@@ -4,6 +4,7 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireStaff } from "@/lib/auth/require-staff";
+import { changedOrders, sameIdSet } from "@/modules/catalog/product-order";
 
 function slugify(raw: string): string {
   return raw
@@ -85,6 +86,44 @@ export async function createProduct(): Promise<
  * na lista; a vitrine inteira (home "Nossas cestas", categorias, "Outras cestas")
  * lê por sort_order asc. Molde igual ao reorderDeliveryZones.
  */
+/**
+ * Salva a ordem manual dos produtos (usada pela lista do painel).
+ *
+ * Diferente de `reorderProducts`: lê a ordem atual, confere que a lista é do
+ * mesmo conjunto de produtos (senão devolve `stale` e a tela recarrega) e
+ * grava SÓ as linhas que mudaram. Revalida a vitrine, mas NÃO o painel de
+ * produtos (a tela já tem o estado certo) nem a loja inteira.
+ */
+export async function saveProductOrder(
+  orderedIds: string[]
+): Promise<{ ok: true; changed: number } | { ok: false; error: string; stale?: boolean }> {
+  const staff = await requireStaff();
+  const admin = createAdminClient();
+
+  const { data, error } = await admin.from("products").select("id, sort_order").eq("tenant_id", staff.tenantId);
+  if (error || !data) return { ok: false, error: "Não foi possível ler a ordem atual." };
+
+  const current = new Map<string, number>(data.map((r) => [r.id as string, Number(r.sort_order)]));
+  if (!sameIdSet(current, orderedIds)) {
+    return { ok: false, stale: true, error: "A lista mudou em outra tela. Recarregando…" };
+  }
+
+  const changes = changedOrders(current, orderedIds);
+  if (changes.length === 0) return { ok: true, changed: 0 };
+
+  const results = await Promise.all(
+    changes.map((c) =>
+      admin.from("products").update({ sort_order: c.sortOrder }).eq("id", c.id).eq("tenant_id", staff.tenantId)
+    )
+  );
+  if (results.some((r) => r.error)) return { ok: false, error: "Não foi possível salvar a nova ordem." };
+
+  revalidatePath("/");
+  revalidatePath("/categoria/[slug]", "page");
+  revalidatePath("/produto/[slug]", "page");
+  return { ok: true, changed: changes.length };
+}
+
 export async function reorderProducts(
   orderedIds: string[]
 ): Promise<{ ok: true } | { ok: false; error: string }> {
