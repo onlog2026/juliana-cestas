@@ -1,6 +1,28 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 
+const SUPABASE = "https://oygizajevizwhiymgsly.supabase.co";
+const GA = "https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com";
+
+// CSP em modo RELATÓRIO: o navegador só avisa no console o que bloquearia,
+// nada quebra. Depois de navegar as telas reais sem alerta, troca-se a chave
+// para "Content-Security-Policy" (enforçar). 'unsafe-inline' porque o Next
+// injeta scripts/estilos inline; nonce fica para uma próxima etapa.
+const CSP = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com`,
+  "style-src 'self' 'unsafe-inline'",
+  `img-src 'self' data: blob: ${SUPABASE} ${GA}`,
+  `media-src 'self' blob: ${SUPABASE}`,
+  `connect-src 'self' ${SUPABASE} ${GA}`,
+  "font-src 'self' data:",
+  "frame-ancestors 'self'",
+  "base-uri 'self'",
+  "form-action 'self' https://wa.me https://api.whatsapp.com",
+  "object-src 'none'",
+  "upgrade-insecure-requests",
+].join("; ");
+
 const nextConfig: NextConfig = {
   // Silencia o aviso do Turbopack: ha um package-lock.json solto em Downloads
   // (pasta pai, com varios projetos) que o Next tenta descartar como workspace root.
@@ -41,6 +63,9 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Content-Security-Policy-Report-Only", value: CSP },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
         ],
       },

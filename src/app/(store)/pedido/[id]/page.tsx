@@ -11,7 +11,7 @@ import { getCardTemplate } from "@/modules/cards/templates";
 import { CardFace } from "@/components/loja/card-face";
 import { formatCents } from "@/lib/money";
 
-export const metadata: Metadata = { title: "Seu pedido" };
+export const metadata: Metadata = { title: "Seu pedido", robots: { index: false, follow: false } };
 
 const weekdayNames = [
   "domingo",

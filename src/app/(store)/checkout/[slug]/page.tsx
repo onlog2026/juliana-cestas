@@ -17,7 +17,7 @@ export async function generateMetadata(
   const tenantId = await getTenantId();
   const found = await getProductForCheckout(tenantId, slug);
   if (!found) return {};
-  return { title: `Comprar ${found.product.name}` };
+  return { title: `Comprar ${found.product.name}`, robots: { index: false, follow: false } };
 }
 
 export default async function CheckoutPage(props: PageProps<"/checkout/[slug]">) {

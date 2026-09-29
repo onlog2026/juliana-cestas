@@ -12,7 +12,7 @@ export default function robots(): MetadataRoute.Robots {
         // PerplexityBot, Google-Extended etc. seguem o mesmo grupo "*").
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin", "/api", "/conta", "/redefinir-senha"],
+        disallow: ["/admin", "/api", "/conta", "/carrinho", "/checkout", "/pedido", "/avaliar", "/redefinir-senha"],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

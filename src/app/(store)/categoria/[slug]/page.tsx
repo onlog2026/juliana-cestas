@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { pickDescription } from "@/modules/seo/meta";
 import Link from "next/link";
+import { BreadcrumbJsonLd, ItemListJsonLd } from "@/components/loja/json-ld";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import {
@@ -25,9 +27,10 @@ export async function generateMetadata(
   if (!category) return {};
   return {
     title: category.name,
-    description:
-      category.description?.trim() ||
-      `${category.name}: cestas de café da manhã e presentes feitos à mão. Escolha a sua e receba com carinho.`,
+    description: pickDescription(
+      category.description,
+      `${category.name}: cestas de café da manhã e presentes feitos à mão em Brasília, com entrega no mesmo dia e cartão personalizado. Escolha a sua.`
+    ),
     alternates: { canonical: `/categoria/${slug}` },
   };
 }
@@ -50,6 +53,16 @@ export default async function CategoriaPage(props: PageProps<"/categoria/[slug]"
 
   return (
     <div className="mx-auto max-w-[1800px] px-4 py-8 sm:px-6 lg:px-8 2xl:px-12">
+      <BreadcrumbJsonLd
+        trail={[
+          { name: "Início", path: "/" },
+          ...(parent ? [{ name: parent.name, path: `/categoria/${parent.slug}` }] : []),
+          { name: category.name, path: `/categoria/${category.slug}` },
+        ]}
+      />
+      {products.length > 0 ? (
+        <ItemListJsonLd items={products.slice(0, 30).map((p) => ({ name: p.name, slug: p.slug }))} />
+      ) : null}
       <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
         <Link href="/" className="transition-colors hover:text-primary">
           Início

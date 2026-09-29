@@ -14,6 +14,7 @@ import { WhatsappCta } from "@/components/loja/whatsapp-cta";
 import { Reveal } from "@/components/loja/reveal";
 import { getTenantId } from "@/lib/tenant/context";
 import { getStoreProfile } from "@/modules/settings/store-profile";
+import { ItemListJsonLd, WebSiteJsonLd } from "@/components/loja/json-ld";
 
 // A home é estática; renova a cada 30 min para as vitrines acompanharem vendas e cliques.
 export const revalidate = 1800;
@@ -34,6 +35,8 @@ export default async function Home() {
       {/* H1 semântico da home. Fica invisível (sr-only) para não competir com
           o banner no visual, mas dá ao Google e a leitores de tela o título
           principal da página -- o analisador acusava "nenhum H1". */}
+      <WebSiteJsonLd name={storeName} />
+      <ItemListJsonLd items={products.slice(0, 12).map((p) => ({ name: p.name, slug: p.slug }))} />
       <h1 className="sr-only">
         {storeName} — cestas de café da manhã, presentes e kits comemorativos feitos à mão
       </h1>

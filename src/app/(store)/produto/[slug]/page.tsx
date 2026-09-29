@@ -8,10 +8,11 @@ import { ProductGallery } from "@/components/loja/product-gallery";
 import { CartaozinhoSection } from "@/components/loja/cartaozinho-section";
 import { AddToCartButton } from "@/components/loja/add-to-cart-button";
 import { Reveal } from "@/components/loja/reveal";
-import { ProductJsonLd } from "@/components/loja/json-ld";
+import { BreadcrumbJsonLd, ProductJsonLd } from "@/components/loja/json-ld";
 import { ItemIcon } from "@/components/loja/item-icon";
 import { TrackViewItem } from "@/components/analytics/track-events";
 import { splitListText } from "@/modules/catalog/list-text";
+import { clampTitle, pickDescription } from "@/modules/seo/meta";
 import { getTenantId } from "@/lib/tenant/context";
 import { getStoreWhatsapp } from "@/modules/settings/store-profile";
 import { LEGACY_TENANT_ID } from "@/lib/tenant/legacy";
@@ -38,11 +39,16 @@ export async function generateMetadata(
   const product = await getProductBySlug(await getTenantId(), slug);
   if (!product) return {};
 
+  const seoTitle = product.seoTitle?.trim();
   return {
-    title: product.seoTitle?.trim() || product.name,
-    description:
-      product.seoDescription?.trim() ||
-      `${product.name} — ${product.serves}, ${currency.format(product.price)}. ${product.packaging}`,
+    // O título escrito pelo dono (ou pela IA) já costuma trazer a marca: `absolute` evita
+    // "… | Juliana Cestas | Juliana Cestas e Frios". Sem título próprio, o nome da cesta
+    // recebe a marca do modelo do site (uma vez só).
+    title: seoTitle ? { absolute: clampTitle(seoTitle) } : clampTitle(product.name),
+    description: pickDescription(
+      product.seoDescription || product.shortDescription,
+      `${product.name}: cesta ${product.serves ? `${product.serves.charAt(0).toLowerCase()}${product.serves.slice(1)}, ` : ""}feita à mão em Brasília, com entrega no mesmo dia e cartão personalizado. ${currency.format(product.price)}.`
+    ),
     alternates: { canonical: `/produto/${slug}` },
   };
 }
@@ -68,10 +74,17 @@ export default async function ProdutoPage(
       <TrackViewItem item={{ id: product.id, name: product.name, price: product.price }} />
       <ProductJsonLd
         name={product.name}
-        description={`${product.serves} — ${product.packaging}`}
+        description={product.shortDescription || product.description || [product.serves, product.packaging].filter(Boolean).join(" — ")}
         priceCents={Math.round(product.price * 100)}
-        imageUrl={product.image}
+        images={product.images}
         slug={product.slug}
+      />
+      <BreadcrumbJsonLd
+        trail={[
+          { name: "Início", path: "/" },
+          { name: "Cestas", path: "/categoria/cafe-da-manha" },
+          { name: product.name, path: `/produto/${product.slug}` },
+        ]}
       />
       <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
         <Link href="/" className="transition-colors hover:text-primary">

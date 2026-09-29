@@ -8,7 +8,7 @@ import { StatusBadge } from "@/components/admin/status-badge";
 import { formatCents } from "@/lib/money";
 import { LogoutButton } from "@/components/conta/logout-button";
 
-export const metadata = { title: "Meus pedidos" };
+export const metadata = { title: "Meus pedidos", robots: { index: false, follow: false } };
 
 export default async function ContaPage() {
   const supabase = await createServerSupabaseClient();

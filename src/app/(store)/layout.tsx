@@ -8,6 +8,7 @@ import { getSiteSettings } from "@/modules/settings/site-settings";
 import { getStoreProfile, getStoreWhatsapp } from "@/modules/settings/store-profile";
 import { getTenantId } from "@/lib/tenant/context";
 import { shortHash } from "@/modules/pwa/version";
+import { pickDescription } from "@/modules/seo/meta";
 import { CartProvider } from "@/modules/cart/cart-context";
 import { ClickTracker } from "@/components/analytics/track-events";
 
@@ -29,11 +30,12 @@ export async function generateMetadata(): Promise<Metadata> {
   // acusar "sem meta description / sem title". Cai num texto real derivado do
   // nome da loja.
   const siteTitle = seo.siteTitle?.trim() || storeName || "Cestas de café da manhã e presentes";
-  const siteDescription =
-    seo.siteDescription?.trim() ||
-    (storeName
-      ? `${storeName} — cestas de café da manhã, presentes e kits comemorativos feitos à mão com carinho.`
-      : "Cestas de café da manhã, presentes e kits comemorativos feitos à mão com carinho.");
+  const siteDescription = pickDescription(
+    seo.siteDescription,
+    storeName
+      ? `${storeName} — cestas de café da manhã, presentes e kits comemorativos feitos à mão com carinho, com entrega em Brasília.`
+      : "Cestas de café da manhã, presentes e kits comemorativos feitos à mão com carinho, com entrega em Brasília."
+  );
   return {
     metadataBase: new URL(SITE_URL),
     title: {

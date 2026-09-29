@@ -5,7 +5,7 @@ import { CartPageClient } from "@/components/loja/cart/cart-page-client";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Carrinho" };
+export const metadata: Metadata = { title: "Carrinho", robots: { index: false, follow: false } };
 
 export default async function CarrinhoPage() {
   const tenantId = await getTenantId();

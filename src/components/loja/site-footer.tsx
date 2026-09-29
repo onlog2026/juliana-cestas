@@ -4,6 +4,8 @@ import { getSocialLinks } from "@/modules/settings/social-links";
 import { getSiteSettings } from "@/modules/settings/site-settings";
 import { getStoreProfile, formatStoreAddress } from "@/modules/settings/store-profile";
 import { SocialIcons } from "@/components/loja/social-icons";
+import { formatCnpj } from "@/modules/seo/schema";
+import { whatsappDigits } from "@/modules/notifications/templates/shell";
 
 const columns = [
   {
@@ -34,6 +36,8 @@ export async function SiteFooter() {
   ]);
   const address = formatStoreAddress(storeProfile);
   const storeName = storeProfile.businessName?.trim() || "";
+  const cnpj = formatCnpj(storeProfile.document);
+  const wa = whatsappDigits(storeProfile.phone);
 
   return (
     // pb-20 no mobile: o BottomNav fixo (h-16 = 64px) cobriria o fim do rodapé;
@@ -43,7 +47,7 @@ export async function SiteFooter() {
         <div>
           {siteSettings.logoFooterUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- pode ser GIF animado
-            <img src={siteSettings.logoFooterUrl} alt="" className="h-14 w-auto object-contain md:h-16" />
+            <img src={siteSettings.logoFooterUrl} alt={storeName ? `Logo ${storeName}` : "Logo da loja"} className="h-14 w-auto object-contain md:h-16" />
           ) : (
             <p className="font-display text-2xl text-primary">{storeName}</p>
           )}
@@ -74,7 +78,7 @@ export async function SiteFooter() {
         ))}
         <div>
           <p className="text-sm font-semibold text-foreground">
-            Endereço e horário
+            Contato e horário
           </p>
           <p className="mt-3 text-sm text-muted-foreground">
             {address ?? (
@@ -94,15 +98,26 @@ export async function SiteFooter() {
           </p>
           {storeProfile.phone || storeProfile.email ? (
             <p className="mt-3 text-sm text-muted-foreground">
-              {storeProfile.phone}
+              {wa ? (
+                <a href={`https://wa.me/${wa}`} className="font-medium text-foreground hover:text-primary">
+                  WhatsApp: {storeProfile.phone}
+                </a>
+              ) : (
+                storeProfile.phone
+              )}
               {storeProfile.phone && storeProfile.email ? <br /> : null}
-              {storeProfile.email}
+              {storeProfile.email ? (
+                <a href={`mailto:${storeProfile.email}`} className="hover:text-primary">
+                  {storeProfile.email}
+                </a>
+              ) : null}
             </p>
           ) : null}
         </div>
       </div>
       <div className="border-t border-border px-4 py-5 text-center text-xs text-muted-foreground sm:px-6 lg:px-8 2xl:px-12">
-        © {new Date().getFullYear()}{storeName ? ` ${storeName}` : ""}. Brasília, DF.
+        © {new Date().getFullYear()}{storeName ? ` ${storeName}` : ""}
+        {cnpj ? ` · CNPJ ${cnpj}` : ""}. Brasília, DF.
       </div>
     </footer>
   );

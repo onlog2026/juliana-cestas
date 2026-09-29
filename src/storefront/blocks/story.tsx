@@ -53,7 +53,7 @@ export function SignatureBlock({ variant, data }: BlockRenderArgs<SignatureProps
             <div className="relative aspect-[4/3] overflow-hidden rounded-card">
               <Image
                 src={data.imageUrl}
-                alt=""
+                alt={data.title || data.storeName}
                 fill
                 sizes="(min-width: 1024px) 42vw, 100vw"
                 className="object-cover"

@@ -11,6 +11,16 @@ import { getContent } from "@/modules/content/service";
 import { getSeoSettings } from "@/modules/seo/service";
 import { getSocialLinks } from "@/modules/settings/social-links";
 import { getStoreProfile, type StoreProfile } from "@/modules/settings/store-profile";
+import { getReviewsSummary } from "@/modules/reviews/service";
+import { getSiteSettings } from "@/modules/settings/site-settings";
+import {
+  breadcrumbSchema,
+  formatCnpj,
+  itemListSchema,
+  productSchema,
+  serializeJsonLd,
+  websiteSchema,
+} from "@/modules/seo/schema";
 
 // TODO F7: a URL pública de cada loja vai vir de `tenant_domains`. Enquanto
 // esse mapa não existe, a única fonte é o env da loja legada.
@@ -33,11 +43,12 @@ function streetFromProfile(profile: StoreProfile): string {
 
 export async function LocalBusinessJsonLd() {
   const tenantId = await getTenantId();
-  const [profile, business, seo, socialLinks] = await Promise.all([
+  const [profile, business, seo, socialLinks, site] = await Promise.all([
     getStoreProfile(tenantId),
     getContent(tenantId, "business"),
     getSeoSettings(tenantId),
     getSocialLinks(tenantId),
+    getSiteSettings(tenantId),
   ]);
   // sameAs liga a entidade às redes sociais -- ajuda o Google (e IAs) a
   // confirmar "é essa loja". Só entram os links realmente preenchidos.
@@ -69,6 +80,12 @@ export async function LocalBusinessJsonLd() {
     name,
     description,
     url: SITE_URL,
+    "@id": `${SITE_URL}/#loja`,
+    logo: site.logoHeaderUrl || undefined,
+    image: site.logoHeaderUrl || undefined,
+    email: clean(profile.email) || undefined,
+    // CNPJ só se o documento tem 14 dígitos (CPF nunca é publicado).
+    taxID: formatCnpj(profile.document) ?? undefined,
     telephone: telephone || undefined,
     priceRange: priceRange || undefined,
     address,
@@ -87,27 +104,45 @@ export async function LocalBusinessJsonLd() {
     sameAs: sameAs.length > 0 ? sameAs : undefined,
   };
 
+  return <JsonLd data={data} />;
+}
+
+/** Um bloco JSON-LD já limpo (sem campos vazios) e seguro contra `</script>` no texto. */
+export function JsonLd({ data }: { data: unknown }) {
   return (
     <script
       type="application/ld+json"
       // eslint-disable-next-line react/no-danger
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(data) }}
     />
   );
+}
+
+export function BreadcrumbJsonLd({ trail }: { trail: Array<{ name: string; path: string }> }) {
+  return <JsonLd data={breadcrumbSchema(SITE_URL, trail)} />;
+}
+
+export function WebSiteJsonLd({ name }: { name: string }) {
+  return <JsonLd data={websiteSchema({ siteUrl: SITE_URL, name })} />;
+}
+
+export function ItemListJsonLd({ items }: { items: Array<{ name: string; slug: string }> }) {
+  return <JsonLd data={itemListSchema(SITE_URL, items)} />;
 }
 
 export async function ProductJsonLd({
   name,
   description,
   priceCents,
-  imageUrl,
+  images,
   slug,
   brandName,
 }: {
   name: string;
-  description: string;
+  description?: string | null;
   priceCents: number;
-  imageUrl: string | null;
+  /** Fotos da cesta (capa primeiro). Endereço do Storage vai como está. */
+  images: string[];
   slug: string;
   /**
    * Nome da marca (a loja). Se quem chama já tem o nome em mãos, passa aqui e
@@ -116,30 +151,25 @@ export async function ProductJsonLd({
    */
   brandName?: string;
 }) {
-  const resolvedBrand = clean(brandName) || (await resolveStoreName(await getTenantId()));
-
-  const data = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name,
-    description,
-    image: imageUrl ? `${SITE_URL}${imageUrl}` : undefined,
-    url: `${SITE_URL}/produto/${slug}`,
-    brand: resolvedBrand ? { "@type": "Brand", name: resolvedBrand } : undefined,
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "BRL",
-      price: (priceCents / 100).toFixed(2),
-      availability: "https://schema.org/InStock",
-      url: `${SITE_URL}/produto/${slug}`,
-    },
-  };
+  const tenantId = await getTenantId();
+  const [resolvedBrand, rating] = await Promise.all([
+    Promise.resolve(clean(brandName)).then((b) => b || resolveStoreName(tenantId)),
+    // Nota média da LOJA (avaliações aprovadas de verdade); sem nenhuma, o campo nem entra.
+    getReviewsSummary(tenantId).catch(() => ({ average: 0, total: 0 })),
+  ]);
 
   return (
-    <script
-      type="application/ld+json"
-      // eslint-disable-next-line react/no-danger
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    <JsonLd
+      data={productSchema({
+        siteUrl: SITE_URL,
+        slug,
+        name,
+        description,
+        images,
+        priceCents,
+        brandName: resolvedBrand,
+        rating,
+      })}
     />
   );
 }

@@ -28,7 +28,7 @@ export async function CategoryShortcuts() {
                 {category.imageUrl ? (
                   <Image
                     src={category.imageUrl}
-                    alt=""
+                    alt={category.name}
                     fill
                     sizes="(min-width: 640px) 80px, 64px"
                     className="object-cover"
