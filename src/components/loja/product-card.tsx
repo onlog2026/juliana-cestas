@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { TrackedProductLink } from "./tracked-product-link";
+import { ProductRibbon } from "./product-ribbon";
 import type { Product } from "@/modules/catalog/product";
 
 const currency = new Intl.NumberFormat("pt-BR", {
@@ -28,8 +29,9 @@ export function ProductCard({ product, sizes }: { product: Product; sizes?: stri
           sizes={sizes ?? DEFAULT_SIZES}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
+        {product.ribbon ? <ProductRibbon {...product.ribbon} size={88} /> : null}
         {product.badge ? (
-          <span className="absolute left-3 top-3 rounded-full bg-[var(--jc-gold)] px-2.5 py-1 text-xs font-semibold text-[#1f2a24]">
+          <span className={`absolute top-3 rounded-full ${product.ribbon ? "right-3" : "left-3"} bg-[var(--jc-gold)] px-2.5 py-1 text-xs font-semibold text-[#1f2a24]`}>
             {product.badge}
           </span>
         ) : null}
@@ -43,8 +45,13 @@ export function ProductCard({ product, sizes }: { product: Product; sizes?: stri
           {product.name}
         </p>
         <p className="min-h-4 text-xs text-muted-foreground">{product.serves}</p>
-        <p className="mt-auto pt-0.5 text-lg font-bold tabular-nums text-foreground">
-          {currency.format(product.price)}
+        <p className="mt-auto flex flex-wrap items-baseline gap-x-2 pt-0.5 text-lg font-bold tabular-nums text-foreground">
+          {product.compareAtPrice ? (
+            <s className="text-sm font-normal text-muted-foreground" aria-label={`de ${currency.format(product.compareAtPrice)}`}>
+              {currency.format(product.compareAtPrice)}
+            </s>
+          ) : null}
+          <span>{currency.format(product.price)}</span>
         </p>
       </div>
     </TrackedProductLink>

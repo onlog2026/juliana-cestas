@@ -81,7 +81,7 @@ export default async function ProdutoPage(
       </nav>
 
       <div className="mt-6 grid gap-10 md:grid-cols-2 md:gap-12">
-        <ProductGallery images={product.images} videoUrl={product.videoUrl} name={product.name} badge={product.badge} imageAlt={product.imageAlt} />
+        <ProductGallery images={product.images} videoUrl={product.videoUrl} name={product.name} badge={product.badge} imageAlt={product.imageAlt} ribbon={product.ribbon} />
 
         <div className="jc-pop" style={{ animationDelay: "0.1s" }}>
           <h1 className="font-display text-3xl text-foreground md:text-4xl">
@@ -90,8 +90,21 @@ export default async function ProdutoPage(
           <p className="mt-1.5 text-sm text-muted-foreground">
             {product.serves} · Tamanho {product.size}
           </p>
-          <p className="mt-4 text-3xl font-bold tabular-nums text-foreground">
-            {currency.format(product.price)}
+          <p className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-3xl font-bold tabular-nums text-foreground">
+            {product.compareAtPrice ? (
+              <s className="text-lg font-normal text-muted-foreground" aria-label={`de ${currency.format(product.compareAtPrice)}`}>
+                {currency.format(product.compareAtPrice)}
+              </s>
+            ) : null}
+            <span>{currency.format(product.price)}</span>
+            {product.discountPct ? (
+              <span
+                className="rounded-full px-2.5 py-1 text-sm font-bold"
+                style={{ background: product.ribbon?.bg ?? "#b3261e", color: product.ribbon?.text ?? "#ffffff" }}
+              >
+                -{product.discountPct}%
+              </span>
+            ) : null}
           </p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

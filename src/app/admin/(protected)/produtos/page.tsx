@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FolderTree } from "lucide-react";
+import { FolderTree, Tag } from "lucide-react";
 import { getAllProductsAdmin } from "@/modules/catalog/service";
 import { getAllCategoriesAdmin } from "@/modules/catalog/categories";
 import { requireStaff } from "@/lib/auth/require-staff";
@@ -55,6 +55,12 @@ export default async function AdminProdutosPage() {
             className="flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground hover:bg-accent"
           >
             <FolderTree className="size-4" /> Categorias
+          </Link>
+          <Link
+            href="/admin/produtos/flags"
+            className="flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground hover:bg-accent"
+          >
+            <Tag className="size-4" /> Flags e tarjas
           </Link>
           <NewProductButton />
         </div>

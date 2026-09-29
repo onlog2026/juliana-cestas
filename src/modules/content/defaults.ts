@@ -1,4 +1,5 @@
 import type { StoreContent } from "@/modules/content/types";
+import { DEFAULT_FLAGS } from "@/modules/flags/logic";
 
 /**
  * Conteúdo padrão de uma loja NOVA -- neutro de propósito, sem marca, cidade
@@ -83,4 +84,6 @@ export const STORE_DEFAULTS: StoreContent = {
     wide: { imageUrl: "", href: "", alt: "" },
     narrow: { imageUrl: "", href: "", alt: "" },
   },
+  // Modelos prontos de flags (o dono muda nomes e cores em Produtos > Flags e tarjas).
+  flags: DEFAULT_FLAGS,
 };

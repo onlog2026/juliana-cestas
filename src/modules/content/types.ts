@@ -150,6 +150,34 @@ export const promoBannersSchema = z.object({
   fill: promoSlotSchema.optional(),
 });
 
+const hexColor = z
+  .string()
+  .trim()
+  .regex(/^#[0-9a-fA-F]{6}$/, "Use uma cor no formato #rrggbb.");
+
+/**
+ * Flags e tarjas de promoção (Promoção, Black Friday, Dia das Mães...). Cada
+ * produto escolhe UMA flag (coluna `products.flag_id`); a flag automática de
+ * desconto ("-14%") vale para todo produto com preço "de/por".
+ */
+export const flagSchema = z.object({
+  id: z
+    .string()
+    .trim()
+    .min(1)
+    .max(40)
+    .regex(/^[a-z0-9-]+$/),
+  label: z.string().trim().min(1).max(24),
+  bg: hexColor,
+  text: hexColor,
+  enabled: z.boolean(),
+});
+
+export const flagsSchema = z.object({
+  items: z.array(flagSchema).max(20),
+  discount: z.object({ enabled: z.boolean(), bg: hexColor, text: hexColor }),
+});
+
 /** Toda seção conhecida da vitrine, com seu formato. */
 export const STORE_SECTIONS = {
   benefits: benefitsSchema,
@@ -163,6 +191,7 @@ export const STORE_SECTIONS = {
   returns: richPageSchema,
   announcement: announcementSchema,
   promo_banners: promoBannersSchema,
+  flags: flagsSchema,
 } as const;
 
 export type StoreSection = keyof typeof STORE_SECTIONS;

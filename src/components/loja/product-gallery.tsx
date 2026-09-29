@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
+import { ProductRibbon } from "@/components/loja/product-ribbon";
 
 type Media = { type: "image"; url: string } | { type: "video"; url: string };
 
@@ -15,6 +16,7 @@ export function ProductGallery({
   name,
   badge,
   imageAlt,
+  ribbon,
 }: {
   images: string[];
   videoUrl?: string;
@@ -22,6 +24,8 @@ export function ProductGallery({
   badge?: string;
   /** Texto alternativo escrito pela lojista (ou pela IA). Vazio = usa o nome. */
   imageAlt?: string;
+  /** Tarja de promoção no canto da foto (flag ou desconto automático). */
+  ribbon?: { label: string; bg: string; text: string };
 }) {
   const media: Media[] = [
     ...images.map((url): Media => ({ type: "image", url })),
@@ -65,8 +69,9 @@ export function ProductGallery({
           <Image src={current.url} alt={imageAlt || name} fill priority sizes="(min-width: 768px) 45vw, 100vw" className="object-cover" />
         ) : null}
 
+        {ribbon ? <ProductRibbon {...ribbon} size={120} /> : null}
         {badge ? (
-          <span className="absolute left-4 top-4 rounded-full bg-[var(--jc-gold)] px-3 py-1 text-xs font-semibold text-[#1f2a24]">
+          <span className={`absolute top-4 rounded-full bg-[var(--jc-gold)] px-3 py-1 text-xs font-semibold text-[#1f2a24] ${ribbon ? "right-4" : "left-4"}`}>
             {badge}
           </span>
         ) : null}

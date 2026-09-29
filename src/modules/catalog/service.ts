@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Product } from "@/modules/catalog/product";
+import { attachPromos } from "@/modules/flags/promos";
 
 export type DbProduct = {
   id: string;
@@ -134,7 +135,7 @@ async function fetchAllProducts(tenantId: string): Promise<Product[]> {
     .order("sort_order", { ascending: true });
 
   if (error || !data) return [];
-  return data.map(mapPublicProduct);
+  return attachPromos(tenantId, data.map(mapPublicProduct));
 }
 
 /** Produtos ativos de UMA categoria — usado pela página /categoria/[slug]. */
@@ -163,7 +164,7 @@ export async function getProductsByCategoryIds(
     .order("sort_order", { ascending: true });
 
   if (error || !data) return [];
-  return data.map(mapPublicProduct);
+  return attachPromos(tenantId, data.map(mapPublicProduct));
 }
 
 export async function getProductBySlug(tenantId: string, slug: string): Promise<Product | null> {

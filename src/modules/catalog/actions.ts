@@ -124,6 +124,57 @@ export async function saveProductOrder(
   return { ok: true, changed: changes.length };
 }
 
+/**
+ * Promoção do produto: preço "de" (o "por" é o preço atual) e a flag escolhida.
+ * O preço cobrado no checkout continua sendo `price_cents` -- o "de" é só
+ * exibição (riscado na vitrine, com % de desconto automático).
+ */
+export async function updateProductPromo(input: {
+  productId: string;
+  compareAtPriceCents: number | null;
+  flagId: string | null;
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  const staff = await requireStaff();
+  const admin = createAdminClient();
+
+  const { data: product } = await admin
+    .from("products")
+    .select("id, slug, price_cents")
+    .eq("id", input.productId)
+    .eq("tenant_id", staff.tenantId)
+    .maybeSingle();
+  if (!product) return { ok: false, error: "Cesta não encontrada." };
+
+  const compare = input.compareAtPriceCents;
+  if (compare !== null) {
+    if (!Number.isInteger(compare) || compare <= 0) return { ok: false, error: "Preço \"de\" inválido." };
+    if (compare <= product.price_cents) {
+      return { ok: false, error: "O preço \"de\" precisa ser MAIOR que o preço atual da cesta." };
+    }
+  }
+  const flagId = input.flagId && /^[a-z0-9-]{1,40}$/.test(input.flagId) ? input.flagId : null;
+
+  const { error } = await admin
+    .from("products")
+    .update({ compare_at_price_cents: compare, flag_id: flagId })
+    .eq("id", input.productId)
+    .eq("tenant_id", staff.tenantId);
+  if (error) {
+    // 42703 = coluna inexistente: a migração 0051 ainda não foi rodada no banco.
+    if (error.code === "42703") {
+      return { ok: false, error: "Falta rodar o SQL 0051 no Supabase para guardar promoções. Me avise que eu te passo." };
+    }
+    console.error("[catalog] falha ao salvar a promoção:", error);
+    return { ok: false, error: "Não foi possível salvar a promoção." };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/categoria/[slug]", "page");
+  revalidatePath(`/produto/${product.slug}`);
+  revalidatePath(`/admin/produtos/${product.id}`);
+  return { ok: true };
+}
+
 export async function reorderProducts(
   orderedIds: string[]
 ): Promise<{ ok: true } | { ok: false; error: string }> {

@@ -29,4 +29,9 @@ export type Product = {
   imageAlt?: string;
   /** Quando o produto foi cadastrado (ISO). Usado na ordenação "Mais novos". */
   createdAt?: string;
+  /** Preço "de" (só existe quando é maior que o atual) e o % de desconto correspondente. */
+  compareAtPrice?: number;
+  discountPct?: number;
+  /** Tarja de promoção já resolvida (flag escolhida ou desconto automático). */
+  ribbon?: { label: string; bg: string; text: string };
 };
