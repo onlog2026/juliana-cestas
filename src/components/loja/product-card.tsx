@@ -18,7 +18,7 @@ export function ProductCard({ product, sizes }: { product: Product; sizes?: stri
     <TrackedProductLink
       href={`/produto/${product.slug}`}
       productId={product.id}
-      className="group block w-full text-left"
+      className="group flex h-full w-full flex-col text-left"
     >
       <div className="jc-glow-card relative aspect-[4/5] overflow-hidden rounded-card bg-secondary">
         <Image
@@ -35,12 +35,15 @@ export function ProductCard({ product, sizes }: { product: Product; sizes?: stri
         ) : null}
       </div>
 
-      <div className="mt-3 space-y-1">
-        <p className="text-[15px] font-semibold text-foreground">
+      {/* Nome em no máximo 2 linhas e a linha de "serve" sempre reservada: o preço
+          fica SEMPRE no fundo do cartão (mt-auto), na mesma altura em todos os
+          cartões da linha, mesmo com nomes de tamanhos diferentes. */}
+      <div className="mt-3 flex flex-1 flex-col gap-1">
+        <p className="line-clamp-2 min-h-[2.75rem] text-[15px] font-semibold leading-snug text-foreground">
           {product.name}
         </p>
-        <p className="text-xs text-muted-foreground">{product.serves}</p>
-        <p className="pt-0.5 text-lg font-bold tabular-nums text-foreground">
+        <p className="min-h-4 text-xs text-muted-foreground">{product.serves}</p>
+        <p className="mt-auto pt-0.5 text-lg font-bold tabular-nums text-foreground">
           {currency.format(product.price)}
         </p>
       </div>

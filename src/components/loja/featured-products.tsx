@@ -3,7 +3,7 @@ import { getAllProducts } from "@/modules/catalog/service";
 import { getSoldUnits } from "@/modules/catalog/showcases";
 import { getContent } from "@/modules/content/service";
 import { ProductCard } from "./product-card";
-import { PromoBanners } from "./promo-banners";
+import { PromoBanners, PromoFill } from "./promo-banners";
 import { SortableProductGrid, type GridEntry } from "./sortable-product-grid";
 
 // Grade de 2 colunas (celular) / 3 (tablet) / 5 (computador): o cartão ocupa
@@ -42,12 +42,13 @@ export async function FeaturedProducts() {
     promoContent.enabled && Boolean(promoContent.wide.imageUrl || promoContent.narrow.imageUrl);
 
   return (
-    <section id="nossas-cestas" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <section id="nossas-cestas" className="mx-auto scroll-mt-32 max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <span id="mais-pedidas" aria-hidden="true" />
       <SortableProductGrid
         title="Nossas cestas"
         entries={entries}
         promo={hasPromo ? <PromoBanners promo={promoContent} /> : undefined}
+        fill={promoContent.enabled && promoContent.fill?.imageUrl ? <PromoFill promo={promoContent} /> : undefined}
       />
     </section>
   );

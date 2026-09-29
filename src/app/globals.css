@@ -331,3 +331,10 @@
     animation: none;
   }
 }
+
+/* Rolagem suave para âncoras (ex.: rodapé do celular -> grade de cestas), exceto para quem pediu menos movimento. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

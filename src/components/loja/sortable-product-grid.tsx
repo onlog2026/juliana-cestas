@@ -11,6 +11,11 @@ import {
   type SortableMeta,
 } from "@/modules/catalog/sort-products";
 
+/** Quantas colunas (de 5) ficam vazias na última linha do computador. */
+export function fillColumns(count: number, columns = 5): number {
+  return count <= 0 ? 0 : (columns - (count % columns)) % columns;
+}
+
 export type GridEntry = SortableMeta & {
   id: string;
   /** O cartão já renderizado NO SERVIDOR (ProductCard continua server component). */
@@ -35,12 +40,15 @@ export function SortableProductGrid({
   title,
   entries,
   promo,
+  fill,
   maxVisible = 30,
 }: {
   title: string;
   entries: GridEntry[];
   /** Banners promocionais (já renderizados no servidor); ausente = sem banners. */
   promo?: ReactNode;
+  /** Banner do espaço vazio da última linha (só computador); ausente = sem banner. */
+  fill?: ReactNode;
   maxVisible?: number;
 }) {
   const [sort, setSort] = useState<SortKey>("destaques");
@@ -96,7 +104,28 @@ export function SortableProductGrid({
         );
       }
     }
-    if (i < visible.length) cells.push(<div key={visible[i].id}>{visible[i].node}</div>);
+    if (i < visible.length) cells.push(
+        <div key={visible[i].id} className="flex flex-col">
+          {visible[i].node}
+        </div>
+      );
+  }
+
+  // Sobra na última linha do computador (5 colunas): o banner ocupa as colunas
+  // vazias. Linha fechada (resto 0) = nada a preencher. A largura vai em `style`
+  // porque o Tailwind não gera classe `col-span-N` montada em tempo de execução.
+  const gapColumns = fillColumns(visible.length);
+  if (fill && gapColumns > 0) {
+    cells.push(
+      <div
+        key="fill"
+        className="hidden lg:block"
+        style={{ gridColumn: `span ${gapColumns} / span ${gapColumns}` }}
+        data-fill-slot={gapColumns}
+      >
+        {fill}
+      </div>
+    );
   }
 
   return (

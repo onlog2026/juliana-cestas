@@ -78,10 +78,29 @@ function SlotFields({
  * home (depois da 3ª linha): um largo e um estreito. Só imagens enviadas pelo
  * painel são aceitas (o servidor recusa outros endereços).
  */
-export function ContentPromoBannersForm({ value }: { value: StoreContent["promo_banners"] }) {
+/**
+ * Tamanho recomendado do banner que preenche a última linha da grade do
+ * computador (5 colunas, ~230 px cada, vão de 16 px, cartão ~390 px de altura).
+ */
+export function fillRecommendation(productCount: number): { columns: number; size: string } | null {
+  const columns = productCount <= 0 ? 0 : (5 - (productCount % 5)) % 5;
+  if (columns === 0) return null;
+  const width = columns * 230 + (columns - 1) * 16;
+  return { columns, size: `${width}×390` };
+}
+
+export function ContentPromoBannersForm({
+  value,
+  productCount = 0,
+}: {
+  value: StoreContent["promo_banners"];
+  productCount?: number;
+}) {
   const [enabled, setEnabled] = useState(value.enabled);
   const [wide, setWide] = useState<Slot>(value.wide);
   const [narrow, setNarrow] = useState<Slot>(value.narrow);
+  const [fill, setFill] = useState<Slot>(value.fill ?? { imageUrl: "", href: "", alt: "" });
+  const fillInfo = fillRecommendation(productCount);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -90,7 +109,7 @@ export function ContentPromoBannersForm({ value }: { value: StoreContent["promo_
     e.preventDefault();
     setError(null);
     setSaved(false);
-    if (enabled && !wide.imageUrl && !narrow.imageUrl) {
+    if (enabled && !wide.imageUrl && !narrow.imageUrl && !fill.imageUrl) {
       setError("Envie pelo menos uma imagem (ou desligue os banners).");
       return;
     }
@@ -99,6 +118,7 @@ export function ContentPromoBannersForm({ value }: { value: StoreContent["promo_
         enabled,
         wide: slotPayload(wide),
         narrow: slotPayload(narrow),
+        ...(fill.imageUrl ? { fill: slotPayload(fill) } : {}),
       });
       if (!result.ok) setError(result.error);
       else setSaved(true);
@@ -158,6 +178,20 @@ export function ContentPromoBannersForm({ value }: { value: StoreContent["promo_
         slot={narrow}
         onChange={(s) => {
           setNarrow(s);
+          setSaved(false);
+        }}
+      />
+
+      <SlotFields
+        title="Banner do espaço vazio (só no computador)"
+        hint={
+          fillInfo
+            ? `Com ${productCount} cestas, sobram ${fillInfo.columns} coluna(s) na última linha da grade. Tamanho recomendado: ${fillInfo.size} px. No celular e no tablet ele não aparece.`
+            : "A última linha da grade está completa hoje, então não há espaço vazio. Se você cadastrar ou desativar cestas e sobrar espaço, o banner entra sozinho."
+        }
+        slot={fill}
+        onChange={(s) => {
+          setFill(s);
           setSaved(false);
         }}
       />

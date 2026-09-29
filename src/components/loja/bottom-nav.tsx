@@ -3,7 +3,8 @@ import { Home, ShoppingBasket, User, MessageCircle } from "lucide-react";
 
 const items = [
   { href: "/", label: "Início", icon: Home },
-  { href: "/categoria/cafe-da-manha", label: "Cestas", icon: ShoppingBasket },
+  // "Cestas" leva à grade com TODAS as cestas da home (não a uma categoria só).
+  { href: "/#nossas-cestas", label: "Cestas", icon: ShoppingBasket },
   { href: "/conta", label: "Minha conta", icon: User },
 ];
 

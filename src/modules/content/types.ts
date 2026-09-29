@@ -142,6 +142,12 @@ export const promoBannersSchema = z.object({
   enabled: z.boolean(),
   wide: promoSlotSchema,
   narrow: promoSlotSchema,
+  /**
+   * Banner (só no computador) que ocupa o espaço vazio ao lado da ÚLTIMA linha
+   * da grade, quando o nº de produtos não fecha a linha de 5. Opcional: o que
+   * já está salvo no banco não tem este campo.
+   */
+  fill: promoSlotSchema.optional(),
 });
 
 /** Toda seção conhecida da vitrine, com seu formato. */

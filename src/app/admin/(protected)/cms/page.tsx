@@ -4,6 +4,7 @@ import { requireStaffWithModule } from "@/lib/auth/require-module";
 import { getSocialLinks } from "@/modules/settings/social-links";
 import { getAllBannersAdmin } from "@/modules/banners/service";
 import { getSiteSettings } from "@/modules/settings/site-settings";
+import { getAllProducts } from "@/modules/catalog/service";
 import { getContentForAdmin } from "@/modules/content/service";
 import { SocialLinksForm } from "@/components/admin/social-links-form";
 import { BannersManager } from "@/components/admin/banners-manager";
@@ -18,12 +19,13 @@ export default async function AdminCmsPage() {
   // módulo "cms" no plano é levado para a página de oferta.
   // (Esta tela edita banners, categorias e a marca do site.)
   const staff = await requireStaffWithModule("cms");
-  const [links, banners, siteSettings, announcement, promoBanners] = await Promise.all([
+  const [links, banners, siteSettings, announcement, promoBanners, products] = await Promise.all([
     getSocialLinks(staff.tenantId),
     getAllBannersAdmin(staff.tenantId),
     getSiteSettings(staff.tenantId),
     getContentForAdmin(staff.tenantId, "announcement"),
     getContentForAdmin(staff.tenantId, "promo_banners"),
+    getAllProducts(staff.tenantId),
   ]);
 
   return (
@@ -62,7 +64,7 @@ export default async function AdminCmsPage() {
               estreito.
             </p>
             <div className="mt-4">
-              <ContentPromoBannersForm value={promoBanners.value} />
+              <ContentPromoBannersForm value={promoBanners.value} productCount={products.length} />
             </div>
           </section>
         </div>

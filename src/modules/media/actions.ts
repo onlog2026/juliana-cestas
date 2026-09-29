@@ -10,6 +10,13 @@ import { getTenantId } from "@/lib/tenant/context";
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 20 * 1024 * 1024;
 
+/**
+ * Largura máxima das fotos guardadas. As imagens são servidas direto do arquivo
+ * (o otimizador da Vercel está desligado), então o que fica no Storage é o que o
+ * visitante baixa: 1600 px cobre banner de tela cheia; nada aqui precisa mais.
+ */
+const MAX_IMAGE_WIDTH = 1600;
+
 type MediaKind = "photo" | "logo" | "favicon" | "video";
 type UploadResult = { ok: true; url: string } | { ok: false; error: string };
 
@@ -50,11 +57,25 @@ async function processUpload(tenantId: string, file: File, kind: MediaKind): Pro
 
   const original = Buffer.from(await file.arrayBuffer());
 
-  // Logo: mantém o arquivo original -- precisa preservar transparência e
-  // animação (PNG/GIF), coisa que converter arriscaria.
+  // Logo: vira WebP MANTENDO a transparência (e a animação, se houver), com
+  // qualidade alta -- é o que aparece em todo cabeçalho. SVG não passa por aqui
+  // (não é image/* raster tratável pelo sharp): sobe como está. Se a conversão
+  // falhar, sobe o original.
   if (kind === "logo") {
-    const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
-    return uploadBuffer(tenantId, original, file.type, ext);
+    if (file.type === "image/svg+xml") {
+      return uploadBuffer(tenantId, original, file.type, "svg");
+    }
+    try {
+      const webp = await sharp(original, { animated: true })
+        .rotate()
+        .resize({ width: MAX_IMAGE_WIDTH, withoutEnlargement: true })
+        .webp({ quality: 92, alphaQuality: 100 })
+        .toBuffer();
+      return uploadBuffer(tenantId, webp, "image/webp", "webp");
+    } catch {
+      const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
+      return uploadBuffer(tenantId, original, file.type, ext);
+    }
   }
 
   // Favicon PRECISA ser quadrado -- ícone da aba do navegador. Se a pessoa
@@ -79,7 +100,11 @@ async function processUpload(tenantId: string, file: File, kind: MediaKind): Pro
   // WebP sempre que der. Se a conversão falhar por qualquer motivo, sobe o
   // arquivo original em vez de derrubar o upload inteiro.
   try {
-    const webp = await sharp(original, { animated: true }).webp({ quality: 82 }).toBuffer();
+    const webp = await sharp(original, { animated: true })
+      .rotate()
+      .resize({ width: MAX_IMAGE_WIDTH, withoutEnlargement: true })
+      .webp({ quality: 80 })
+      .toBuffer();
     return uploadBuffer(tenantId, webp, "image/webp", "webp");
   } catch {
     const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";

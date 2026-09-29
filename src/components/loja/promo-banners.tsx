@@ -79,3 +79,13 @@ export function PromoBanners({ promo }: { promo: StoreContent["promo_banners"] }
     </div>
   );
 }
+
+/**
+ * Banner que preenche o espaço vazio da última linha da grade (computador).
+ * A altura acompanha a dos cartões vizinhos (o item da grade estica); o
+ * `min-h` evita um banner achatado se a última linha tiver poucos itens.
+ */
+export function PromoFill({ promo }: { promo: StoreContent["promo_banners"] }) {
+  if (!promo.enabled || !promo.fill?.imageUrl) return null;
+  return <PromoSlot slot={promo.fill} className="h-full min-h-[240px]" sizes="(min-width: 1024px) 40vw, 0px" />;
+}
