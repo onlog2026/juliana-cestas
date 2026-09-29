@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Figtree, Young_Serif, Playfair_Display, Poppins } from "next/font/google";
 import "./globals.css";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { GoogleTagManager, GoogleTagManagerNoScript } from "@/components/analytics/google-tag-manager";
 
 /**
  * Layout RAIZ -- só o que vale para o site inteiro: fontes, estilos e
@@ -73,10 +74,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           o `position: sticky` do cabeçalho da loja; `clip` corta sem isso, e
           com o eixo Y visível a rolagem vertical/sticky da viewport continua. */}
       <body className="flex min-h-full flex-col overflow-x-clip bg-background text-foreground">
+        <GoogleTagManagerNoScript />
         <noscript>
           <style>{`.jc-reveal{opacity:1!important;transform:none!important}`}</style>
         </noscript>
         <GoogleAnalytics />
+        <GoogleTagManager />
         {children}
       </body>
     </html>

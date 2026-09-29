@@ -14,6 +14,8 @@ const CSP = [
   `media-src 'self' blob: ${SUPABASE}`,
   `connect-src 'self' ${SUPABASE} ${GA}`,
   "font-src 'self' data:",
+  // Tag Manager (versão sem JavaScript) usa um iframe do próprio Google.
+  "frame-src https://www.googletagmanager.com",
   "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self' https://wa.me https://api.whatsapp.com",
