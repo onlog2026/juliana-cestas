@@ -8,12 +8,15 @@ import { CancelOrderButton } from "@/components/admin/cancel-order-button";
 import { DeleteOrderButton } from "@/components/admin/delete-order-button";
 import { MarkPaidButton } from "@/components/admin/mark-paid-button";
 import { OrderDetailEditable } from "@/components/admin/order-detail-editable";
+import { OrderEmailsPanel } from "@/components/admin/order-emails-panel";
+import { getOrderEmails } from "@/modules/orders/email-actions";
 import { formatCents } from "@/lib/money";
 
 export default async function AdminPedidoDetailPage(props: PageProps<"/admin/pedidos/[id]">) {
   const { id } = await props.params;
   const order = await getOrderDetail(id);
   if (!order) notFound();
+  const emails = await getOrderEmails(order.id);
 
   return (
     <div className="max-w-3xl">
@@ -95,6 +98,8 @@ export default async function AdminPedidoDetailPage(props: PageProps<"/admin/ped
           <span>{formatCents(order.total_cents)}</span>
         </div>
       </div>
+
+      <OrderEmailsPanel orderId={order.id} emails={emails} buyerEmail={order.buyer_email} />
 
       <div className="mt-4 rounded-card border border-border bg-card p-5">
         <h2 className="text-sm font-semibold text-foreground">Histórico</h2>
