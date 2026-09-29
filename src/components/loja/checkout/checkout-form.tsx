@@ -416,7 +416,7 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
       });
       setValue("couponCode", data.couponCode);
     } catch {
-      setCouponError("Falha de conexão. Tenta de novo.");
+      setCouponError("Sem conexão com a internet. Confira o sinal e tente de novo.");
     } finally {
       setCouponApplying(false);
     }
@@ -470,7 +470,7 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
       });
       const data = await res.json();
       if (!res.ok) {
-        setSubmitError(data.error || "Não foi possível concluir o pedido.");
+        setSubmitError(data.error || "Não foi possível concluir o pedido. Tente de novo.");
         setSubmitting(false);
         return;
       }
@@ -485,7 +485,7 @@ export function CheckoutForm({ product, addons, upsells, cardMaxWords, storeName
       ]);
       router.push(`/pedido/${data.orderId}?t=${data.token}`);
     } catch {
-      setSubmitError("Falha de conexão. Tenta de novo.");
+      setSubmitError("Sem conexão com a internet. Confira o sinal e tente de novo.");
       setSubmitting(false);
     }
   }

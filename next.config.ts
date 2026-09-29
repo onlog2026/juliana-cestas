@@ -4,9 +4,7 @@ import path from "node:path";
 const SUPABASE = "https://oygizajevizwhiymgsly.supabase.co";
 const GA = "https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com";
 
-// CSP em modo RELATÓRIO: o navegador só avisa no console o que bloquearia,
-// nada quebra. Depois de navegar as telas reais sem alerta, troca-se a chave
-// para "Content-Security-Policy" (enforçar). 'unsafe-inline' porque o Next
+// CSP: enforçada na vitrine, em modo relatório no painel (só avisa no console). 'unsafe-inline' porque o Next
 // injeta scripts/estilos inline; nonce fica para uma próxima etapa.
 const CSP = [
   "default-src 'self'",
@@ -37,12 +35,11 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
-    // 29/09/2026: a Vercel passou a responder 402 (OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED)
-    // no /_next/image -- a cota de otimização de imagens do plano acabou e as
-    // fotos da home apareciam quebradas. Enquanto o plano não é ampliado, as
-    // imagens vão direto do arquivo original (já em .webp, ~170 KB cada) e não
-    // dependem da cota. Para voltar a otimizar: remover esta linha.
-    unoptimized: true,
+    // 29/09/2026: a cota do otimizador da Vercel acabou (402). As fotos do Storage
+    // passam por /api/img (sharp + cache imutável na CDN), que gera cada largura
+    // uma vez. Para voltar ao otimizador da Vercel: remover loaderFile.
+    loader: "custom",
+    loaderFile: "./src/lib/image-loader.ts",
     // Sem isso, TODA imagem vinda do Storage do Supabase (logo, favicon, foto
     // de produto/banner enviada pelo painel) volta 400
     // INVALID_IMAGE_OPTIMIZE_REQUEST do /_next/image e aparece quebrada na
@@ -63,11 +60,20 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
-          { key: "Content-Security-Policy-Report-Only", value: CSP },
           { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
           { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
         ],
+      },
+      // Vitrine: CSP ENFORÇADA (telas conferidas sem violação em 29/09/2026).
+      {
+        source: "/((?!admin|super|plataforma|auth).*)",
+        headers: [{ key: "Content-Security-Policy", value: CSP }],
+      },
+      // Painel/plataforma: continua só em relatório até conferir cada tela.
+      {
+        source: "/(admin|super|plataforma|auth)/:path*",
+        headers: [{ key: "Content-Security-Policy-Report-Only", value: CSP }],
       },
     ];
   },

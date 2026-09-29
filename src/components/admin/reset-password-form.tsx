@@ -34,7 +34,7 @@ export function ResetPasswordForm({ storeName }: { storeName: string }) {
 
     const { error: updateError } = await supabase.auth.updateUser({ password });
     if (updateError) {
-      setError("Não foi possível trocar a senha. Tenta de novo.");
+      setError("Não foi possível trocar a senha. Tente de novo.");
       setLoading(false);
       return;
     }
