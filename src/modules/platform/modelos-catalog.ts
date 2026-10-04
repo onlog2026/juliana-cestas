@@ -26,7 +26,7 @@ export const MODELOS: ModeloVitrine[] = TEMAS.map((t) => ({
     cor: v.paleta.primary,
     desktop: `/modelos/${t.key}-${v.key}-d.webp`,
     celular: `/modelos/${t.key}-${v.key}-m.webp`,
-    demo: `/modelos/ver/${t.key}?variante=${v.key}`,
+    demo: `/demo/${t.key}/${v.key}`,
   })),
 }));
 

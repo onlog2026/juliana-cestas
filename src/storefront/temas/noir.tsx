@@ -6,15 +6,6 @@ import type { DadosLoja } from "./types";
 export function HomeNoir({ d }: { d: DadosLoja }) {
   return (
     <>
-      <header className="border-b" style={{ borderColor: "color-mix(in srgb, var(--t-primary) 35%, transparent)" }}>
-        <div className="mx-auto flex max-w-[1400px] items-center gap-8 px-6 py-5">
-          <p className="text-2xl tracking-[0.35em] uppercase" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}>{d.loja}</p>
-          <nav className="hidden gap-8 text-[12px] tracking-[0.25em] uppercase md:flex" style={{ color: "var(--t-muted)" }} aria-label="Categorias">
-            {d.categorias.map((c) => <span key={c.nome}>{c.nome}</span>)}
-          </nav>
-          <div className="ml-auto flex gap-5" style={{ color: "var(--t-primary)" }}><Search className="size-4" /><ShoppingBag className="size-4" /></div>
-        </div>
-      </header>
 
       <section className="relative">
         <Foto src={d.heroImagem} alt="" className="aspect-[3/4] w-full object-cover sm:aspect-[16/7]" style={{ filter: "brightness(.55) saturate(.9)" }} />
@@ -51,10 +42,6 @@ export function HomeNoir({ d }: { d: DadosLoja }) {
         <p className="mt-6 text-[12px] tracking-[0.35em] uppercase" style={{ color: "var(--t-primary)" }}>{d.loja}</p>
       </section>
 
-      <footer className="px-6 py-12 text-center text-[12px] tracking-[0.25em] uppercase" style={{ color: "var(--t-muted)" }}>
-        <span className="mx-auto mb-6 block h-px w-24" style={{ background: "var(--t-primary)" }} />
-        Atendimento exclusivo · Entregas agendadas · Presentes corporativos
-      </footer>
     </>
   );
 }

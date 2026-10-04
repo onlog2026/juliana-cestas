@@ -6,19 +6,6 @@ import type { DadosLoja } from "./types";
 export function HomeClassica({ d }: { d: DadosLoja }) {
   return (
     <>
-      <div className="px-4 py-2 text-center text-sm" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>{d.aviso}</div>
-      <header className="border-b" style={{ borderColor: "var(--t-line)" }}>
-        <div className="mx-auto flex max-w-[1400px] items-center gap-6 px-5 py-4">
-          <p className="text-3xl whitespace-nowrap" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}>{d.loja}</p>
-          <div className="mx-auto hidden h-11 max-w-xl flex-1 items-center gap-2 rounded-full border bg-white px-4 text-sm md:flex" style={{ borderColor: "var(--t-line)", color: "var(--t-muted)" }}>
-            <Search className="size-4" aria-hidden="true" /> Buscar cestas, ocasiões…
-          </div>
-          <div className="ml-auto flex items-center gap-5"><User className="size-5" /><ShoppingBag className="size-5" /></div>
-        </div>
-        <nav className="mx-auto hidden max-w-[1400px] gap-8 px-5 pb-3 text-sm md:flex" aria-label="Categorias">
-          {d.categorias.map((c) => <span key={c.nome}>{c.nome}</span>)}
-        </nav>
-      </header>
 
       <section className="relative">
         <Foto src={d.heroImagem} alt="" className="aspect-[4/5] w-full object-cover sm:aspect-[21/8]" />
@@ -62,13 +49,6 @@ export function HomeClassica({ d }: { d: DadosLoja }) {
         </div>
       </div>
 
-      <footer className="border-t px-5 py-10 text-sm" style={{ borderColor: "var(--t-line)", background: "var(--t-surface)", color: "var(--t-muted)" }}>
-        <div className="mx-auto grid max-w-[1400px] gap-6 sm:grid-cols-3">
-          <p className="text-xl" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}>{d.loja}</p>
-          <p>Atendimento de segunda a sábado<br />WhatsApp e e-mail</p>
-          <p>Trocas e devoluções<br />Política de privacidade</p>
-        </div>
-      </footer>
     </>
   );
 }

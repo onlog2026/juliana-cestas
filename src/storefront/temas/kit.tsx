@@ -26,10 +26,13 @@ export function TemaRoot({ tema, v, children }: { tema: TemaKey; v: Variacao; ch
     background: p.bg,
     color: p.fg,
     fontFamily: "var(--t-texto)",
-    minHeight: "100vh",
+    minHeight: "100dvh",
+    overflowX: "clip",
   } as CSSProperties;
   return (
     <div data-modelo={tema} className={TEMA_FONT_CLASSES} style={style}>
+      {/* Toque: links dos menus com pelo menos 44px de altura em qualquer modelo. */}
+      <style>{`[data-modelo] nav a{display:inline-flex;align-items:center;min-height:44px}[data-modelo] footer a{display:inline-flex;align-items:center;min-height:44px}`}</style>
       {children}
     </div>
   );
@@ -41,3 +44,4 @@ export function Foto({ src, alt, className, style }: { src: string; alt: string;
   // eslint-disable-next-line @next/next/no-img-element
   return <img src={src} alt={alt} loading="lazy" decoding="async" className={className} style={style} />;
 }
+

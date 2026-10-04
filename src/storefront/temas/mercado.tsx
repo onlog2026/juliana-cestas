@@ -24,22 +24,6 @@ export function HomeMercado({ d }: { d: DadosLoja }) {
   };
   return (
     <>
-      <div className="px-4 py-1.5 text-center text-xs font-semibold" style={{ background: "var(--t-fg)", color: "var(--t-bg)" }}>{d.aviso}</div>
-      <header className="bg-white">
-        <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-4 px-4 py-4">
-          <p className="text-2xl font-black tracking-tight" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}>{d.loja}</p>
-          <div className="order-3 flex h-12 w-full overflow-hidden rounded-lg border-2 sm:order-none sm:w-auto sm:flex-1" style={{ borderColor: "var(--t-primary)" }}>
-            <span className="flex flex-1 items-center gap-2 px-3 text-sm" style={{ color: "var(--t-muted)" }}><Search className="size-4" />O que você procura?</span>
-            <span className="flex items-center px-5 text-sm font-bold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>Buscar</span>
-          </div>
-          <div className="ml-auto flex gap-5 text-xs"><span className="flex flex-col items-center"><User className="size-5" />Entrar</span><span className="flex flex-col items-center"><ShoppingCart className="size-5" />Carrinho</span></div>
-        </div>
-        <nav className="border-t" style={{ borderColor: "var(--t-line)" }} aria-label="Categorias">
-          <div className="mx-auto flex max-w-[1400px] gap-2 overflow-x-auto px-4 py-2 text-sm font-semibold">
-            {d.categorias.map((c) => <span key={c.nome} className="shrink-0 rounded-md px-3 py-2" style={{ background: "var(--t-bg)" }}>{c.nome}</span>)}
-          </div>
-        </nav>
-      </header>
 
       <div className="mx-auto max-w-[1400px] px-4 py-5">
         <section className="grid gap-3 md:grid-cols-3 md:grid-rows-2">
@@ -70,14 +54,6 @@ export function HomeMercado({ d }: { d: DadosLoja }) {
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{d.cestas.slice(0, 10).map(card)}</div>
       </div>
 
-      <footer className="mt-10 px-4 py-10 text-sm" style={{ background: "var(--t-fg)", color: "var(--t-bg)" }}>
-        <div className="mx-auto grid max-w-[1400px] gap-6 sm:grid-cols-4">
-          <p className="text-xl font-black" style={{ fontFamily: "var(--t-titulo)" }}>{d.loja}</p>
-          <p>Institucional<br />Sobre nós<br />Trabalhe conosco</p>
-          <p>Ajuda<br />Entregas<br />Trocas</p>
-          <p>Pagamento<br />PIX · Cartão · Boleto</p>
-        </div>
-      </footer>
     </>
   );
 }

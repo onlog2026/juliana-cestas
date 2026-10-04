@@ -7,14 +7,6 @@ export function HomeBoutique({ d }: { d: DadosLoja }) {
   const [destaque, ...resto] = d.cestas;
   return (
     <>
-      <p className="py-2 text-center text-[11px] tracking-[0.25em] uppercase" style={{ color: "var(--t-muted)" }}>{d.aviso}</p>
-      <header className="relative border-y px-5 py-6 text-center" style={{ borderColor: "var(--t-line)" }}>
-        <p className="text-3xl tracking-[0.3em] uppercase sm:text-4xl" style={{ fontFamily: "var(--t-titulo)", fontWeight: 500 }}>{d.loja}</p>
-        <nav className="mt-3 hidden justify-center gap-10 text-[12px] tracking-[0.2em] uppercase sm:flex" aria-label="Categorias">
-          {d.categorias.map((c) => <span key={c.nome}>{c.nome}</span>)}
-        </nav>
-        <div className="absolute top-1/2 right-5 flex -translate-y-1/2 gap-5"><Search className="size-4" /><ShoppingBag className="size-4" /></div>
-      </header>
 
       <Foto src={d.heroImagem} alt="" className="aspect-[4/5] w-full object-cover sm:aspect-[16/7]" />
       <section className="mx-auto max-w-xl px-6 py-16 text-center">
@@ -48,10 +40,6 @@ export function HomeBoutique({ d }: { d: DadosLoja }) {
         </section>
       ) : null}
 
-      <footer className="mt-24 border-t px-5 py-14 text-center" style={{ borderColor: "var(--t-line)" }}>
-        <p className="text-2xl tracking-[0.3em] uppercase" style={{ fontFamily: "var(--t-titulo)" }}>{d.loja}</p>
-        <p className="mt-4 text-[12px] tracking-[0.2em] uppercase" style={{ color: "var(--t-muted)" }}>Atendimento · Entregas · Trocas · Instagram</p>
-      </footer>
     </>
   );
 }

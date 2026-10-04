@@ -8,16 +8,6 @@ const PASTEIS = ["color-mix(in srgb, var(--t-primary) 14%, white)", "color-mix(i
 export function HomeFesta({ d }: { d: DadosLoja }) {
   return (
     <>
-      <div className="px-4 py-2 text-center text-sm font-bold" style={{ background: "var(--t-accent)", color: "var(--t-fg)" }}>{d.aviso}</div>
-      <header className="mx-auto flex max-w-[1300px] flex-wrap items-center gap-4 px-5 py-5">
-        <p className="text-4xl font-extrabold" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}>{d.loja}</p>
-        <nav className="hidden flex-wrap gap-2 md:flex" aria-label="Categorias">
-          {d.categorias.map((c, i) => (
-            <span key={c.nome} className="rounded-full px-4 py-2 text-sm font-bold" style={{ background: PASTEIS[i % 3] }}>{c.nome}</span>
-          ))}
-        </nav>
-        <span className="ml-auto flex size-12 items-center justify-center rounded-full" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}><ShoppingBag className="size-5" /></span>
-      </header>
 
       <section className="relative mx-3 overflow-hidden rounded-[2.5rem] sm:mx-5" style={{ background: "var(--t-primary)" }}>
         <span className="absolute -top-10 -left-10 size-48 rounded-full opacity-70" style={{ background: "var(--t-accent)" }} aria-hidden="true" />
@@ -58,13 +48,6 @@ export function HomeFesta({ d }: { d: DadosLoja }) {
         </div>
       </div>
 
-      <svg viewBox="0 0 1440 60" className="mt-16 block w-full" aria-hidden="true" preserveAspectRatio="none" style={{ height: 40 }}>
-        <path d="M0 30 Q 60 0 120 30 T 240 30 T 360 30 T 480 30 T 600 30 T 720 30 T 840 30 T 960 30 T 1080 30 T 1200 30 T 1320 30 T 1440 30 V60 H0 Z" fill="var(--t-primary)" />
-      </svg>
-      <footer className="px-5 pb-12 pt-6 text-center" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>
-        <p className="text-3xl font-extrabold" style={{ fontFamily: "var(--t-titulo)" }}>{d.loja}</p>
-        <p className="mt-2 text-sm opacity-90">Entregas com data marcada · PIX e cartão · Fale no WhatsApp</p>
-      </footer>
     </>
   );
 }
