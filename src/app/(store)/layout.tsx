@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/loja/site-header";
 import { SiteFooter } from "@/components/loja/site-footer";
 import { BottomNav } from "@/components/loja/bottom-nav";
+import { InstallAppPrompt } from "@/components/loja/install-app-prompt";
 import { LocalBusinessJsonLd } from "@/components/loja/json-ld";
 import { getSeoSettings } from "@/modules/seo/service";
 import { getSiteSettings } from "@/modules/settings/site-settings";
@@ -68,7 +69,8 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function StoreLayout({ children }: LayoutProps<"/">) {
   // Número do WhatsApp vem do cadastro da loja (banco). A barra de baixo é
   // client component, então o número desce por prop a partir daqui.
-  const whatsapp = await getStoreWhatsapp(await getTenantId());
+  const tenantId = await getTenantId();
+  const [whatsapp, perfil] = await Promise.all([getStoreWhatsapp(tenantId), getStoreProfile(tenantId)]);
   return (
     <CartProvider>
       <LocalBusinessJsonLd />
@@ -77,6 +79,7 @@ export default async function StoreLayout({ children }: LayoutProps<"/">) {
       <main className="flex-1 pb-16 md:pb-0">{children}</main>
       <SiteFooter />
       <BottomNav whatsapp={whatsapp} />
+      <InstallAppPrompt storeName={perfil.businessName?.trim() || "loja"} />
     </CartProvider>
   );
 }

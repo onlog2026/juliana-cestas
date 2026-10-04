@@ -45,7 +45,7 @@ export default async function ModeloPage(props: { params: Promise<{ modelo: stri
   return (
     <>
       <LandingHeader branding={branding} />
-      <main className="mx-auto max-w-6xl px-4 pt-8 pb-24 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-6xl px-4 pt-8 pb-32 sm:px-6 lg:px-8 lg:pb-24">
         <p className="mb-5 text-sm text-muted-foreground">
           <Link href="/modelos" className="hover:text-foreground">Modelos</Link> / {modelo.name}
         </p>
