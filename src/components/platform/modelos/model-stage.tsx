@@ -64,7 +64,7 @@ export function ModelStage({ modelo, ficha }: { modelo: ModeloVitrine; ficha: Re
           ))}
         </div>
         <div className="mt-7 grid gap-3 sm:grid-cols-2">
-          <Link href={`/cadastro?modelo=${modelo.key}&variante=${atual.key}`} className="inline-flex min-h-12 items-center justify-center rounded-lg bg-primary px-5 font-semibold text-primary-foreground">
+          <Link href={`/modelos/testar?modelo=${modelo.key}&variante=${atual.key}`} className="inline-flex min-h-12 items-center justify-center rounded-lg bg-primary px-5 font-semibold text-primary-foreground">
             Criar loja com este modelo
           </Link>
           <a href={atual.demo} target="_blank" rel="noopener" className="inline-flex min-h-12 items-center justify-center rounded-lg border border-foreground px-5 font-semibold text-foreground">
@@ -75,7 +75,7 @@ export function ModelStage({ modelo, ficha }: { modelo: ModeloVitrine; ficha: Re
 
       {/* Celular: "Usar este modelo" e "Ver demo" sempre à mão, fixos embaixo (área segura do iPhone). */}
       <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 gap-2 border-t border-border bg-background px-3 pt-2 lg:hidden" style={{ paddingBottom: "calc(8px + env(safe-area-inset-bottom, 0px))" }}>
-        <Link href={`/cadastro?modelo=${modelo.key}&variante=${atual.key}`} className="inline-flex min-h-12 items-center justify-center rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground">
+        <Link href={`/modelos/testar?modelo=${modelo.key}&variante=${atual.key}`} className="inline-flex min-h-12 items-center justify-center rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground">
           Usar este modelo
         </Link>
         <a href={atual.demo} target="_blank" rel="noopener" className="inline-flex min-h-12 items-center justify-center rounded-lg border border-foreground px-3 text-sm font-semibold text-foreground">

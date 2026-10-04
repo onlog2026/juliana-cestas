@@ -12,7 +12,7 @@ export function HomeNoir({ d }: { d: DadosLoja }) {
         <div className="absolute inset-0 flex items-center">
           <div className="mx-auto w-full max-w-[1400px] px-6 sm:px-12">
             <p className="text-[12px] tracking-[0.4em] uppercase" style={{ color: "var(--t-primary)" }}>{d.aviso}</p>
-            <h1 className="mt-5 max-w-3xl text-5xl leading-[1.02] sm:text-7xl" style={{ fontFamily: "var(--t-titulo)" }}>{d.titulo}</h1>
+            <h1 className="mt-5 max-w-3xl text-3xl leading-[1.05] sm:text-6xl lg:text-7xl" style={{ fontFamily: "var(--t-titulo)" }}>{d.titulo}</h1>
             <span className="mt-8 inline-flex h-12 items-center border px-8 text-[12px] tracking-[0.3em] uppercase" style={{ borderColor: "var(--t-primary)", color: "var(--t-primary)" }}>Conhecer a coleção</span>
           </div>
         </div>

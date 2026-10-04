@@ -426,6 +426,8 @@ describe("registro de blocos", () => {
   it("o renderizador continua desligado — a home é o page.tsx de hoje", () => {
     const pageTsx = lerArquivo("src", "app", "(store)", "page.tsx");
     expect(pageTsx).not.toContain("SectionsRenderer");
-    expect(pageTsx).not.toContain("storefront");
+    // o motor de modelos (storefront/temas) só entra se houver modelo instalado; o renderizador antigo de blocos segue fora
+    expect(pageTsx).not.toContain("@/storefront/renderer");
+    expect(pageTsx).not.toContain("@/storefront/blocks");
   });
 });

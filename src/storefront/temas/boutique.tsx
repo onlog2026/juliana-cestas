@@ -10,7 +10,7 @@ export function HomeBoutique({ d }: { d: DadosLoja }) {
 
       <Foto src={d.heroImagem} alt="" className="aspect-[4/5] w-full object-cover sm:aspect-[16/7]" />
       <section className="mx-auto max-w-xl px-6 py-16 text-center">
-        <h1 className="text-4xl leading-tight sm:text-5xl" style={{ fontFamily: "var(--t-titulo)", fontWeight: 400 }}>{d.titulo}</h1>
+        <h1 className="text-3xl leading-tight sm:text-5xl" style={{ fontFamily: "var(--t-titulo)", fontWeight: 400 }}>{d.titulo}</h1>
         <p className="mt-4" style={{ color: "var(--t-muted)" }}>{d.texto}</p>
         <span className="mt-6 inline-block border-b pb-1 text-[12px] tracking-[0.25em] uppercase" style={{ borderColor: "var(--t-fg)" }}>Ver coleção</span>
       </section>

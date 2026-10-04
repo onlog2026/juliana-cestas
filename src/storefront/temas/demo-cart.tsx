@@ -74,3 +74,8 @@ export function useDemoCart(): Ctx {
   if (!c) throw new Error("useDemoCart precisa estar dentro de <DemoCartProvider>.");
   return c;
 }
+
+/** Como useDemoCart, mas devolve null fora do provider. */
+export function useDemoCartOptional(): Ctx | null {
+  return useContext(CartCtx);
+}

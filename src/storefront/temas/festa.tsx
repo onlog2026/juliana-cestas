@@ -15,7 +15,7 @@ export function HomeFesta({ d }: { d: DadosLoja }) {
         <span className="absolute top-8 right-8 size-16 rounded-full bg-white/30" aria-hidden="true" />
         <div className="relative grid items-center gap-8 p-8 sm:p-14 md:grid-cols-2">
           <div style={{ color: "var(--t-on-primary)" }}>
-            <h1 className="text-5xl leading-[0.95] font-extrabold sm:text-6xl" style={{ fontFamily: "var(--t-titulo)" }}>{d.titulo}</h1>
+            <h1 className="text-4xl leading-[0.98] font-extrabold sm:text-6xl" style={{ fontFamily: "var(--t-titulo)" }}>{d.titulo}</h1>
             <p className="mt-4 text-lg opacity-95">{d.texto}</p>
             <span className="mt-6 inline-flex h-12 items-center rounded-full bg-white px-7 font-extrabold" style={{ color: "var(--t-primary)" }}>Quero a minha!</span>
           </div>

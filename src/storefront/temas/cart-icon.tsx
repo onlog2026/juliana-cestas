@@ -2,7 +2,8 @@
 
 import type { CSSProperties } from "react";
 import { ShoppingBag, ShoppingBasket, ShoppingCart } from "lucide-react";
-import { useDemoCart } from "./demo-cart";
+import { useCartOptional } from "@/modules/cart/cart-context";
+import { useDemoCartOptional } from "./demo-cart";
 
 const ICONES = { sacola: ShoppingBag, carrinho: ShoppingCart, cesta: ShoppingBasket } as const;
 
@@ -21,7 +22,10 @@ export function CartIcon({
   className?: string;
   style?: CSSProperties;
 }) {
-  const { quantidade } = useDemoCart();
+  // Loja de verdade: carrinho real (itens). Demo/prévia: carrinho local da demonstração.
+  const real = useCartOptional();
+  const demo = useDemoCartOptional();
+  const quantidade = real ? real.count : (demo?.quantidade ?? 0);
   const Icon = ICONES[icone];
   return (
     <a

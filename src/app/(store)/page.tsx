@@ -18,12 +18,22 @@ import { ItemListJsonLd, WebSiteJsonLd } from "@/components/loja/json-ld";
 import { TrustBar } from "@/components/loja/trust-bar";
 import { RecentlyViewed } from "@/components/loja/recently-viewed";
 import { toLiteProducts } from "@/components/loja/lite-product";
+import { HOMES } from "@/storefront/temas";
+import { getTemaInstalado } from "@/storefront/temas/instalado";
+import { dadosLoja } from "@/storefront/temas/dados-loja";
 
 // A home é estática; renova a cada 30 min para as vitrines acompanharem vendas e cliques.
 export const revalidate = 1800;
 
 export default async function Home() {
   const tenantId = await getTenantId();
+  // Modelo novo instalado: a página inicial é a dele, com os produtos reais da loja.
+  const instalado = await getTemaInstalado(tenantId);
+  if (instalado) {
+    const d = await dadosLoja(tenantId, "", instalado.variacao);
+    const HomeTema = HOMES[instalado.tema.key];
+    return <HomeTema d={d} />;
+  }
   const [banners, profile, products] = await Promise.all([
     getActiveBanners(tenantId),
     getStoreProfile(tenantId),

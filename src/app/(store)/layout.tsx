@@ -3,6 +3,9 @@ import { SiteHeader } from "@/components/loja/site-header";
 import { SiteFooter } from "@/components/loja/site-footer";
 import { BottomNav } from "@/components/loja/bottom-nav";
 import { InstallAppPrompt } from "@/components/loja/install-app-prompt";
+import { CABECALHOS, RODAPES, TemaRoot } from "@/storefront/temas";
+import { getTemaInstalado } from "@/storefront/temas/instalado";
+import { dadosLoja } from "@/storefront/temas/dados-loja";
 import { LocalBusinessJsonLd } from "@/components/loja/json-ld";
 import { getSeoSettings } from "@/modules/seo/service";
 import { getSiteSettings } from "@/modules/settings/site-settings";
@@ -71,6 +74,27 @@ export default async function StoreLayout({ children }: LayoutProps<"/">) {
   // client component, então o número desce por prop a partir daqui.
   const tenantId = await getTenantId();
   const [whatsapp, perfil] = await Promise.all([getStoreWhatsapp(tenantId), getStoreProfile(tenantId)]);
+  // Modelo novo INSTALADO pelo lojista: cabeçalho, rodapé, cores e fontes dele. Sem modelo
+  // instalado (caso da Juliana) o código abaixo nem roda e a loja é exatamente a de sempre.
+  const instalado = await getTemaInstalado(tenantId);
+  if (instalado) {
+    const d = await dadosLoja(tenantId, "", instalado.variacao);
+    const Cabecalho = CABECALHOS[instalado.tema.key];
+    const Rodape = RODAPES[instalado.tema.key];
+    return (
+      <CartProvider>
+        <LocalBusinessJsonLd />
+        <ClickTracker />
+        <TemaRoot tema={instalado.tema.key} v={instalado.variacao}>
+          <Cabecalho d={d} />
+          <main className="pb-16 md:pb-0">{children}</main>
+          <Rodape d={d} />
+          <BottomNav whatsapp={whatsapp} />
+          <InstallAppPrompt storeName={perfil.businessName?.trim() || "loja"} />
+        </TemaRoot>
+      </CartProvider>
+    );
+  }
   return (
     <CartProvider>
       <LocalBusinessJsonLd />

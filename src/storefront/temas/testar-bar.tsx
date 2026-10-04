@@ -39,10 +39,10 @@ export function TestarBar({ modelo, nomeModelo, variante, variacoes }: { modelo:
           </Link>
         ))}
       </div>
-      <Link href={`/cadastro?modelo=${modelo}&variante=${variante}`} className="flex min-h-11 shrink-0 items-center rounded-lg px-3 text-sm font-semibold sm:px-4" style={{ background: "#ffb800", color: "#141414" }}>
+      <a href={`/modelos/testar?modelo=${modelo}&variante=${variante}`} className="flex min-h-11 shrink-0 items-center rounded-lg px-3 text-sm font-semibold sm:px-4" style={{ background: "#ffb800", color: "#141414" }}>
         <span className="sm:hidden">Testar</span>
         <span className="hidden sm:inline">Testar na minha loja</span>
-      </Link>
+      </a>
     </div>
   );
 }

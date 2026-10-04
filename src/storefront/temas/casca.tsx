@@ -47,7 +47,7 @@ export function CabecalhoBoutique({ d }: { d: DadosLoja }) {
     <>
       <p className="py-2 text-center text-[11px] tracking-[0.25em] uppercase" style={{ color: "var(--t-muted)" }}>{d.aviso}</p>
       <header className="relative border-y px-5 py-6 text-center" style={{ borderColor: "var(--t-line)" }}>
-        <p className="text-3xl tracking-[0.3em] uppercase sm:text-4xl" style={{ fontFamily: "var(--t-titulo)", fontWeight: 500 }}><a href={d.base || "/"}>{d.loja}</a></p>
+        <p className="text-xl tracking-[0.18em] uppercase sm:text-4xl sm:tracking-[0.3em]" style={{ fontFamily: "var(--t-titulo)", fontWeight: 500 }}><a href={d.base || "/"}>{d.loja}</a></p>
         <nav className="mt-3 hidden justify-center gap-10 text-[12px] tracking-[0.2em] uppercase sm:flex" aria-label="Categorias">
           {d.categorias.map((c) => <a key={c.nome} href={c.href}>{c.nome}</a>)}
         </nav>
@@ -111,7 +111,7 @@ export function CabecalhoFesta({ d }: { d: DadosLoja }) {
     <>
       <div className="px-4 py-2 text-center text-sm font-bold" style={{ background: "var(--t-accent)", color: "var(--t-fg)" }}>{d.aviso}</div>
       <header className="mx-auto flex max-w-[1300px] flex-wrap items-center gap-4 px-5 py-5">
-        <p className="text-4xl font-extrabold" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}><a href={d.base || "/"}>{d.loja}</a></p>
+        <p className="text-2xl font-extrabold sm:text-4xl" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}><a href={d.base || "/"}>{d.loja}</a></p>
         <nav className="hidden flex-wrap gap-2 md:flex" aria-label="Categorias">
           {d.categorias.map((c, i) => (
             <a key={c.nome} href={c.href} className="rounded-full px-4 py-2 text-sm font-bold" style={{ background: PASTEIS[i % 3] }}>{c.nome}</a>
@@ -142,7 +142,7 @@ export function CabecalhoNoir({ d }: { d: DadosLoja }) {
     <>
       <header className="border-b" style={{ borderColor: "color-mix(in srgb, var(--t-primary) 35%, transparent)" }}>
         <div className="mx-auto flex max-w-[1400px] items-center gap-8 px-6 py-5">
-          <p className="text-2xl tracking-[0.35em] uppercase" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}><a href={d.base || "/"}>{d.loja}</a></p>
+          <p className="text-base tracking-[0.2em] uppercase sm:text-2xl sm:tracking-[0.35em]" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}><a href={d.base || "/"}>{d.loja}</a></p>
           <nav className="hidden gap-8 text-[12px] tracking-[0.25em] uppercase md:flex" style={{ color: "var(--t-muted)" }} aria-label="Categorias">
             {d.categorias.map((c) => <a key={c.nome} href={c.href}>{c.nome}</a>)}
           </nav>

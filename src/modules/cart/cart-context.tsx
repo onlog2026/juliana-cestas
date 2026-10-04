@@ -151,3 +151,8 @@ export function useCart(): CartContextValue {
   if (!ctx) throw new Error("useCart precisa estar dentro de <CartProvider>.");
   return ctx;
 }
+
+/** Como useCart, mas devolve null fora do provider (componentes que servem à loja real e à demo). */
+export function useCartOptional(): CartContextValue | null {
+  return useContext(CartContext);
+}

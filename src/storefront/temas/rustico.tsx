@@ -21,7 +21,7 @@ export function HomeRustico({ d }: { d: DadosLoja }) {
         </div>
         <div className="relative">
           <span className="absolute -top-20 right-0 hidden size-24 rotate-12 items-center sm:flex justify-center rounded-full border-2 border-dashed text-center text-xs leading-tight font-bold uppercase" style={{ borderColor: "var(--t-accent)", color: "var(--t-accent)" }}>Feito<br />à mão</span>
-          <h1 className="text-4xl leading-tight sm:text-5xl" style={{ fontFamily: "var(--t-titulo)", fontWeight: 600 }}>{d.titulo}</h1>
+          <h1 className="text-3xl leading-tight sm:text-5xl" style={{ fontFamily: "var(--t-titulo)", fontWeight: 600 }}>{d.titulo}</h1>
           <p className="mt-4 text-lg" style={{ color: "var(--t-muted)" }}>{d.texto}</p>
           <div className="mt-6 inline-block rotate-1 px-5 py-3 text-2xl shadow-sm" style={{ background: "#fff8c7", fontFamily: "var(--t-detalhe)" }}>Encomende até as 16h ♡</div>
         </div>
