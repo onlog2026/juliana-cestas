@@ -39,6 +39,8 @@ const MAPA: Record<string, Acao> = {
 type EventoAsaas = {
   id?: unknown;
   event?: unknown;
+  /** Eventos SUBSCRIPTION_* trazem a assinatura aqui (não dentro de `payment`). */
+  subscription?: { id?: unknown; customer?: unknown; externalReference?: unknown };
   payment?: {
     id?: unknown;
     value?: unknown;
@@ -125,13 +127,14 @@ type Loja = {
   subscription_status: string | null;
   subscription_plan: string | null;
   paid_until: string | null;
+  asaas_subscription_id: string | null;
   pending_plan_id: string | null;
   pending_expected_cents: number | null;
   pending_cycle: string | null;
 };
 
 const CAMPOS_LOJA =
-  "id,slug,subscription_status,subscription_plan,paid_until,pending_plan_id,pending_expected_cents,pending_cycle";
+  "id,slug,subscription_status,subscription_plan,paid_until,asaas_subscription_id,pending_plan_id,pending_expected_cents,pending_cycle";
 
 /** Acha a loja pelo externalReference (slug), senão pelo id da assinatura. */
 async function acharLoja(env: Ambiente, slug: string | undefined, subscriptionId: string): Promise<Loja | null> {
@@ -181,9 +184,20 @@ export async function POST(req: Request) {
   const acao = MAPA[evento];
   if (!acao) return ok("evento_ignorado");
 
-  const subscriptionId = typeof pg.subscription === "string" ? pg.subscription : "";
-  const customerId = typeof pg.customer === "string" ? pg.customer : "";
-  const ref = typeof pg.externalReference === "string" ? lerExternalRef(pg.externalReference) : {};
+  // Evento de PAGAMENTO: a assinatura vem em payment.subscription (texto). Evento de
+  // ASSINATURA (SUBSCRIPTION_*): vem em `subscription` no topo, com id/customer/ref próprios.
+  const sub = corpo.subscription && typeof corpo.subscription === "object" ? corpo.subscription : null;
+  const subscriptionId =
+    typeof pg.subscription === "string" ? pg.subscription : sub && typeof sub.id === "string" ? sub.id : "";
+  const customerId =
+    typeof pg.customer === "string" ? pg.customer : sub && typeof sub.customer === "string" ? sub.customer : "";
+  const refTexto =
+    typeof pg.externalReference === "string"
+      ? pg.externalReference
+      : sub && typeof sub.externalReference === "string"
+        ? sub.externalReference
+        : "";
+  const ref = refTexto ? lerExternalRef(refTexto) : {};
   const valorReais = typeof pg.value === "number" ? pg.value : Number(pg.value);
   const valorCents = Number.isFinite(valorReais) ? Math.round(valorReais * 100) : null;
 
@@ -235,6 +249,26 @@ export async function POST(req: Request) {
 
 type Resultado = { ok: true; motivo: string } | { ok: false; motivo: string };
 
+/** Cancela uma assinatura no Asaas da plataforma. 404 (já não existe) conta como feito. */
+async function cancelarNoAsaas(subscriptionId: string): Promise<boolean> {
+  const chave = (process.env.PLATFORM_ASAAS_API_KEY ?? "").trim();
+  if (!chave) return false;
+  const base =
+    (process.env.PLATFORM_ASAAS_ENV ?? "sandbox").trim().toLowerCase() === "production"
+      ? "https://api.asaas.com/v3"
+      : "https://api-sandbox.asaas.com/v3";
+  try {
+    const r = await fetch(`${base}/subscriptions/${encodeURIComponent(subscriptionId)}`, {
+      method: "DELETE",
+      headers: { access_token: chave, "User-Agent": "loja-online/1.0" },
+      cache: "no-store",
+    });
+    return r.ok || r.status === 404;
+  } catch {
+    return false;
+  }
+}
+
 async function aplicar(
   env: Ambiente,
   loja: Loja,
@@ -284,7 +318,24 @@ async function aplicar(
     if (!r.ok) return { ok: false, motivo: "falha_ao_ativar" };
     const linhas = (await lerJson<Array<{ id: string }>>(r)) ?? [];
     if (linhas.length === 0) return { ok: false, motivo: "loja_nao_ativada" };
+
+    // TROCA DE PLANO: a assinatura nova acabou de ser paga e virou a atual; a
+    // antiga continuaria cobrando (cobrança dupla). Cancela no Asaas, depois de
+    // a nova estar salva. Falha aqui NÃO desfaz a ativação (o cliente já pagou):
+    // fica no log para conferência manual.
+    const antiga = loja.asaas_subscription_id;
+    if (antiga && d.subscriptionId && antiga !== d.subscriptionId) {
+      const c = await cancelarNoAsaas(antiga);
+      if (!c) console.error("[platform-webhook] assinatura antiga NÃO cancelada (conferir no Asaas)", { loja: loja.slug, antiga });
+    }
     return { ok: true, motivo: "assinatura_ativa" };
+  }
+
+  // Eventos NEGATIVOS só valem para a assinatura ATUAL da loja. Checkout abandonado
+  // (nunca pago), assinatura antiga já substituída e cobrança de ciclo velho não
+  // podem atrasar, cancelar ou inativar uma loja que paga por outra assinatura.
+  if (!loja.asaas_subscription_id || loja.asaas_subscription_id !== d.subscriptionId) {
+    return { ok: true, motivo: "ignorado_assinatura_nao_atual" };
   }
 
   if (d.acao === "atrasar") {

@@ -134,7 +134,9 @@ export async function subscribeSeller(input: SubscribeInput): Promise<SubscribeR
         : {}),
     });
 
-    await admin.from("tenants").update({ asaas_subscription_id: sub.id }).eq("id", loja.id);
+    // NÃO grava `asaas_subscription_id` aqui: só o webhook, DEPOIS do pagamento. Gravar antes
+    // fazia um checkout abandonado virar a "assinatura atual" e atrasar/cancelar a loja
+    // (e impedia cancelar a antiga ao trocar de plano).
 
     if (input.billingType === "PIX") {
       const pays = await asaas.getSubscriptionPayments(sub.id, 1);
@@ -150,4 +152,47 @@ export async function subscribeSeller(input: SubscribeInput): Promise<SubscribeR
   } catch (e) {
     return { ok: false, error: msgErro(e) };
   }
+}
+
+export type CancelResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * Cancela a assinatura da PLATAFORMA da loja de quem está logado. Cancela no Asaas
+ * (a cobrança para de vir). O status da loja vira "cancelada" quando o webhook
+ * SUBSCRIPTION_DELETED chegar; nada é apagado e o acesso segue as regras de
+ * validade já existentes (`paid_until`).
+ */
+export async function cancelMySubscription(): Promise<CancelResult> {
+  const staff = await requireStaff();
+  const asaas = getPlatformAsaasClient();
+  if (!asaas) return { ok: false, error: "A cobrança automática ainda não está ligada. Fale com o suporte." };
+
+  const admin = createAdminClient();
+  const { data: loja } = await admin
+    .from("tenants")
+    .select("id, asaas_subscription_id")
+    .eq("id", staff.tenantId)
+    .maybeSingle();
+  const id = (loja?.asaas_subscription_id as string | null) ?? "";
+  if (!id) return { ok: false, error: "Não encontrei uma assinatura ativa para cancelar." };
+
+  try {
+    await asaas.cancelSubscription(id);
+  } catch (e) {
+    // 404 = já não existe no Asaas: segue como cancelada.
+    if (!(e instanceof AsaasError && e.status === 404)) {
+      return { ok: false, error: msgErro(e) };
+    }
+  }
+  const { error: auditoria } = await admin.from("audit_logs").insert({
+    tenant_id: loja!.id,
+    actor_email: staff.email ?? "",
+    action: "subscription.cancel",
+    target: id,
+    before: null,
+    after: null,
+  });
+  if (auditoria) console.error("[assinatura] falha ao gravar auditoria:", auditoria);
+  revalidatePath("/admin/assinatura");
+  return { ok: true };
 }

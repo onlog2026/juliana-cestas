@@ -4,6 +4,8 @@ import { getEntitlements } from "@/modules/entitlements/service";
 import { MODULE_REGISTRY } from "@/lib/modules/registry";
 import { VoucherRedeemForm } from "@/components/admin/voucher-redeem-form";
 import { SubscribeForm } from "@/components/admin/subscribe-form";
+import { CancelSubscriptionButton } from "@/components/admin/cancel-subscription-button";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getPlatformAsaasConfig } from "@/modules/platform/asaas-platform";
 import { getSellerPlans, getSellerCustomPriceCents } from "@/modules/platform/subscription-service";
 
@@ -63,6 +65,14 @@ export default async function AssinaturaPage() {
   const [planos, precoProprio] = cobrancaLigada
     ? await Promise.all([getSellerPlans(), getSellerCustomPriceCents(staff.tenantId)])
     : [[], null];
+
+  // Só mostra "Cancelar" quando existe uma assinatura paga ativa (id gravado pelo webhook).
+  const { data: tenantRow } = await createAdminClient()
+    .from("tenants")
+    .select("asaas_subscription_id")
+    .eq("id", staff.tenantId)
+    .maybeSingle();
+  const podeCancelar = cobrancaLigada && Boolean(tenantRow?.asaas_subscription_id);
 
   const estado = ESTADO_TEXTO[ent.state] ?? ESTADO_TEXTO.ok;
   const liberados = MODULE_REGISTRY.filter((m) => ent.allowed.includes(m.slug));
@@ -127,6 +137,7 @@ export default async function AssinaturaPage() {
               paga cada mês. Sua conta é liberada assim que o pagamento é confirmado.
             </p>
             <SubscribeForm plans={planos} customPriceCents={precoProprio} />
+            {podeCancelar ? <CancelSubscriptionButton /> : null}
           </>
         ) : (
           <p className="mt-1 text-sm text-muted-foreground">
