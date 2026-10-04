@@ -70,7 +70,7 @@ for (const [tema, vars] of Object.entries(TEMAS)) {
           else {
             await page.goto(`${BASE}${await prod.getAttribute("href")}`, { waitUntil: "networkidle" });
             await checar("cesta");
-            const add = page.getByRole("button", { name: /^Adicionar/ }).first();
+            const add = page.locator("[data-acao=comprar]").or(page.getByRole("button", { name: /^Adicionar/ })).first();
             await add.scrollIntoViewIfNeeded();
             await add.click();
             await page.goto(`${BASE}/demo/${tema}/${v}/carrinho`, { waitUntil: "networkidle" });

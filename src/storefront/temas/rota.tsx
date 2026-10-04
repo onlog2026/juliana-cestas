@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { CABECALHOS, HOMES, RODAPES } from "./index";
-import { PaginaCarrinho, PaginaCategoria, PaginaProduto } from "./paginas";
+import { INTERNAS } from "./internas";
 import type { DadosLoja, TemaKey } from "./types";
 
 /**
@@ -10,18 +10,19 @@ import type { DadosLoja, TemaKey } from "./types";
  */
 export function RotaLoja({ tema, d, rota }: { tema: TemaKey; d: DadosLoja; rota: string[] }) {
   const [a, b] = rota;
+  const { Categoria, Produto, Carrinho } = INTERNAS[tema];
   let corpo;
   if (rota.length === 0) {
     const Home = HOMES[tema];
     corpo = <Home d={d} />;
   } else if (a === "categoria" && rota.length <= 2) {
     if (b && !d.categorias.some((c) => c.slug === b)) notFound();
-    corpo = <PaginaCategoria d={d} slug={b} />;
+    corpo = <Categoria d={d} slug={b} />;
   } else if (a === "produto" && b && rota.length === 2) {
     if (!d.produtos.some((p) => p.slug === b)) notFound();
-    corpo = <PaginaProduto d={d} slug={b} />;
+    corpo = <Produto d={d} slug={b} />;
   } else if (a === "carrinho" && rota.length === 1) {
-    corpo = <PaginaCarrinho d={d} />;
+    corpo = <Carrinho d={d} />;
   } else {
     notFound();
   }
