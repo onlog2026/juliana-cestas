@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:isolation": "node tests/isolation/tenant-isolation.mjs",
+    "test:instalar-modelo": "node tests/isolation/instalar-voltar.mjs",
     "backup": "node scripts/db-backup.mjs"
   },
   "dependencies": {
