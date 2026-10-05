@@ -10,12 +10,15 @@ import { AvisoSemCobranca, CaminhoPao, CarrinhoVazio, FAIXAS, NaoEncontrada, ORD
 
 const CORES = ["var(--t-primary)", "var(--t-accent)", "#2fb5a3", "#f2b705"];
 const cor = (i: number) => CORES[i % CORES.length];
+/** Texto legível sobre cada cor da lista acima. */
+const TXT = ["var(--t-on-primary)", "var(--t-on-accent)", "#0b2b27", "#1f1700"];
+const txt = (i: number) => TXT[i % TXT.length];
 
 function Cartao({ p, i }: { p: ProdutoLoja; i: number }) {
   return (
     <a href={p.href} className="group relative block min-w-0 rounded-[28px] p-2.5 transition-transform hover:-translate-y-1" style={{ background: "color-mix(in srgb, " + cor(i) + " 14%, var(--t-bg))" }}>
       <Foto src={p.fotos[0]} alt={p.nome} className="aspect-square w-full rounded-[22px] object-cover" />
-      <span className="absolute top-5 right-4 rotate-6 rounded-full px-3 py-1 text-sm font-extrabold shadow-md" style={{ background: cor(i), color: "#fff" }}>{brl(p.preco)}</span>
+      <span className="absolute top-5 right-4 rotate-6 rounded-full px-3 py-1 text-sm font-extrabold shadow-md" style={{ background: cor(i), color: txt(i) }}>{brl(p.preco)}</span>
       <p className="mt-3 line-clamp-2 px-1.5 pb-2 text-center text-base leading-tight font-extrabold" style={{ fontFamily: "var(--t-titulo)" }}>{p.nome}</p>
     </a>
   );
@@ -29,7 +32,7 @@ export function CategoriaFesta({ d, slug }: { d: DadosLoja; slug?: string }) {
       <h1 className="mt-3 flex items-center gap-3 text-4xl font-extrabold sm:text-6xl" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}><PartyPopper className="size-9 sm:size-12" aria-hidden="true" />{titulo}</h1>
       <div className="mt-6 flex flex-wrap gap-2" role="group" aria-label="Faixa de preço">
         {FAIXAS.map(([k, l], i) => (
-          <button key={k} type="button" aria-pressed={faixa === k} onClick={() => setFaixa(k)} className="min-h-11 rounded-full border-2 px-5 text-sm font-bold" style={{ borderColor: cor(i), background: faixa === k ? cor(i) : "transparent", color: faixa === k ? "#fff" : "var(--t-fg)" }}>{l}</button>
+          <button key={k} type="button" aria-pressed={faixa === k} onClick={() => setFaixa(k)} className="min-h-11 rounded-full border-2 px-5 text-sm font-bold" style={{ borderColor: cor(i), background: faixa === k ? cor(i) : "transparent", color: faixa === k ? txt(i) : "var(--t-fg)" }}>{l}</button>
         ))}
         <label className="ml-auto flex items-center gap-2 text-sm font-bold">Ordenar
           <select value={ordem} onChange={(e) => setOrdem(e.target.value as Ordem)} className="h-11 rounded-full border-2 bg-transparent px-4" style={{ borderColor: "var(--t-line)" }}>
@@ -62,7 +65,7 @@ export function ProdutoFesta({ d, slug }: { d: DadosLoja; slug: string }) {
         <div className="min-w-0">
           <div className="relative rounded-[36px] p-3" style={{ background: "color-mix(in srgb, var(--t-primary) 14%, var(--t-bg))" }}>
             <Foto src={p.fotos[0]} alt={p.nome} className="aspect-square w-full rounded-[28px] object-cover" />
-            <span className="absolute -top-3 -left-2 flex size-20 -rotate-12 items-center justify-center rounded-full text-center text-xs leading-tight font-extrabold shadow-lg" style={{ background: "var(--t-accent)", color: "#fff" }}>entrega<br />marcada!</span>
+            <span className="absolute -top-3 -left-2 flex size-20 -rotate-12 items-center justify-center rounded-full text-center text-xs leading-tight font-extrabold shadow-lg" style={{ background: "var(--t-accent)", color: "var(--t-on-accent)" }}>entrega<br />marcada!</span>
           </div>
           {p.fotos.length > 1 ? (
             <div className="mt-3 grid grid-cols-4 gap-2">
@@ -86,7 +89,7 @@ export function ProdutoFesta({ d, slug }: { d: DadosLoja; slug: string }) {
               </ul>
             </section>
           ) : null}
-          <button type="button" data-acao="comprar" onClick={comprar} className="mt-8 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full text-lg font-extrabold shadow-lg" style={{ background: "var(--t-accent)", color: "#fff" }}>
+          <button type="button" data-acao="comprar" onClick={comprar} className="mt-8 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full text-lg font-extrabold shadow-lg" style={{ background: "var(--t-accent)", color: "var(--t-on-accent)" }}>
             {ok ? <><Check className="size-5" /> Adicionada!</> : "Quero essa festa!"}
           </button>
           <a href={`${d.base}/carrinho`} className="mt-3 flex min-h-12 w-full items-center justify-center rounded-full border-2 font-bold" style={{ borderColor: "var(--t-primary)", color: "var(--t-primary)" }}>Ver carrinho</a>
@@ -101,7 +104,7 @@ export function ProdutoFesta({ d, slug }: { d: DadosLoja; slug: string }) {
       </section>
       <div className="fixed inset-x-0 z-30 flex items-center gap-3 rounded-t-3xl px-4 py-2.5 lg:hidden" style={{ bottom: "var(--demo-barra-baixo, 0px)", background: "var(--t-primary)", color: "var(--t-on-primary)" }}>
         <p className="min-w-0 flex-1 text-lg font-extrabold">{brl(p.preco)}</p>
-        <button type="button" onClick={comprar} className="min-h-11 rounded-full px-6 font-extrabold" style={{ background: "var(--t-accent)", color: "#fff" }}>{ok ? "Adicionada!" : "Quero!"}</button>
+        <button type="button" onClick={comprar} className="min-h-11 rounded-full px-6 font-extrabold" style={{ background: "var(--t-accent)", color: "var(--t-on-accent)" }}>{ok ? "Adicionada!" : "Quero!"}</button>
       </div>
     </main>
   );
@@ -131,7 +134,7 @@ export function CarrinhoFesta({ d }: { d: DadosLoja }) {
             <p className="flex justify-between text-2xl font-extrabold"><span>Total</span><span>{brl(total)}</span></p>
             <p className="mt-1 text-sm opacity-90">Entrega e cartão de mensagem no pedido.</p>
             <AvisoSemCobranca d={d} className="mt-4 rounded-2xl p-3 text-sm" />
-            <button type="button" disabled={d.demo} className="mt-4 inline-flex min-h-14 w-full items-center justify-center rounded-full text-lg font-extrabold disabled:opacity-60" style={{ background: "var(--t-accent)", color: "#fff" }}>{rotuloFinalizar(d)}</button>
+            <button type="button" aria-disabled={d.demo} className="mt-4 inline-flex min-h-14 w-full items-center justify-center rounded-full text-lg font-extrabold aria-disabled:cursor-not-allowed" style={{ background: "var(--t-accent)", color: "var(--t-on-accent)" }}>{rotuloFinalizar(d)}</button>
           </aside>
         </div>
       )}

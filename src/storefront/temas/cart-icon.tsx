@@ -37,7 +37,7 @@ export function CartIcon({
       {quantidade > 0 ? (
         <span
           className="absolute top-0 right-0 flex size-5 items-center justify-center rounded-full text-[11px] font-bold"
-          style={{ background: "var(--t-accent)", color: "var(--t-fg)" }}
+          style={{ background: "var(--t-accent)", color: "var(--t-on-accent)" }}
         >
           {quantidade}
         </span>

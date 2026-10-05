@@ -10,14 +10,7 @@ import sharp from "sharp";
 import { mkdirSync } from "node:fs";
 
 const BASE = process.argv[2] || "http://localhost:3066";
-const TEMAS = {
-  classica: ["cafe", "romantica", "corporativa"],
-  boutique: ["flores", "premium", "noivas"],
-  mercado: ["empresas", "datas", "atacado"],
-  festa: ["aniversario", "infantil", "cha-de-bebe"],
-  noir: ["vinhos", "corporativo", "natal"],
-  rustico: ["cafe-colonial", "fazenda", "pascoa"],
-};
+import { TEMAS } from "./modelos-lista.mjs";
 
 mkdirSync("public/modelos", { recursive: true });
 const browser = await chromium.launch();

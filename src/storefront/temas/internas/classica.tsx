@@ -178,7 +178,7 @@ export function CarrinhoClassica({ d }: { d: DadosLoja }) {
             <p className="mt-1 flex justify-between text-sm" style={{ color: "var(--t-muted)" }}><span>Entrega</span><span>no pedido</span></p>
             <p className="mt-3 flex justify-between border-t pt-3 text-xl" style={{ borderColor: "var(--t-line)" }}><span>Total</span><b>{brl(total)}</b></p>
             <AvisoSemCobranca d={d} className="mt-4 rounded-lg p-3 text-sm" />
-            <button type="button" disabled={d.demo} className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-full px-6 font-semibold disabled:opacity-50" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>{rotuloFinalizar(d)}</button>
+            <button type="button" aria-disabled={d.demo} className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-full px-6 font-semibold aria-disabled:cursor-not-allowed" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>{rotuloFinalizar(d)}</button>
           </aside>
         </div>
       )}

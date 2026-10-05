@@ -9,12 +9,14 @@ import {
   CabecalhoBoutique, CabecalhoClassica, CabecalhoFesta, CabecalhoMercado, CabecalhoNoir, CabecalhoRustico,
   RodapeBoutique, RodapeClassica, RodapeFesta, RodapeMercado, RodapeNoir, RodapeRustico,
 } from "./casca";
+import { NOVOS_CABECALHOS, NOVOS_HOMES, NOVOS_RODAPES } from "./novos";
 import type { DadosLoja, TemaKey } from "./types";
 
 type C = ComponentType<{ d: DadosLoja }>;
 
 /** Modelo → página inicial. Um componente por modelo (esqueletos diferentes de verdade). */
 export const HOMES: Record<TemaKey, C> = {
+  ...NOVOS_HOMES,
   classica: HomeClassica,
   boutique: HomeBoutique,
   mercado: HomeMercado,
@@ -24,6 +26,7 @@ export const HOMES: Record<TemaKey, C> = {
 };
 
 export const CABECALHOS: Record<TemaKey, C> = {
+  ...NOVOS_CABECALHOS,
   classica: CabecalhoClassica,
   boutique: CabecalhoBoutique,
   mercado: CabecalhoMercado,
@@ -33,6 +36,7 @@ export const CABECALHOS: Record<TemaKey, C> = {
 };
 
 export const RODAPES: Record<TemaKey, C> = {
+  ...NOVOS_RODAPES,
   classica: RodapeClassica,
   boutique: RodapeBoutique,
   mercado: RodapeMercado,

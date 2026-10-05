@@ -109,7 +109,7 @@ export function RodapeMercado({ d }: { d: DadosLoja }) {
 export function CabecalhoFesta({ d }: { d: DadosLoja }) {
   return (
     <>
-      <div className="px-4 py-2 text-center text-sm font-bold" style={{ background: "var(--t-accent)", color: "var(--t-fg)" }}>{d.aviso}</div>
+      <div className="px-4 py-2 text-center text-sm font-bold" style={{ background: "var(--t-accent)", color: "var(--t-on-accent)" }}>{d.aviso}</div>
       <header className="mx-auto flex max-w-[1300px] flex-wrap items-center gap-4 px-5 py-5">
         <p className="text-2xl font-extrabold sm:text-4xl" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}><a href={d.base || "/"}>{d.loja}</a></p>
         <nav className="hidden flex-wrap gap-2 md:flex" aria-label="Categorias">

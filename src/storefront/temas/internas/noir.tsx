@@ -129,7 +129,7 @@ export function CarrinhoNoir({ d }: { d: DadosLoja }) {
             <p className="mt-2 text-4xl" style={{ fontFamily: "var(--t-titulo)" }}>{brl(total)}</p>
             <p className="mt-2 text-sm" style={{ color: "var(--t-muted)" }}>Entrega e cartão de mensagem no pedido.</p>
             <AvisoSemCobranca d={d} className="mt-4 border p-3 text-sm" />
-            <button type="button" disabled={d.demo} className={`mt-5 inline-flex min-h-14 w-full items-center justify-center ${CAPS} font-semibold disabled:opacity-50`} style={{ background: "var(--t-accent)", color: "var(--t-bg)" }}>{rotuloFinalizar(d)}</button>
+            <button type="button" aria-disabled={d.demo} className={`mt-5 inline-flex min-h-14 w-full items-center justify-center ${CAPS} font-semibold aria-disabled:cursor-not-allowed`} style={{ background: "var(--t-accent)", color: "var(--t-bg)" }}>{rotuloFinalizar(d)}</button>
           </aside>
         </div>
       )}

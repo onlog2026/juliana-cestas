@@ -133,7 +133,7 @@ export function CarrinhoBoutique({ d }: { d: DadosLoja }) {
           <p className={`mt-8 flex justify-between ${CAPS}`}><span>Total</span><span className="text-base tracking-normal normal-case">{brl(total)}</span></p>
           <p className="mt-1 text-xs" style={{ color: "var(--t-muted)" }}>Entrega e cartão de mensagem são escolhidos no pedido.</p>
           <AvisoSemCobranca d={d} className="mt-6 border p-4 text-sm" />
-          <button type="button" disabled={d.demo} className={`mt-6 inline-flex min-h-14 w-full items-center justify-center ${CAPS} font-semibold disabled:opacity-50`} style={{ background: "var(--t-fg)", color: "var(--t-bg)" }}>{rotuloFinalizar(d)}</button>
+          <button type="button" aria-disabled={d.demo} className={`mt-6 inline-flex min-h-14 w-full items-center justify-center ${CAPS} font-semibold aria-disabled:cursor-not-allowed`} style={{ background: "var(--t-fg)", color: "var(--t-bg)" }}>{rotuloFinalizar(d)}</button>
         </>
       )}
     </main>

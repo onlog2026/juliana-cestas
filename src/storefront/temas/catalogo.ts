@@ -1,3 +1,5 @@
+import { S } from "./fotos";
+import { NOVOS_TEMAS } from "./novos";
 import type { Tema, TemaKey } from "./types";
 
 /**
@@ -8,34 +10,8 @@ import type { Tema, TemaKey } from "./types";
  * `heroImagem`: caminho de `public/` ou `slug:<cesta>` (usa a foto da cesta).
  * As fotos de exemplo são de cestas reais da plataforma (uso autorizado).
  */
-const S = {
-  premium: "nova-cesta-muipr2pw",
-  pink: "nova-cesta-criancas-muimg6te",
-  flores: "nova-cesta-arranjo-flores-mu3e1iz1",
-  lady: "nova-cesta-muipeoip",
-  memoravel: "cesta-memoravel",
-  frios: "nova-cesta-mtwbo29q",
-  confraria: "nova-caixa-presente-muhozgsi",
-  sinha: "nova-cesta-maes-muhqb46z",
-  maestro: "nova-caixa-pai-homem-muhokijx",
-  amor: "nova-cesta-namorados-muhsajcb",
-  aconchego: "cesta-aconchego",
-  essencia: "cesta-essencia",
-  executivo: "nova-cesta-executivo-muiluxwv",
-  encanto: "cesta-encanto",
-  blue: "nova-cesta-dia-das-criancas-muimcd7r",
-  porDoSol: "nova-cesta-tarde-muimktaf",
-  afeto: "cesta-afeto",
-  orquidea: "nova-cesta-mu3dwun6",
-  baloes: "nova-cesta-mu3e8s1h",
-  kolanchoe: "nova-cesta-mu3dyz8m",
-  ferrero: "nova-cesta-mu3ec8zz",
-  miniBolo: "nova-cesta-mu3dubq8",
-  coracao: "nova-cesta-mu3e4x6m",
-  caneca: "nova-cesta-mu3dbd2p",
-};
 
-export const TEMAS: Tema[] = [
+const TEMAS_BASE: Tema[] = [
   {
     key: "classica",
     name: "Clássica",
@@ -86,7 +62,7 @@ export const TEMAS: Tema[] = [
       },
       {
         key: "noivas", name: "Noivas",
-        paleta: { bg: "#fbf9f5", fg: "#2a2622", primary: "#2a2622", onPrimary: "#ffffff", accent: "#9a8c7a", surface: "#f2ede5", muted: "#77706a", line: "#e7e0d4" },
+        paleta: { bg: "#fbf9f5", fg: "#2a2622", primary: "#2a2622", onPrimary: "#ffffff", accent: "#9a8c7a", surface: "#f2ede5", muted: "#6a635d", line: "#e7e0d4" },
         fontes: { titulo: "cormorant", texto: "jost" },
         demo: { loja: "Sim, Aceito", aviso: "Lembranças para padrinhos e convidados", titulo: "Presentes para o grande dia", texto: "Cestas para padrinhos, noivos e família.", heroImagem: "slug:" + S.sinha, cestas: [S.sinha, S.lady, S.flores, S.amor, S.memoravel, S.essencia], categorias: ["Padrinhos", "Noivos", "Lembranças", "Flores"] },
       },
@@ -130,13 +106,13 @@ export const TEMAS: Tema[] = [
     variacoes: [
       {
         key: "aniversario", name: "Aniversário",
-        paleta: { bg: "#fff8ec", fg: "#2a1640", primary: "#ff3d7f", onPrimary: "#ffffff", accent: "#ffc400", surface: "#ffffff", muted: "#6b5a7d", line: "#ffe1b8" },
+        paleta: { bg: "#fff8ec", fg: "#2a1640", primary: "#d6165f", onPrimary: "#ffffff", accent: "#ffc400", surface: "#ffffff", muted: "#6b5a7d", line: "#ffe1b8" },
         fontes: { titulo: "baloo", texto: "nunito" },
         demo: { loja: "Festa na Cesta", aviso: "Balões e cartão de parabéns inclusos", titulo: "Parabéns que chega com festa", texto: "Cestas com balões, doces e uma mensagem do seu jeito.", heroImagem: "slug:" + S.pink, cestas: [S.pink, S.blue, S.baloes, S.miniBolo, S.ferrero, S.coracao, S.afeto, S.caneca], categorias: ["Aniversário", "Balões", "Doces", "Bolos", "Mensagens"] },
       },
       {
         key: "infantil", name: "Infantil",
-        paleta: { bg: "#f0fbff", fg: "#13304a", primary: "#0091c2", onPrimary: "#ffffff", accent: "#ff7a59", surface: "#ffffff", muted: "#4f6b80", line: "#cfeefb" },
+        paleta: { bg: "#f0fbff", fg: "#13304a", primary: "#007aa8", onPrimary: "#ffffff", accent: "#ff7a59", surface: "#ffffff", muted: "#4f6b80", line: "#cfeefb" },
         fontes: { titulo: "baloo", texto: "nunito" },
         demo: { loja: "Pequenos Mimos", aviso: "Dia das Crianças: monte o seu piquenique", titulo: "Piquenique para os pequenos", texto: "Lanches, brinquedos e balões numa cesta só.", heroImagem: "slug:" + S.blue, cestas: [S.blue, S.pink, S.baloes, S.miniBolo, S.caneca, S.ferrero, S.coracao, S.afeto], categorias: ["Meninas", "Meninos", "Balões", "Lanches", "Brinquedos"] },
       },
@@ -205,6 +181,9 @@ export const TEMAS: Tema[] = [
     ],
   },
 ];
+
+/** Ondas A (6 esqueletos) + B e C (11 esqueletos novos): 17 modelos × 3 variações. */
+export const TEMAS: Tema[] = [...TEMAS_BASE, ...NOVOS_TEMAS];
 
 export function getTema(key: string): Tema | undefined {
   return TEMAS.find((t) => t.key === key);

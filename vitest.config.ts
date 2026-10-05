@@ -15,6 +15,7 @@ export default defineConfig({
       // `server-only` existe só para o compilador do Next barrar import errado.
       // Em teste ele lança na hora do import; trocamos por um módulo vazio.
       "server-only": path.resolve(__dirname, "tests/stubs/server-only.ts"),
+      "next/font/google": path.resolve(__dirname, "tests/stubs/next-font-google.ts"),
     },
   },
 });

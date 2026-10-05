@@ -1,6 +1,9 @@
 import type { TemaFonte } from "./fonts";
 
-export type TemaKey = "classica" | "boutique" | "mercado" | "festa" | "noir" | "rustico";
+export type TemaKey =
+  | "classica" | "boutique" | "mercado" | "festa" | "noir" | "rustico"
+  | "galeria" | "promo" | "mono" | "stories" | "panorama" | "simetria"
+  | "bairro" | "revista" | "vibrante" | "aconchego" | "empresas";
 
 /** Cores de uma variação. Todas viram variáveis CSS `--t-*` no invólucro do modelo. */
 export type Paleta = {

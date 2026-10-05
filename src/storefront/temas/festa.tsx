@@ -40,7 +40,7 @@ export function HomeFesta({ d }: { d: DadosLoja }) {
           {d.cestas.map((c, i) => (
             <a key={c.nome + i} href={c.href} className="relative block rounded-[1.75rem] p-3 pb-5" style={{ background: PASTEIS[i % 3] }}>
               <Foto src={c.imagem} alt={c.nome} className="aspect-square w-full rounded-[1.25rem] object-cover" />
-              <span className="absolute top-5 right-5 -rotate-6 rounded-full px-3 py-1 text-sm font-extrabold shadow" style={{ background: "var(--t-accent)", color: "var(--t-fg)" }}>{brl(c.preco)}</span>
+              <span className="absolute top-5 right-5 -rotate-6 rounded-full px-3 py-1 text-sm font-extrabold shadow" style={{ background: "var(--t-accent)", color: "var(--t-on-accent)" }}>{brl(c.preco)}</span>
               <p className="mt-3 px-1 text-base leading-tight font-extrabold" style={{ fontFamily: "var(--t-titulo)" }}>{c.nome}</p>
               {c.serve ? <p className="px-1 text-xs" style={{ color: "var(--t-muted)" }}>{c.serve}</p> : null}
             </a>

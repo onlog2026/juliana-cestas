@@ -14,7 +14,7 @@ function Cartao({ p }: { p: ProdutoLoja }) {
   const off = descontoPct(p);
   return (
     <div className="relative flex min-w-0 flex-col rounded-lg border bg-white p-2.5" style={{ borderColor: "var(--t-line)" }}>
-      {off ? <span className="absolute top-3 left-3 z-10 rounded px-1.5 py-0.5 text-xs font-bold" style={{ background: "var(--t-accent)", color: "#fff" }}>-{off}%</span> : null}
+      {off ? <span className="absolute top-3 left-3 z-10 rounded px-1.5 py-0.5 text-xs font-bold" style={{ background: "var(--t-accent)", color: "var(--t-on-accent)" }}>-{off}%</span> : null}
       <a href={p.href} className="block">
         <Foto src={p.fotos[0]} alt={p.nome} className="aspect-square w-full rounded-md object-cover" />
         <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-[13px] leading-snug font-medium">{p.nome}</p>
@@ -154,7 +154,7 @@ export function CarrinhoMercado({ d }: { d: DadosLoja }) {
             <p className="mt-1 flex justify-between text-sm" style={{ color: "var(--t-muted)" }}><span>Frete</span><span>calculado no pedido</span></p>
             <p className="mt-3 flex justify-between border-t pt-3 text-xl font-bold" style={{ borderColor: "var(--t-line)" }}><span>Total</span><span>{brl(total)}</span></p>
             <AvisoSemCobranca d={d} className="mt-3 rounded-md bg-[color-mix(in_srgb,var(--t-fg)_5%,transparent)] p-3 text-sm" />
-            <button type="button" disabled={d.demo} className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-md font-bold disabled:opacity-50" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>{rotuloFinalizar(d)}</button>
+            <button type="button" aria-disabled={d.demo} className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-md font-bold aria-disabled:cursor-not-allowed" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>{rotuloFinalizar(d)}</button>
           </aside>
         </div>
       )}

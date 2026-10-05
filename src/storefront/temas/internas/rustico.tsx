@@ -140,7 +140,7 @@ export function CarrinhoRustico({ d }: { d: DadosLoja }) {
               <p className="mt-5 flex items-baseline justify-between text-3xl" style={MAO}><span>Total</span><span className="underline decoration-wavy underline-offset-4">{brl(total)}</span></p>
               <p className="mt-1 text-lg" style={{ ...MAO, color: "var(--t-muted)" }}>Dia, horário e bilhete: você escolhe no pedido.</p>
               <AvisoSemCobranca d={d} className="mt-5 border border-dashed p-3 text-sm" />
-              <button type="button" disabled={d.demo} className="mt-6 inline-flex min-h-14 w-full items-center justify-center border-2 border-dashed text-2xl disabled:opacity-50" style={{ ...MAO, borderColor: "var(--t-primary)", background: "var(--t-primary)", color: "var(--t-on-primary)" }}>{rotuloFinalizar(d)}</button>
+              <button type="button" aria-disabled={d.demo} className="mt-6 inline-flex min-h-14 w-full items-center justify-center border-2 border-dashed text-2xl aria-disabled:cursor-not-allowed" style={{ ...MAO, borderColor: "var(--t-primary)", background: "var(--t-primary)", color: "var(--t-on-primary)" }}>{rotuloFinalizar(d)}</button>
             </>
           )}
         </div>

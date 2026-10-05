@@ -11,14 +11,7 @@ import { chromium } from "playwright";
 
 const BASE = process.argv[2] || "http://localhost:3066";
 const SO_MODELO = process.argv[3];
-const TEMAS = {
-  classica: ["cafe", "romantica", "corporativa"],
-  boutique: ["flores", "premium", "noivas"],
-  mercado: ["empresas", "datas", "atacado"],
-  festa: ["aniversario", "infantil", "cha-de-bebe"],
-  noir: ["vinhos", "corporativo", "natal"],
-  rustico: ["cafe-colonial", "fazenda", "pascoa"],
-};
+import { TEMAS } from "./modelos-lista.mjs";
 const LARGURAS = [360, 768, 1440];
 const falhas = [];
 let telas = 0;
