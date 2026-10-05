@@ -68,7 +68,7 @@ export function PreviaBar({
         <p className="hidden shrink-0 text-sm font-semibold md:block">Prévia · {nomeModelo}</p>
         <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group" aria-label="Variações">
           {variacoes.map((v) => (
-            <Link key={v.key} href={`/admin/previa/${modelo}/${v.key}${resto}`} aria-current={v.key === variante} className="flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-3 text-sm whitespace-nowrap" style={{ borderColor: v.key === variante ? "#fff" : "rgba(255,255,255,.3)", background: v.key === variante ? "rgba(255,255,255,.14)" : "transparent" }}>
+            <Link key={v.key} href={`/admin/previa/${modelo}/${v.key}${resto}`} scroll={false} onClick={() => window.scrollTo(0, 0)} aria-current={v.key === variante} className="flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-3 text-sm whitespace-nowrap" style={{ borderColor: v.key === variante ? "#fff" : "rgba(255,255,255,.3)", background: v.key === variante ? "rgba(255,255,255,.14)" : "transparent" }}>
               <span className="size-3 rounded-full" style={{ background: v.cor, boxShadow: "0 0 0 1px rgba(255,255,255,.6)" }} aria-hidden="true" />{v.nome}
             </Link>
           ))}

@@ -30,6 +30,8 @@ export function TestarBar({ modelo, nomeModelo, variante, variacoes }: { modelo:
           <Link
             key={v.key}
             href={`/demo/${modelo}/${v.key}${resto}`}
+            scroll={false}
+            onClick={() => window.scrollTo(0, 0)}
             aria-current={v.key === variante}
             className="flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-3 text-sm whitespace-nowrap"
             style={{ borderColor: v.key === variante ? "#fff" : "rgba(255,255,255,.3)", background: v.key === variante ? "rgba(255,255,255,.14)" : "transparent" }}
