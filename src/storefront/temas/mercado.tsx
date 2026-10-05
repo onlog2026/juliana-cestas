@@ -25,7 +25,7 @@ export function HomeMercado({ d }: { d: DadosLoja }) {
   return (
     <>
 
-      <div className="mx-auto max-w-[1400px] px-4 py-5">
+      <div className="mx-auto max-w-[2000px] px-4 py-5">
         <section className="grid gap-3 md:grid-cols-3 md:grid-rows-2">
           {[b1, b2, b3].map((b, i) => b ? (
             <div key={b.nome} className={`relative overflow-hidden rounded-lg ${i === 0 ? "md:col-span-2 md:row-span-2" : ""}`}>

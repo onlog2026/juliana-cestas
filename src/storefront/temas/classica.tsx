@@ -10,13 +10,13 @@ export function HomeClassica({ d }: { d: DadosLoja }) {
       <section className="relative">
         <Foto src={d.heroImagem} alt="" className="aspect-[4/5] w-full object-cover sm:aspect-[21/8]" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-        <div className="absolute bottom-0 left-0 max-w-[1400px] p-6 sm:p-12">
+        <div className="absolute bottom-0 left-0 max-w-[2000px] p-6 sm:p-12">
           <h1 className="max-w-3xl text-3xl text-white sm:text-5xl" style={{ fontFamily: "var(--t-titulo)", textShadow: "0 2px 14px rgba(0,0,0,.4)" }}>{d.titulo}</h1>
           <span className="mt-4 inline-flex h-11 items-center rounded-full px-6 text-sm font-semibold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>Ver cestas</span>
         </div>
       </section>
 
-      <div className="mx-auto max-w-[1400px] px-5">
+      <div className="mx-auto max-w-[2000px] px-5">
         <div className="flex flex-wrap gap-6 py-8">
           {d.categorias.map((c) => (
             <div key={c.nome} className="flex w-20 flex-col items-center gap-2 text-center text-xs sm:w-24 sm:text-sm">

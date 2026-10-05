@@ -7,11 +7,11 @@ import { Regua } from "./pecas";
 export function Cabecalho({ d }: { d: DadosLoja }) {
   return (
     <header>
-      <div className="mx-auto flex max-w-[1400px] items-center gap-3 px-4 sm:px-6 lg:px-10">
+      <div className="mx-auto flex max-w-[2000px] items-center gap-3 px-4 sm:px-6 lg:px-10">
         <p className="min-w-0 flex-1 truncate py-2 text-[11px] tracking-[0.14em] uppercase" style={{ fontFamily: "var(--t-detalhe)", color: "var(--t-muted)" }}>{d.aviso}</p>
         <CartIcon base={d.base} icone="sacola" className="size-5" />
       </div>
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-10">
+      <div className="mx-auto max-w-[2000px] px-4 sm:px-6 lg:px-10">
         <Regua />
         <p className="py-4 text-center text-[clamp(2.25rem,9vw,5.5rem)] leading-none [overflow-wrap:anywhere]" style={{ fontFamily: "var(--t-titulo)" }}>
           <a href={d.base || "/"} className="inline-flex min-h-11 items-center">{d.loja}</a>
@@ -31,7 +31,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
 export function Rodape({ d }: { d: DadosLoja }) {
   return (
     <footer className="mt-20 px-4 pb-10 sm:px-6 lg:px-10">
-      <div className="mx-auto max-w-[1400px]">
+      <div className="mx-auto max-w-[2000px]">
         <Regua />
         <div className="grid grid-cols-[minmax(0,1fr)] gap-8 py-8 text-sm sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
           <div className="min-w-0">

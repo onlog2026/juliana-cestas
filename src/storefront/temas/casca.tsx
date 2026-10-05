@@ -13,14 +13,14 @@ export function CabecalhoClassica({ d }: { d: DadosLoja }) {
     <>
       <div className="px-4 py-2 text-center text-sm" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>{d.aviso}</div>
       <header className="border-b" style={{ borderColor: "var(--t-line)" }}>
-        <div className="mx-auto flex max-w-[1400px] items-center gap-6 px-5 py-4">
+        <div className="mx-auto flex max-w-[2000px] items-center gap-6 px-5 py-4">
           <p className="text-3xl whitespace-nowrap" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}><a href={d.base || "/"}>{d.loja}</a></p>
           <div className="mx-auto hidden h-11 max-w-xl flex-1 items-center gap-2 rounded-full border bg-white px-4 text-sm md:flex" style={{ borderColor: "var(--t-line)", color: "var(--t-muted)" }}>
             <Search className="size-4" aria-hidden="true" /> Buscar cestas, ocasiões…
           </div>
           <div className="ml-auto flex items-center gap-5"><User className="size-5" /><CartIcon base={d.base} icone="sacola" className="size-5" /></div>
         </div>
-        <nav className="mx-auto hidden max-w-[1400px] gap-8 px-5 pb-3 text-sm md:flex" aria-label="Categorias">
+        <nav className="mx-auto hidden max-w-[2000px] gap-8 px-5 pb-3 text-sm md:flex" aria-label="Categorias">
           {d.categorias.map((c) => <a key={c.nome} href={c.href}>{c.nome}</a>)}
         </nav>
       </header>
@@ -32,7 +32,7 @@ export function RodapeClassica({ d }: { d: DadosLoja }) {
   return (
     <>
       <footer className="border-t px-5 py-10 text-sm" style={{ borderColor: "var(--t-line)", background: "var(--t-surface)", color: "var(--t-muted)" }}>
-        <div className="mx-auto grid max-w-[1400px] gap-6 sm:grid-cols-3">
+        <div className="mx-auto grid max-w-[2000px] gap-6 sm:grid-cols-3">
           <p className="text-xl" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}><a href={d.base || "/"}>{d.loja}</a></p>
           <p>Atendimento de segunda a sábado<br />WhatsApp e e-mail</p>
           <p>Trocas e devoluções<br />Política de privacidade</p>
@@ -73,7 +73,7 @@ export function CabecalhoMercado({ d }: { d: DadosLoja }) {
     <>
       <div className="px-4 py-1.5 text-center text-xs font-semibold" style={{ background: "var(--t-fg)", color: "var(--t-bg)" }}>{d.aviso}</div>
       <header className="bg-white">
-        <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-4 px-4 py-4">
+        <div className="mx-auto flex max-w-[2000px] flex-wrap items-center gap-4 px-4 py-4">
           <p className="text-2xl font-black tracking-tight" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}><a href={d.base || "/"}>{d.loja}</a></p>
           <div className="order-3 flex h-12 w-full overflow-hidden rounded-lg border-2 sm:order-none sm:w-auto sm:flex-1" style={{ borderColor: "var(--t-primary)" }}>
             <span className="flex flex-1 items-center gap-2 px-3 text-sm" style={{ color: "var(--t-muted)" }}><Search className="size-4" />O que você procura?</span>
@@ -82,7 +82,7 @@ export function CabecalhoMercado({ d }: { d: DadosLoja }) {
           <div className="ml-auto flex gap-5 text-xs"><span className="flex flex-col items-center"><User className="size-5" />Entrar</span><span className="flex flex-col items-center"><CartIcon base={d.base} icone="carrinho" className="size-5" />Carrinho</span></div>
         </div>
         <nav className="border-t" style={{ borderColor: "var(--t-line)" }} aria-label="Categorias">
-          <div className="mx-auto flex max-w-[1400px] gap-2 overflow-x-auto px-4 py-2 text-sm font-semibold">
+          <div className="mx-auto flex max-w-[2000px] gap-2 overflow-x-auto px-4 py-2 text-sm font-semibold">
             {d.categorias.map((c) => <a key={c.nome} href={c.href} className="shrink-0 rounded-md px-3 py-2" style={{ background: "var(--t-bg)" }}>{c.nome}</a>)}
           </div>
         </nav>
@@ -95,7 +95,7 @@ export function RodapeMercado({ d }: { d: DadosLoja }) {
   return (
     <>
       <footer className="mt-10 px-4 py-10 text-sm" style={{ background: "var(--t-fg)", color: "var(--t-bg)" }}>
-        <div className="mx-auto grid max-w-[1400px] gap-6 sm:grid-cols-4">
+        <div className="mx-auto grid max-w-[2000px] gap-6 sm:grid-cols-4">
           <p className="text-xl font-black" style={{ fontFamily: "var(--t-titulo)" }}><a href={d.base || "/"}>{d.loja}</a></p>
           <p>Institucional<br />Sobre nós<br />Trabalhe conosco</p>
           <p>Ajuda<br />Entregas<br />Trocas</p>
@@ -110,7 +110,7 @@ export function CabecalhoFesta({ d }: { d: DadosLoja }) {
   return (
     <>
       <div className="px-4 py-2 text-center text-sm font-bold" style={{ background: "var(--t-accent)", color: "var(--t-on-accent)" }}>{d.aviso}</div>
-      <header className="mx-auto flex max-w-[1300px] flex-wrap items-center gap-4 px-5 py-5">
+      <header className="mx-auto flex max-w-[2000px] flex-wrap items-center gap-4 px-5 py-5">
         <p className="text-2xl font-extrabold sm:text-4xl" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}><a href={d.base || "/"}>{d.loja}</a></p>
         <nav className="hidden flex-wrap gap-2 md:flex" aria-label="Categorias">
           {d.categorias.map((c, i) => (
@@ -141,7 +141,7 @@ export function CabecalhoNoir({ d }: { d: DadosLoja }) {
   return (
     <>
       <header className="border-b" style={{ borderColor: "color-mix(in srgb, var(--t-primary) 35%, transparent)" }}>
-        <div className="mx-auto flex max-w-[1400px] items-center gap-8 px-6 py-5">
+        <div className="mx-auto flex max-w-[2000px] items-center gap-8 px-6 py-5">
           <p className="text-base tracking-[0.2em] uppercase sm:text-2xl sm:tracking-[0.35em]" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}><a href={d.base || "/"}>{d.loja}</a></p>
           <nav className="hidden gap-8 text-[12px] tracking-[0.25em] uppercase md:flex" style={{ color: "var(--t-muted)" }} aria-label="Categorias">
             {d.categorias.map((c) => <a key={c.nome} href={c.href}>{c.nome}</a>)}

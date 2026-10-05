@@ -23,7 +23,7 @@ export function HomeFesta({ d }: { d: DadosLoja }) {
         </div>
       </section>
 
-      <div className="mx-auto max-w-[1300px] px-5">
+      <div className="mx-auto max-w-[2000px] px-5">
         <div className="flex flex-wrap justify-center gap-5 py-10">
           {d.categorias.map((c, i) => (
             <div key={c.nome} className="flex flex-col items-center gap-2 text-sm font-bold">

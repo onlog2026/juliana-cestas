@@ -16,7 +16,7 @@ export function Home({ d }: { d: DadosLoja }) {
     <main className={COL} style={COL_STYLE}>
       {grupos.length ? <Historias grupos={grupos} /> : null}
 
-      <section className="flex min-w-0 items-center gap-4 border-y px-4 py-5" style={{ borderColor: "var(--t-line)", background: "var(--t-surface)" }}>
+      <section className="flex min-w-0 items-center gap-4 border-y px-4 py-5 md:px-6 lg:px-10" style={{ borderColor: "var(--t-line)", background: "var(--t-surface)" }}>
         <Avatar imagem={d.heroImagem} alt="" tamanho="size-20" />
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl leading-tight font-bold" style={{ fontFamily: "var(--t-titulo)" }}>{d.titulo}</h1>
@@ -24,13 +24,13 @@ export function Home({ d }: { d: DadosLoja }) {
         </div>
       </section>
 
-      <section aria-label="Novidades" className="mt-2">
+      <section aria-label="Novidades" className="mt-2 md:mt-5 md:grid md:grid-cols-2 md:gap-5 md:px-6 lg:grid-cols-3 lg:px-10 2xl:grid-cols-4">
         {d.cestas.slice(0, 8).map((c) => <Post key={c.href} p={c} loja={d.loja} avatar={d.heroImagem} />)}
       </section>
 
-      <section className="px-4 pt-8" aria-labelledby="explorar">
+      <section className="px-4 pt-8 md:px-6 lg:px-10" aria-labelledby="explorar">
         <h2 id="explorar" className="text-lg font-bold" style={{ fontFamily: "var(--t-titulo)" }}>Explorar por ocasião</h2>
-        <div className="mt-4 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3">
+        <div className="mt-4 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 md:grid-cols-4 lg:grid-cols-6">
           {d.categorias.map((c) => (
             <a key={c.slug} href={c.href} className="group block min-w-0">
               <div className="overflow-hidden rounded-2xl border" style={{ borderColor: "var(--t-line)" }}>

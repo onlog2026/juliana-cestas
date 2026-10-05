@@ -29,7 +29,7 @@ export function Home({ d }: { d: DadosLoja }) {
       <section className="gal-hero relative h-[85dvh] min-h-[480px] w-full overflow-hidden">
         <Foto src={d.heroImagem} alt={d.titulo} className="absolute inset-0 size-full object-cover" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(10,8,6,.62), rgba(10,8,6,.08) 55%, rgba(10,8,6,.12))" }} aria-hidden="true" />
-        <div className="absolute inset-x-0 bottom-0 mx-auto flex max-w-[1500px] flex-col gap-5 px-5 pb-12 sm:px-10 sm:pb-16" style={{ color: "#fff" }}>
+        <div className="absolute inset-x-0 bottom-0 mx-auto flex max-w-[2000px] flex-col gap-5 px-5 pb-12 sm:px-10 sm:pb-16" style={{ color: "#fff" }}>
           <p className={CAPS}>{d.loja}</p>
           <h1 className="max-w-4xl text-[clamp(2.4rem,7vw,6.2rem)] leading-[1.02] font-normal tracking-[-0.01em]" style={{ fontFamily: "var(--t-titulo)" }}>{d.titulo}</h1>
           <p className="max-w-md text-sm leading-relaxed sm:text-base" style={{ opacity: 0.92 }}>{d.texto}</p>
@@ -38,7 +38,7 @@ export function Home({ d }: { d: DadosLoja }) {
       </section>
 
       {/* Vitrine */}
-      <section className="mx-auto max-w-[1500px] px-5 pt-24 pb-10 sm:px-10 sm:pt-36" aria-labelledby="vitrine">
+      <section className="mx-auto max-w-[2000px] px-5 pt-24 pb-10 sm:px-10 sm:pt-36" aria-labelledby="vitrine">
         <div className="flex items-end justify-between gap-6 border-b pb-5" style={{ borderColor: "var(--t-line)" }}>
           <h2 id="vitrine" className="text-4xl sm:text-6xl" style={{ fontFamily: "var(--t-titulo)" }}>A coleção</h2>
           <p className={CAPS} style={{ color: "var(--t-muted)" }}>{pecas.length} peças</p>
@@ -67,7 +67,7 @@ export function Home({ d }: { d: DadosLoja }) {
 
       {/* Nossa história */}
       <section className="mt-16 border-y" style={{ background: "var(--t-surface)", borderColor: "var(--t-line)" }} aria-labelledby="historia">
-        <div className="mx-auto grid max-w-[1500px] grid-cols-[minmax(0,1fr)] items-center gap-12 px-5 py-20 sm:px-10 lg:grid-cols-2 lg:gap-24 lg:py-32">
+        <div className="mx-auto grid max-w-[2000px] grid-cols-[minmax(0,1fr)] items-center gap-12 px-5 py-20 sm:px-10 lg:grid-cols-2 lg:gap-24 lg:py-32">
           <div className="min-w-0 lg:pr-10">
             <Foto src={apoio} alt="" className="aspect-[4/5] w-full max-w-md object-cover lg:ml-auto" />
           </div>
@@ -82,7 +82,7 @@ export function Home({ d }: { d: DadosLoja }) {
       </section>
 
       {/* Coleções em lista */}
-      <section className="mx-auto max-w-[1500px] px-5 pt-24 sm:px-10" aria-labelledby="colecoes">
+      <section className="mx-auto max-w-[2000px] px-5 pt-24 sm:px-10" aria-labelledby="colecoes">
         <h2 id="colecoes" className={CAPS} style={{ color: "var(--t-muted)" }}>Escolha por ocasião</h2>
         <ul className="mt-6 border-t" style={{ borderColor: "var(--t-line)" }}>
           {d.categorias.map((c, i) => (
@@ -98,7 +98,7 @@ export function Home({ d }: { d: DadosLoja }) {
       </section>
 
       {/* Promessas */}
-      <section className="mx-auto grid max-w-[1500px] grid-cols-[minmax(0,1fr)] gap-10 px-5 pt-24 sm:grid-cols-3 sm:px-10">
+      <section className="mx-auto grid max-w-[2000px] grid-cols-[minmax(0,1fr)] gap-10 px-5 pt-24 sm:grid-cols-3 sm:px-10">
         {[["I", "Montada à mão", "Cada peça é preparada no dia da entrega."], ["II", "Data e horário marcados", "Você escolhe quando a cesta chega."], ["III", "Cartão escrito por você", "A mensagem vai junto, do seu jeito."]].map(([n, t, x]) => (
           <div key={n} className="min-w-0 border-t pt-5" style={{ borderColor: "var(--t-line)" }}>
             <p className="text-2xl" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-accent)" }}>{n}</p>

@@ -10,7 +10,7 @@ export function HomeNoir({ d }: { d: DadosLoja }) {
       <section className="relative">
         <Foto src={d.heroImagem} alt="" className="aspect-[3/4] w-full object-cover sm:aspect-[16/7]" style={{ filter: "brightness(.55) saturate(.9)" }} />
         <div className="absolute inset-0 flex items-center">
-          <div className="mx-auto w-full max-w-[1400px] px-6 sm:px-12">
+          <div className="mx-auto w-full max-w-[2000px] px-6 sm:px-12">
             <p className="text-[12px] tracking-[0.4em] uppercase" style={{ color: "var(--t-primary)" }}>{d.aviso}</p>
             <h1 className="mt-5 max-w-3xl text-3xl leading-[1.05] sm:text-6xl lg:text-7xl" style={{ fontFamily: "var(--t-titulo)" }}>{d.titulo}</h1>
             <span className="mt-8 inline-flex h-12 items-center border px-8 text-[12px] tracking-[0.3em] uppercase" style={{ borderColor: "var(--t-primary)", color: "var(--t-primary)" }}>Conhecer a coleção</span>
@@ -18,7 +18,7 @@ export function HomeNoir({ d }: { d: DadosLoja }) {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1400px] px-6 py-20">
+      <section className="mx-auto max-w-[2000px] px-6 py-20">
         <div className="flex items-center gap-6">
           <span className="h-px flex-1" style={{ background: "var(--t-line)" }} />
           <h2 className="text-3xl italic" style={{ fontFamily: "var(--t-titulo)" }}>A coleção</h2>

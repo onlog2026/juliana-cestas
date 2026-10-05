@@ -11,7 +11,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
   return (
     <>
       <div className="px-4 py-2 text-sm" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>
-        <div className="mx-auto flex max-w-[1400px] items-center gap-3 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mx-auto flex max-w-[2000px] items-center gap-3 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {lista.length ? (
             <>
               <span className="flex shrink-0 items-center gap-1.5 font-bold"><MapPin className="size-4" aria-hidden="true" /> Entregamos em:</span>
@@ -23,7 +23,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
         </div>
       </div>
       <header className="border-b" style={{ borderColor: "var(--t-line)", background: "var(--t-surface)" }}>
-        <div className="mx-auto flex max-w-[1400px] items-center gap-3 px-4 py-3 sm:px-6 lg:px-10">
+        <div className="mx-auto flex max-w-[2000px] items-center gap-3 px-4 py-3 sm:px-6 lg:px-10">
           <a href={d.base || "/"} className="flex min-h-11 min-w-0 items-center gap-2.5">
             <span className="flex size-10 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}><Store className="size-5" aria-hidden="true" /></span>
             <span className="truncate text-xl font-bold sm:text-2xl" style={{ fontFamily: "var(--t-titulo)" }}>{d.loja}</span>
@@ -39,7 +39,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
           </div>
         </div>
         <nav aria-label="Categorias" className="border-t" style={{ borderColor: "var(--t-line)" }}>
-          <div className="mx-auto flex max-w-[1400px] gap-1 overflow-x-auto px-3 sm:px-5 lg:px-9 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mx-auto flex max-w-[2000px] gap-1 overflow-x-auto px-3 sm:px-5 lg:px-9 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <a href={`${d.base}/categoria`} className="shrink-0 px-3 text-sm font-semibold whitespace-nowrap">Todas</a>
             {d.categorias.map((c) => <a key={c.slug} href={c.href} className="shrink-0 px-3 text-sm whitespace-nowrap">{c.nome}</a>)}
           </div>
@@ -52,7 +52,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
 export function Rodape({ d }: { d: DadosLoja }) {
   return (
     <footer className="mt-16 border-t" style={{ borderColor: "var(--t-line)", background: "var(--t-surface)" }}>
-      <div className="mx-auto grid max-w-[1400px] grid-cols-[minmax(0,1fr)] gap-8 px-4 py-10 text-sm sm:grid-cols-3 sm:px-6 lg:px-10">
+      <div className="mx-auto grid max-w-[2000px] grid-cols-[minmax(0,1fr)] gap-8 px-4 py-10 text-sm sm:grid-cols-3 sm:px-6 lg:px-10">
         <div className="min-w-0">
           <p className="text-xl font-bold" style={{ fontFamily: "var(--t-titulo)" }}><a href={d.base || "/"}>{d.loja}</a></p>
           <p className="mt-2 max-w-xs leading-relaxed" style={{ color: "var(--t-muted)" }}>Loja do bairro: cada cesta é montada para o dia e a hora que você escolher.</p>

@@ -13,7 +13,7 @@ import type { PlatformContent } from "@/modules/platform/landing-content";
 export function LandingHeader({ branding }: { branding: PlatformContent["branding"] }) {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-[2000px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         {/* `min-h-11`: alvo de toque de 44px também no logotipo -- sem isso a
             altura era a da imagem (32px) e o link ficava difícil de acertar. */}
         <a href="/plataforma" className="flex min-h-11 min-w-0 items-center gap-2">

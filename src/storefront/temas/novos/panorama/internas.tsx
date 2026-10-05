@@ -11,7 +11,7 @@ import { ALTURA_TELA } from "./estilo";
 /** PANORAMA (internas) — categoria em painéis grandes alternados; cesta com foto presa à esquerda e texto rolando à direita; carrinho em duas metades. */
 
 const EYEBROW = "text-xs font-semibold tracking-[0.25em] uppercase";
-const LARG = "mx-auto w-full max-w-[1600px] px-5 sm:px-8";
+const LARG = "mx-auto w-full max-w-[2000px] px-5 sm:px-8";
 
 export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
   const { cat, titulo, lista, ordem, setOrdem, faixa, setFaixa } = useLista(d, slug);

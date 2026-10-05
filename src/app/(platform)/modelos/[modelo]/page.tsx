@@ -45,14 +45,14 @@ export default async function ModeloPage(props: { params: Promise<{ modelo: stri
   return (
     <>
       <LandingHeader branding={branding} />
-      <main className="mx-auto max-w-6xl px-4 pt-8 pb-32 sm:px-6 lg:px-8 lg:pb-24">
+      <main className="mx-auto max-w-[2000px] px-4 pt-8 pb-32 sm:px-6 lg:px-10 lg:pb-24 2xl:px-14">
         <p className="mb-5 text-sm text-muted-foreground">
           <Link href="/modelos" className="hover:text-foreground">Modelos</Link> / {modelo.name}
         </p>
         <ModelStage modelo={modelo} ficha={ficha} />
 
         <h2 className="mt-20 font-display text-3xl text-foreground">Outros modelos</h2>
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {outros.map((m) => (
             <Link key={m.key} href={`/modelos/${m.key}`} className="rounded-2xl border border-border bg-card p-3 hover:shadow-lg">
               <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-secondary">

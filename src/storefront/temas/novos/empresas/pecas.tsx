@@ -8,7 +8,7 @@ import type { DadosLoja } from "../../types";
  * informativos e a tabela de quantidades de EXEMPLO (rotulada como exemplo).
  */
 
-export const wrapE = "mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8";
+export const wrapE = "mx-auto w-full max-w-[2000px] px-4 sm:px-6 lg:px-10 2xl:px-14";
 
 /** Rótulo pequeno em caixa-alta (fonte de detalhe) que antecede os títulos. */
 export function Rotulo({ children, className }: { children: ReactNode; className?: string }) {

@@ -14,7 +14,7 @@ export function HomeRustico({ d }: { d: DadosLoja }) {
   return (
     <div style={PAPEL}>
 
-      <section className="mx-auto grid max-w-[1200px] items-center gap-10 px-6 py-12 md:grid-cols-[1.1fr_1fr]">
+      <section className="mx-auto grid max-w-[2000px] items-center gap-10 px-6 py-12 md:grid-cols-[1.1fr_1fr]">
         <div className="relative mx-auto w-full max-w-xl -rotate-2 bg-white p-3 pb-14 shadow-[0_18px_40px_-18px_rgba(60,40,20,.5)]">
           <Foto src={d.heroImagem} alt="" className="aspect-[4/3] w-full object-cover" />
           <p className="absolute bottom-3 left-0 w-full text-center text-2xl" style={{ fontFamily: "var(--t-detalhe)", color: "var(--t-fg)" }}>feito hoje cedinho</p>
@@ -27,7 +27,7 @@ export function HomeRustico({ d }: { d: DadosLoja }) {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1200px] px-6 pb-16">
+      <section className="mx-auto max-w-[2000px] px-6 pb-16">
         <h2 className="text-center text-4xl" style={{ fontFamily: "var(--t-detalhe)", color: "var(--t-primary)" }}>Nossas cestas da semana</h2>
         <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-12 lg:grid-cols-3">
           {d.cestas.slice(0, 6).map((c, i) => (

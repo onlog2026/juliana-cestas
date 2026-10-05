@@ -47,7 +47,7 @@ export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
       <p className="px-4 pb-2 text-xs" style={{ color: "var(--t-muted)" }} aria-live="polite">{lista.length} {lista.length === 1 ? "cesta" : "cestas"}</p>
 
       {lista.length ? (
-        <div className="border-t" style={{ borderColor: "var(--t-line)" }}>
+        <div className="border-t md:grid md:grid-cols-2 md:gap-5 md:border-t-0 md:px-6 md:pt-2 lg:grid-cols-3 lg:px-10 2xl:grid-cols-4" style={{ borderColor: "var(--t-line)" }}>
           {lista.map((p) => <Post key={p.slug} p={{ nome: p.nome, preco: p.preco, precoDe: p.precoDe, imagem: p.fotos[0] ?? "", serve: p.serve, href: p.href }} loja={d.loja} avatar={avatar} />)}
         </div>
       ) : (
@@ -76,9 +76,10 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
 
   return (
     <main className={`${COL} pb-36`} style={COL_STYLE}>
-      <div className="px-4 py-3"><CaminhoPao d={d} p={p} cat={cat ? { nome: cat.nome, href: cat.href } : undefined} /></div>
+      <div className="px-4 py-3 md:px-6 lg:px-10"><CaminhoPao d={d} p={p} cat={cat ? { nome: cat.nome, href: cat.href } : undefined} /></div>
 
-      <div className="relative border-y" style={{ borderColor: "var(--t-line)" }}>
+      <div className="md:grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] md:items-start md:gap-10 md:px-6 lg:px-10">
+      <div className="relative border-y md:overflow-hidden md:rounded-2xl md:border" style={{ borderColor: "var(--t-line)" }}>
         <div ref={trilho} onScroll={ao_rolar} className="flex snap-x snap-mandatory overflow-x-auto" style={ROLA} aria-label="Fotos da cesta" role="group">
           {fotos.map((f, i) => (
             <div key={i} className="aspect-square min-w-0 basis-full shrink-0 snap-center">
@@ -96,7 +97,7 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
         {pct ? <span className="absolute top-3 left-3 rounded-full px-3 py-1 text-xs font-bold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>-{pct}%</span> : null}
       </div>
 
-      <div className="px-4 pt-5">
+      <div className="px-4 pt-5 md:px-0 md:pt-0">
         <h1 className="text-3xl leading-tight font-bold" style={{ fontFamily: "var(--t-titulo)" }}>{p.nome}</h1>
         <p className="mt-2 text-2xl font-bold tabular-nums">
           {p.precoDe ? <s className="mr-2 text-base font-normal" style={{ color: "var(--t-muted)" }}>{brl(p.precoDe)}</s> : null}
@@ -114,12 +115,24 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
           </section>
         ) : null}
         <p className="mt-6 rounded-2xl p-4 text-sm" style={{ background: "var(--t-surface)", color: "var(--t-muted)" }}>Dia e horário de entrega escolhidos no pedido. Cartão de mensagem incluso.</p>
+      {/* Folha de compra: fica no lugar da barra de app e acompanha a rolagem. */}
+      <div data-stories-sheet className="fixed inset-x-0 z-50 mx-auto flex w-full max-w-[560px] items-center gap-3 rounded-t-3xl border-t px-4 pt-3 md:static md:z-auto md:mt-6 md:max-w-none md:rounded-2xl md:border md:px-5 md:py-4" style={{ bottom: "var(--demo-barra-baixo, 0px)", paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))", background: "var(--t-surface)", borderColor: "var(--t-line)" }}>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-xs" style={{ color: "var(--t-muted)" }}>{p.nome}</p>
+          <p className="text-xl font-bold tabular-nums">{brl(p.preco)}</p>
+        </div>
+        <button type="button" data-acao="comprar" onClick={comprar} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-7 font-semibold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>
+          {ok ? <><Check className="size-4" aria-hidden="true" /> Adicionada</> : "Adicionar"}
+        </button>
+        <CartIcon base={d.base} icone="sacola" className="size-6" />
+      </div>
+      </div>
       </div>
 
       {outras.length ? (
         <section className="mt-8" aria-labelledby="mais">
-          <h2 id="mais" className="px-4 text-lg font-bold" style={{ fontFamily: "var(--t-titulo)" }}>Veja também</h2>
-          <div className="mt-3 flex snap-x gap-3 overflow-x-auto px-4 pb-2" style={ROLA}>
+          <h2 id="mais" className="px-4 text-lg font-bold md:px-6 lg:px-10" style={{ fontFamily: "var(--t-titulo)" }}>Veja também</h2>
+          <div className="mt-3 flex snap-x gap-3 overflow-x-auto px-4 pb-2 md:px-6 lg:px-10" style={ROLA}>
             {outras.map((x) => (
               <a key={x.slug} href={x.href} className="group block w-40 shrink-0 snap-start">
                 <div className="overflow-hidden rounded-2xl border" style={{ borderColor: "var(--t-line)" }}>
@@ -133,17 +146,6 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
         </section>
       ) : null}
 
-      {/* Folha de compra: fica no lugar da barra de app e acompanha a rolagem. */}
-      <div data-stories-sheet className="fixed inset-x-0 z-50 mx-auto flex w-full max-w-[560px] items-center gap-3 rounded-t-3xl border-t px-4 pt-3" style={{ bottom: "var(--demo-barra-baixo, 0px)", paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))", background: "var(--t-surface)", borderColor: "var(--t-line)" }}>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-xs" style={{ color: "var(--t-muted)" }}>{p.nome}</p>
-          <p className="text-xl font-bold tabular-nums">{brl(p.preco)}</p>
-        </div>
-        <button type="button" data-acao="comprar" onClick={comprar} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-7 font-semibold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>
-          {ok ? <><Check className="size-4" aria-hidden="true" /> Adicionada</> : "Adicionar"}
-        </button>
-        <CartIcon base={d.base} icone="sacola" className="size-6" />
-      </div>
     </main>
   );
 }
@@ -151,7 +153,7 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
 export function Carrinho({ d }: { d: DadosLoja }) {
   const { itens, total } = useDemoCart();
   return (
-    <main className={`${COL} px-4 pt-5 pb-8`} style={COL_STYLE}>
+    <main className={`${COL} px-4 pt-5 pb-8 md:max-w-4xl`} style={COL_STYLE}>
       <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--t-titulo)" }}>Carrinho</h1>
       {itens.length === 0 ? (
         <CarrinhoVazio d={d} className="mt-6 rounded-3xl border border-dashed p-10 text-center" botao="mt-5 inline-flex min-h-12 items-center rounded-full px-7 font-semibold" />

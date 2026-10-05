@@ -4,7 +4,7 @@ import { Foto, brl } from "../../kit";
 
 export type DadosPost = { nome: string; preco: number; precoDe?: number; imagem: string; serve?: string; href: string };
 
-export const COL = "mx-auto w-full max-w-[560px] sm:border-x";
+export const COL = "mx-auto w-full max-w-[2000px]";
 export const COL_STYLE = { borderColor: "var(--t-line)" } as const;
 
 export function Avatar({ imagem, alt, tamanho = "size-10" }: { imagem?: string; alt: string; tamanho?: string }) {
@@ -20,7 +20,7 @@ export function Avatar({ imagem, alt, tamanho = "size-10" }: { imagem?: string; 
 export function Post({ p, loja, avatar }: { p: DadosPost; loja: string; avatar?: string }) {
   const pct = p.precoDe && p.precoDe > p.preco ? Math.round((1 - p.preco / p.precoDe) * 100) : null;
   return (
-    <article className="border-b pb-5" style={{ borderColor: "var(--t-line)" }}>
+    <article className="border-b pb-5 md:overflow-hidden md:rounded-2xl md:border" style={{ borderColor: "var(--t-line)" }}>
       <div className="flex min-w-0 items-center gap-3 px-4 py-3">
         <Avatar imagem={avatar} alt="" />
         <div className="min-w-0 flex-1">

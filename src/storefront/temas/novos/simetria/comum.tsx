@@ -3,7 +3,7 @@ import { Foto, brl } from "../../kit";
 
 /** SIMETRIA — peças compartilhadas (sem hooks): título entre dois fios, cartão centralizado e medida da página. */
 
-export const LARG = "mx-auto w-full max-w-[1200px] px-4 sm:px-6";
+export const LARG = "mx-auto w-full max-w-[2000px] px-4 sm:px-6 lg:px-10 2xl:px-14";
 export const CAPS = "text-xs font-medium tracking-[0.22em] uppercase";
 
 /** Título de seção centralizado entre dois fios. */

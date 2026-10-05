@@ -9,7 +9,7 @@ import { linkWhats } from "./dados";
  * cartões com selo de entrega, horários + regiões e um grande convite para o WhatsApp.
  */
 export function Home({ d }: { d: DadosLoja }) {
-  const area = "mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10";
+  const area = "mx-auto w-full max-w-[2000px] px-4 sm:px-6 lg:px-10";
   const passos: Array<[typeof Gift, string, string]> = [
     [MousePointerClick, "Escolha a cesta", "Veja as opções e adicione ao carrinho."],
     [CalendarCheck, "Marque o dia e a faixa", "Você define a data e o horário da entrega."],

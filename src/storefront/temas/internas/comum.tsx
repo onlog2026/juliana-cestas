@@ -12,7 +12,7 @@ import type { DadosLoja, ProdutoLoja } from "../types";
  * galeria, resumo — mora no arquivo do próprio modelo.
  */
 
-export const wrap = "mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10";
+export const wrap = "mx-auto w-full max-w-[2000px] px-4 sm:px-6 lg:px-10";
 
 export type Faixa = "" | "ate150" | "150a300" | "300mais";
 export type Ordem = "destaques" | "menor" | "maior";

@@ -38,7 +38,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
         </div>
       </div>
       <header style={{ background: "var(--t-bg)" }}>
-        <div className="mx-auto flex max-w-[1400px] items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6">
+        <div className="mx-auto flex max-w-[2000px] items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6">
           <p className="text-2xl leading-none font-bold tracking-tight whitespace-nowrap uppercase sm:text-4xl" style={{ fontFamily: "var(--t-titulo)" }}>
             <a href={d.base || "/"}>{d.loja}</a>
           </p>
@@ -53,7 +53,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
           </div>
         </div>
         <nav aria-label="Categorias" className="overflow-x-auto" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>
-          <ul className="mx-auto flex max-w-[1400px] items-stretch gap-1 px-2 text-sm font-semibold tracking-wide whitespace-nowrap uppercase sm:px-4">
+          <ul className="mx-auto flex max-w-[2000px] items-stretch gap-1 px-2 text-sm font-semibold tracking-wide whitespace-nowrap uppercase sm:px-4">
             <li><a href={`${d.base}/categoria`} className="px-3 sm:px-4">Todas as ofertas</a></li>
             {d.categorias.map((c) => <li key={c.slug}><a href={c.href} className="px-3 sm:px-4">{c.nome}</a></li>)}
           </ul>
@@ -75,7 +75,7 @@ export function Rodape({ d }: { d: DadosLoja }) {
   return (
     <footer className="mt-16" style={{ background: "var(--t-surface)" }}>
       <div className="promo-faixa" aria-hidden="true" />
-      <div className="mx-auto max-w-[1400px] px-4 py-10 sm:px-6">
+      <div className="mx-auto max-w-[2000px] px-4 py-10 sm:px-6">
         <ul className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4 lg:grid-cols-4">
           {GARANTIAS.map(([I, t, x]) => (
             <li key={t} className="flex min-w-0 items-start gap-3">

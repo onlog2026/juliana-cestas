@@ -8,7 +8,7 @@ import { Estrela, Faixa, GIGANTE, PILULA, blocoEstilo } from "./pecas";
  * cartões sem foto de fundo (bloco colorido + foto recortada em arco) e botões em pílula grossa.
  */
 export function Home({ d }: { d: DadosLoja }) {
-  const area = "mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10";
+  const area = "mx-auto w-full max-w-[2000px] px-4 sm:px-6 lg:px-10";
   const n = d.categorias.length;
   const passos: Array<[string, string]> = [
     ["Escolha", "Ache a cesta com a cara de quem vai receber."],

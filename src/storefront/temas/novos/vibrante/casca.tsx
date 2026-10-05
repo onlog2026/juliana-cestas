@@ -10,7 +10,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
     <>
       <Faixa frases={[d.aviso, "Cartão escrito do seu jeito", "PIX e cartão"]} fundo="var(--t-primary)" texto="var(--t-on-primary)" />
       <header className="relative border-b-[3px]" style={{ borderColor: "var(--t-fg)", background: "var(--t-bg)" }}>
-        <div className="mx-auto flex max-w-[1400px] items-center gap-3 px-4 py-3 sm:px-6 lg:px-10">
+        <div className="mx-auto flex max-w-[2000px] items-center gap-3 px-4 py-3 sm:px-6 lg:px-10">
           <a href={d.base || "/"} className="flex min-h-11 min-w-0 items-center gap-2 text-2xl font-extrabold sm:text-3xl" style={{ fontFamily: "var(--t-titulo)" }}>
             <Estrela className="size-6 shrink-0 sm:size-7" style={{ color: "var(--t-primary)" }} />
             <span className="truncate">{d.loja}</span>
@@ -49,7 +49,7 @@ export function Rodape({ d }: { d: DadosLoja }) {
     <footer className="mt-16">
       <Faixa frases={["Entrega com data marcada", d.loja, "Presente com cor"]} fundo="var(--t-accent)" texto="var(--t-fg)" />
       <div className="px-4 pt-12 pb-10 sm:px-6 lg:px-10" style={{ background: "var(--t-fg)", color: "var(--t-bg)" }}>
-        <div className="mx-auto max-w-[1400px]">
+        <div className="mx-auto max-w-[2000px]">
           <p className={`text-[clamp(2.25rem,10vw,8rem)] font-extrabold ${GIGANTE}`} style={{ fontFamily: "var(--t-titulo)" }}>
             <a href={d.base || "/"}>{d.loja}</a>
           </p>

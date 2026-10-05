@@ -17,7 +17,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
       <style dangerouslySetInnerHTML={{ __html: GAL_CSS }} />
       <p className={`px-4 py-2.5 text-center ${CAPS}`} style={{ color: "var(--t-muted)" }}>{d.aviso}</p>
       <header className="relative border-y" style={{ borderColor: "var(--t-line)" }}>
-        <div className="mx-auto grid max-w-[1500px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-4 sm:px-8">
+        <div className="mx-auto grid max-w-[2000px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-4 sm:px-8">
           <nav aria-label="Categorias" className={`hidden items-center gap-7 lg:flex ${CAPS}`}>
             {d.categorias.slice(0, 4).map((c) => <a key={c.slug} href={c.href} className="gal-ul">{c.nome}</a>)}
           </nav>
@@ -46,7 +46,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
 export function Rodape({ d }: { d: DadosLoja }) {
   return (
     <footer className="mt-24 border-t px-5 pt-16 pb-10 sm:px-10" style={{ borderColor: "var(--t-line)" }}>
-      <div className="mx-auto max-w-[1500px]">
+      <div className="mx-auto max-w-[2000px]">
         <p className="text-center text-3xl tracking-[0.4em] uppercase sm:text-5xl" style={{ fontFamily: "var(--t-titulo)" }}>
           <a href={d.base || "/"}>{d.loja}</a>
         </p>

@@ -39,7 +39,7 @@ export function Home({ d }: { d: DadosLoja }) {
   const [b1, b2] = d.cestas;
   const vendidas = d.cestas.slice(0, 10);
   return (
-    <main className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6 sm:py-8">
+    <main className="mx-auto max-w-[2000px] px-4 py-5 sm:px-6 sm:py-8">
       {/* Banner principal + contador */}
       <section className="grid grid-cols-[minmax(0,1fr)] overflow-hidden rounded-lg border-2 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]" style={{ borderColor: "var(--t-fg)" }} aria-label="Oferta do dia">
         <div className="flex min-w-0 flex-col justify-center gap-5 p-6 sm:p-10" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>

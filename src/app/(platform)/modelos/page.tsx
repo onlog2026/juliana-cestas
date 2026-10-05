@@ -19,12 +19,12 @@ export default async function ModelosPage() {
   return (
     <>
       <LandingHeader branding={branding} />
-      <main className="mx-auto max-w-6xl px-4 pt-12 pb-24 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-[2000px] px-4 pt-12 pb-24 sm:px-6 lg:px-10 2xl:px-14">
         <h1 className="font-display text-4xl text-foreground sm:text-5xl">Modelos de loja para cestas</h1>
         <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
           Escolha o visual da sua loja. Troque quando quiser, sem perder cestas nem pedidos.
         </p>
-        <div className="mt-10 grid gap-8 md:grid-cols-3">
+        <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {MODELOS.map((m) => (
             <Link
               key={m.key}

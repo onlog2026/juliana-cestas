@@ -6,7 +6,7 @@ import { Foto, brl } from "../../kit";
  * manchas orgânicas (blobs), ilustrações de linha em SVG e o cartão "nuvem".
  */
 
-export const wrapA = "mx-auto w-full max-w-[1180px] px-5 sm:px-8";
+export const wrapA = "mx-auto w-full max-w-[2000px] px-5 sm:px-8 lg:px-10 2xl:px-14";
 
 /** Raios assimétricos: dão o contorno "pedrinha" às fotos e cartões. */
 export const FORMAS = [

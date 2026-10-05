@@ -15,7 +15,7 @@ export function HomeBoutique({ d }: { d: DadosLoja }) {
         <span className="mt-6 inline-block border-b pb-1 text-[12px] tracking-[0.25em] uppercase" style={{ borderColor: "var(--t-fg)" }}>Ver coleção</span>
       </section>
 
-      <section className="mx-auto max-w-[1300px] px-5">
+      <section className="mx-auto max-w-[2000px] px-5">
         <p className="text-center text-[11px] tracking-[0.3em] uppercase" style={{ color: "var(--t-accent)" }}>Seleção da casa</p>
         <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-14 md:grid-cols-3">
           {resto.slice(0, 6).map((c) => (
@@ -29,7 +29,7 @@ export function HomeBoutique({ d }: { d: DadosLoja }) {
       </section>
 
       {destaque ? (
-        <section className="mx-auto mt-24 grid max-w-[1300px] items-center gap-10 px-5 md:grid-cols-2">
+        <section className="mx-auto mt-24 grid max-w-[2000px] items-center gap-10 px-5 md:grid-cols-2">
           <Foto src={destaque.imagem} alt={destaque.nome} className="aspect-square w-full object-cover" />
           <div className="md:px-10">
             <p className="text-[11px] tracking-[0.3em] uppercase" style={{ color: "var(--t-accent)" }}>A mais pedida</p>

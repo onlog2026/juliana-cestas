@@ -10,7 +10,7 @@ import { AvisoSemCobranca, CaminhoPao, CarrinhoVazio, FAIXAS, NaoEncontrada, ORD
 /** GALERIA (internas) — categoria em 2 colunas desiguais, cesta com miniaturas e zoom, carrinho em linhas finas. */
 
 const CAPS = "text-[11px] tracking-[0.28em] uppercase";
-const wrapG = "mx-auto w-full max-w-[1500px] px-5 sm:px-10";
+const wrapG = "mx-auto w-full max-w-[2000px] px-5 sm:px-10";
 const num = (n: number) => String(n + 1).padStart(2, "0");
 const ASP_ESQ = ["aspect-[4/5]", "aspect-square", "aspect-[3/4]"];
 const ASP_DIR = ["aspect-[3/4]", "aspect-[4/5]", "aspect-[3/4]"];

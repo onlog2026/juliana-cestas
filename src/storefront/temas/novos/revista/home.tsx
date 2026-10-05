@@ -8,7 +8,7 @@ import { Kicker, MATERIAS, TituloSecao } from "./pecas";
  * categoria correspondente), destaques da edição em colunas com filete, texto do editor com capitular.
  */
 export function Home({ d }: { d: DadosLoja }) {
-  const area = "mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10";
+  const area = "mx-auto w-full max-w-[2000px] px-4 sm:px-6 lg:px-10";
   const nCat = Math.max(d.categorias.length, 1);
   const destaques = d.cestas.slice(0, 4);
   const mais = d.cestas.slice(4, 8);
