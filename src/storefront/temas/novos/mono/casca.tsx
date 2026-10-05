@@ -1,5 +1,6 @@
 import { CartIcon } from "../../cart-icon";
 import type { DadosLoja } from "../../types";
+import { BlocoBusca } from "../../blocos";
 
 /** MONO — cabeçalho de linhas finas com menu de texto sublinhado animado; rodapé com o nome da loja em letras gigantes. */
 
@@ -43,6 +44,11 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
             <CartIcon base={d.base} icone="sacola" className="size-5" />
           </div>
         </div>
+        {!d.demo ? (
+          <div className="border-t px-4 py-2 sm:px-8" style={{ borderColor: "var(--t-line)" }}>
+            <div className="max-w-xl"><BlocoBusca base={d.base} id="busca-mono" /></div>
+          </div>
+        ) : null}
       </header>
     </>
   );

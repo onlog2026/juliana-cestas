@@ -1,11 +1,19 @@
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { Foto, brl } from "../../kit";
+import type { ReactNode } from "react";
 import type { DadosLoja } from "../../types";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "../../blocos";
 import { MONO_CAPS, MONO_CSS, MONO_GIGA } from "./casca";
+import { Cartao } from "./internas";
 
 /** MONO — título gigante, fotos coladas em grade de 1 px, numeração enorme, tudo em cantos retos. */
 
 const num = (n: number) => String(n + 1).padStart(2, "0");
+
+/** Contêiner dos blocos reais da loja ao vivo, com a margem lateral e o ritmo do Mono. */
+function Faixa({ children }: { children: ReactNode }) {
+  return <div className="px-4 pt-16 sm:px-8 sm:pt-20">{children}</div>;
+}
 
 export function Home({ d }: { d: DadosLoja }) {
   const pecas = d.cestas.slice(0, 8);
@@ -22,6 +30,9 @@ export function Home({ d }: { d: DadosLoja }) {
           <a href={`${d.base}/categoria`} className={`mono-ul inline-flex min-h-11 w-fit items-center gap-2 ${MONO_CAPS}`}>Ver as cestas <ArrowDownRight className="size-4" aria-hidden="true" /></a>
         </div>
       </section>
+
+      {!d.demo ? <BlocoBannersPromo /> : null}
+      {!d.demo ? <Faixa><BlocoConfianca /></Faixa> : null}
 
       {/* Fotos coladas */}
       <section className="mt-10 border-y" style={{ borderColor: "var(--t-line)" }} aria-label="Em destaque">
@@ -62,6 +73,21 @@ export function Home({ d }: { d: DadosLoja }) {
         </div>
       </section>
 
+      {!d.demo ? (
+        <>
+          <Faixa><BlocoVitrines base={d.base} Cartao={Cartao} /></Faixa>
+          <Faixa>
+            <h2 className={`mb-6 text-[clamp(2rem,7vw,6rem)] ${MONO_GIGA}`}>Todas as cestas</h2>
+            <BlocoGradeOrdenavel
+              base={d.base}
+              Cartao={Cartao}
+              classeGrade="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-px sm:grid-cols-3 lg:grid-cols-4"
+            />
+          </Faixa>
+          <Faixa><BlocoAvaliacoes /></Faixa>
+        </>
+      ) : null}
+
       {/* Categorias em linhas */}
       <section className="px-4 pt-20 sm:px-8" aria-labelledby="categorias">
         <h2 id="categorias" className={MONO_CAPS} style={{ color: "var(--t-muted)" }}>Categorias</h2>
@@ -87,6 +113,18 @@ export function Home({ d }: { d: DadosLoja }) {
           </div>
         ))}
       </section>
+
+      {!d.demo ? (
+        <>
+          <Faixa><BlocoBeneficios /></Faixa>
+          <Faixa><BlocoCartaozinho /></Faixa>
+          <Faixa><BlocoFaq /></Faixa>
+          <Faixa><BlocoWhatsapp /></Faixa>
+          <Faixa><BlocoVistos base={d.base} Cartao={Cartao} /></Faixa>
+          <JsonLdHome nome={d.loja} />
+          <div className="h-16" aria-hidden="true" />
+        </>
+      ) : null}
 
       <a href={`${d.base}/categoria`} className="group mt-0 flex min-h-24 w-full items-center justify-between gap-4 px-4 py-8 sm:px-8" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>
         <span className="min-w-0 text-[clamp(2rem,8vw,8rem)] leading-none font-bold tracking-[-0.045em] uppercase">Ver todas</span>

@@ -1,36 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Check, ShoppingBasket } from "lucide-react";
 import { Foto, brl } from "../../kit";
-import { useDemoCart } from "../../demo-cart";
+import { useDemoCart, useDemoCartOptional } from "../../demo-cart";
 import type { DadosLoja, ProdutoLoja } from "../../types";
-import { AvisoSemCobranca, CaminhoPao, CarrinhoVazio, FAIXAS, NaoEncontrada, ORDENS, Quantidade, descontoPct, itensLimpos, rotuloFinalizar, useCompra, useLista, wrap, type Ordem } from "../../internas/comum";
+import type { EncaixesCategoria, EncaixesProduto } from "../../encaixes";
+import { AvisoSemCobranca, CaminhoPao, CarrinhoVazio, FAIXAS, NaoEncontrada, ORDENS, Quantidade, descontoPct, itensLimpos, rotuloFinalizar, useLista, wrap, type Ordem } from "../../internas/comum";
 import { Horarios, Retirada, SeloEntrega, Whats } from "./pecas";
 
 /* BAIRRO — páginas internas: chips de ocasião, cartões com selo de entrega, cesta com bloco de entrega e barra de compra no celular. */
 
-function Cartao({ p }: { p: ProdutoLoja }) {
-  const { comprar, ok } = useCompra(p);
+/** Adicionar ao carrinho de demonstração; fora do carrinho de demonstração (loja ao vivo) não faz nada. */
+function useCompraSegura(p: ProdutoLoja | undefined) {
+  const c = useDemoCartOptional();
+  const [ok, setOk] = useState(false);
+  function comprar() {
+    if (!p || !c) return;
+    c.adicionar({ slug: p.slug, nome: p.nome, preco: p.preco, foto: p.fotos[0] });
+    setOk(true);
+    window.setTimeout(() => setOk(false), 2000);
+  }
+  return { comprar, ok, temCarrinho: Boolean(c) };
+}
+
+/** Cartão visual do modelo (sem botão de demonstração): é o que os blocos reais da loja ao vivo usam. */
+export function Cartao({ p }: { p: ProdutoLoja }) {
   const off = descontoPct(p);
   return (
-    <div className="flex min-w-0 flex-col gap-2">
-      <a href={p.href} className="group block min-w-0">
-        <div className="overflow-hidden rounded-2xl border" style={{ borderColor: "var(--t-line)", background: "var(--t-surface)" }}>
-          <div className="relative">
-            <Foto src={p.fotos[0]} alt={p.nome} className="aspect-[4/5] w-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-[1.04]" />
-            {off ? <span className="absolute top-2 left-2 rounded-full px-2 py-0.5 text-xs font-bold" style={{ background: "var(--t-fg)", color: "var(--t-bg)" }}>-{off}%</span> : null}
-          </div>
-          <div className="border-t border-dashed p-3" style={{ borderColor: "var(--t-line)" }}>
-            <p className="line-clamp-2 min-h-[2.5rem] text-sm leading-snug font-medium sm:text-base">{p.nome}</p>
-            <p className="mt-1 flex flex-wrap items-baseline gap-x-2">
-              <span className="text-lg font-bold tabular-nums" style={{ fontFamily: "var(--t-titulo)" }}>{brl(p.preco)}</span>
-              {p.precoDe ? <s className="text-xs tabular-nums" style={{ color: "var(--t-muted)" }}>{brl(p.precoDe)}</s> : null}
-            </p>
-            <SeloEntrega className="mt-2" />
-          </div>
+    <a href={p.href} className="group block min-w-0">
+      <div className="overflow-hidden rounded-2xl border" style={{ borderColor: "var(--t-line)", background: "var(--t-surface)" }}>
+        <div className="relative">
+          <Foto src={p.fotos[0]} alt={p.nome} className="aspect-[4/5] w-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-[1.04]" />
+          {off ? <span className="absolute top-2 left-2 rounded-full px-2 py-0.5 text-xs font-bold" style={{ background: "var(--t-fg)", color: "var(--t-bg)" }}>-{off}%</span> : null}
         </div>
-      </a>
+        <div className="border-t border-dashed p-3" style={{ borderColor: "var(--t-line)" }}>
+          <p className="line-clamp-2 min-h-[2.5rem] text-sm leading-snug font-medium sm:text-base">{p.nome}</p>
+          <p className="mt-1 flex flex-wrap items-baseline gap-x-2">
+            <span className="text-lg font-bold tabular-nums" style={{ fontFamily: "var(--t-titulo)" }}>{brl(p.preco)}</span>
+            {p.precoDe ? <s className="text-xs tabular-nums" style={{ color: "var(--t-muted)" }}>{brl(p.precoDe)}</s> : null}
+          </p>
+          <SeloEntrega className="mt-2" />
+        </div>
+      </div>
+    </a>
+  );
+}
+
+function CartaoComBotao({ p }: { p: ProdutoLoja }) {
+  const { comprar, ok, temCarrinho } = useCompraSegura(p);
+  if (!temCarrinho) return <Cartao p={p} />;
+  return (
+    <div className="flex min-w-0 flex-col gap-2">
+      <Cartao p={p} />
       <button type="button" onClick={comprar} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border text-sm font-semibold" style={{ borderColor: "var(--t-primary)", color: "var(--t-primary)", background: "var(--t-surface)" }}>
         {ok ? <><Check className="size-4" aria-hidden="true" /> Adicionada</> : <><ShoppingBasket className="size-4" aria-hidden="true" /> Adicionar</>}
       </button>
@@ -38,7 +60,7 @@ function Cartao({ p }: { p: ProdutoLoja }) {
   );
 }
 
-export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
+export function Categoria({ d, slug, encaixes }: { d: DadosLoja; slug?: string; encaixes?: EncaixesCategoria }) {
   const { cat, titulo, lista, ordem, setOrdem, faixa, setFaixa } = useLista(d, slug);
   return (
     <main className={`${wrap} py-5 sm:py-8`}>
@@ -52,6 +74,8 @@ export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
           <a key={c.slug} href={c.href} className="flex min-h-11 shrink-0 items-center rounded-full border px-5 text-sm font-semibold whitespace-nowrap" style={{ borderColor: "var(--t-line)", background: c.slug === slug ? "var(--t-primary)" : "var(--t-surface)", color: c.slug === slug ? "var(--t-on-primary)" : "var(--t-fg)" }}>{c.nome}</a>
         ))}
       </div>
+
+      {encaixes?.filtrosExtras ? <div className="mt-3 min-w-0">{encaixes.filtrosExtras}</div> : null}
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <div className="flex min-w-0 flex-wrap gap-1.5" role="group" aria-label="Faixa de preço">
@@ -70,18 +94,19 @@ export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
 
       {lista.length ? (
         <div className="mt-4 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
-          {lista.map((p) => <Cartao key={p.slug} p={p} />)}
+          {lista.map((p) => <CartaoComBotao key={p.slug} p={p} />)}
         </div>
       ) : (
         <p className="mt-6 rounded-2xl border border-dashed p-8 text-center" style={{ borderColor: "var(--t-line)" }}>Nenhuma cesta nessa faixa. <button type="button" className="min-h-11 underline" onClick={() => setFaixa("")}>Limpar filtro</button></p>
       )}
+      {encaixes?.rodape ? <div className="mt-10 min-w-0">{encaixes.rodape}</div> : null}
     </main>
   );
 }
 
-export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
+export function Produto({ d, slug, encaixes }: { d: DadosLoja; slug: string; encaixes?: EncaixesProduto }) {
   const p = d.produtos.find((x) => x.slug === slug);
-  const { comprar, ok } = useCompra(p);
+  const { comprar, ok } = useCompraSegura(p);
   const [foto, setFoto] = useState(0);
   if (!p) return <NaoEncontrada d={d} />;
   const cat = d.categorias.find((c) => c.slug === p.categoria);
@@ -126,16 +151,23 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
             </div>
           ) : null}
 
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-            <button type="button" data-acao="comprar" onClick={comprar} className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full px-6 font-bold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>
-              {ok ? <><Check className="size-5" aria-hidden="true" /> Adicionada ao carrinho</> : "Adicionar ao carrinho"}
-            </button>
-            <a href={`${d.base}/carrinho`} className="inline-flex min-h-12 items-center justify-center rounded-full border px-6 font-semibold" style={{ borderColor: "var(--t-line)" }}>Ver carrinho</a>
-          </div>
+          {encaixes?.compra ? (
+            <div id="compra" className="mt-6 min-w-0 scroll-mt-24">
+              {encaixes.compra}
+              {encaixes.entrega ? <div className="mt-3 min-w-0">{encaixes.entrega}</div> : null}
+            </div>
+          ) : (
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+              <button type="button" data-acao="comprar" onClick={comprar} className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full px-6 font-bold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>
+                {ok ? <><Check className="size-5" aria-hidden="true" /> Adicionada ao carrinho</> : "Adicionar ao carrinho"}
+              </button>
+              <a href={`${d.base}/carrinho`} className="inline-flex min-h-12 items-center justify-center rounded-full border px-6 font-semibold" style={{ borderColor: "var(--t-line)" }}>Ver carrinho</a>
+            </div>
+          )}
 
           <section className="mt-6 rounded-2xl border p-5" style={{ borderColor: "var(--t-line)", background: "var(--t-surface)" }} aria-labelledby="entrega-cesta">
             <h2 id="entrega-cesta" className="mb-3 text-lg font-bold" style={{ fontFamily: "var(--t-titulo)" }}>Entrega e retirada</h2>
-            <p className="mb-3 text-sm font-semibold" style={{ color: "var(--t-primary)" }}>Pediu até 14h, chega hoje (na região atendida).</p>
+            {encaixes?.compra ? null : <p className="mb-3 text-sm font-semibold" style={{ color: "var(--t-primary)" }}>Pediu até 14h, chega hoje (na região atendida).</p>}
             <Horarios d={d} />
             <div className="mt-4 border-t pt-4" style={{ borderColor: "var(--t-line)" }}><Retirada d={d} /></div>
             <div className="mt-4"><Whats d={d} texto="Tirar dúvidas no WhatsApp" compacto /></div>
@@ -143,15 +175,33 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
         </div>
       </div>
 
+      {[encaixes?.extras, encaixes?.avaliacoes, encaixes?.quemComprou, encaixes?.vistos].map((no, n) => (no ? <section key={n} className="mt-10 min-w-0 pb-4">{no}</section> : null))}
+
       <div className="fixed inset-x-0 z-30 flex items-center gap-3 border-t px-4 py-2 lg:hidden" style={{ bottom: "var(--demo-barra-baixo, 0px)", borderColor: "var(--t-line)", background: "var(--t-surface)" }}>
         <p className="min-w-0 flex-1 text-xl font-bold tabular-nums" style={{ fontFamily: "var(--t-titulo)" }}>{brl(p.preco)}</p>
-        <button type="button" onClick={comprar} className="min-h-11 rounded-full px-6 font-bold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>{ok ? "Adicionada" : "Adicionar"}</button>
+        {encaixes?.compra ? (
+          <a href="#compra" className="inline-flex min-h-11 items-center rounded-full px-6 font-bold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>Comprar</a>
+        ) : (
+          <button type="button" onClick={comprar} className="min-h-11 rounded-full px-6 font-bold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>{ok ? "Adicionada" : "Adicionar"}</button>
+        )}
       </div>
     </main>
   );
 }
 
-export function Carrinho({ d }: { d: DadosLoja }) {
+export function Carrinho({ d, conteudo }: { d: DadosLoja; conteudo?: ReactNode }) {
+  if (conteudo) {
+    return (
+      <main className={`${wrap} py-5 sm:py-8`}>
+        <h1 className="text-3xl font-bold sm:text-4xl" style={{ fontFamily: "var(--t-titulo)" }}>Seu carrinho</h1>
+        <div className="mt-5 min-w-0">{conteudo}</div>
+      </main>
+    );
+  }
+  return <CarrinhoDemo d={d} />;
+}
+
+function CarrinhoDemo({ d }: { d: DadosLoja }) {
   const { itens, total, quantidade } = useDemoCart();
   return (
     <main className={`${wrap} py-5 sm:py-8`}>

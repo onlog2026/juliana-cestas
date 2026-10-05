@@ -1,6 +1,8 @@
 import { ArrowRight, CalendarClock, FileCheck2, ListChecks } from "lucide-react";
 import { Foto, brl } from "../../kit";
 import type { DadosLoja } from "../../types";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "../../blocos";
+import { Cartao } from "./internas";
 import { FormOrcamento } from "./form-orcamento";
 import { Rotulo, SELOS, TabelaExemplo, wrapE } from "./pecas";
 
@@ -24,6 +26,8 @@ export function Home({ d }: { d: DadosLoja }) {
   const fotoC = d.cestas[2]?.imagem ?? d.cestas[0]?.imagem ?? "";
   return (
     <main>
+      {!d.demo ? <BlocoBannersPromo /> : null}
+
       {/* Abertura */}
       <section className={`${wrapE} grid grid-cols-[minmax(0,1fr)] items-center gap-10 py-10 sm:py-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14 lg:py-20`}>
         <div className="min-w-0">
@@ -32,7 +36,7 @@ export function Home({ d }: { d: DadosLoja }) {
           <p className="mt-5 max-w-xl text-lg leading-relaxed" style={{ color: "var(--t-muted)" }}>{d.texto}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a href={todas} className="inline-flex min-h-12 items-center gap-2 rounded-md border px-6 font-bold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)", borderColor: "var(--t-primary)" }}>
-              Montar meu orçamento <ArrowRight className="size-4" aria-hidden="true" />
+              {d.demo ? "Montar meu orçamento" : "Ver catálogo"} <ArrowRight className="size-4" aria-hidden="true" />
             </a>
             <a href={`${inicio}#como`} className="inline-flex min-h-12 items-center rounded-md border px-6 font-semibold" style={{ borderColor: "var(--t-line)", background: "var(--t-surface)" }}>Como funciona</a>
           </div>
@@ -54,6 +58,8 @@ export function Home({ d }: { d: DadosLoja }) {
           </div>
         </div>
       </section>
+
+      {!d.demo ? <div className={`${wrapE} pb-10`}><BlocoConfianca /></div> : null}
 
       {/* Selos informativos */}
       <section className="border-y" style={{ borderColor: "var(--t-line)", background: "var(--t-surface)" }} aria-label="Condições para empresas">
@@ -127,7 +133,26 @@ export function Home({ d }: { d: DadosLoja }) {
         </div>
       </section>
 
-      {/* Tabela de quantidades (exemplo) */}
+      {!d.demo ? (
+        <>
+          <div className={`${wrapE} min-w-0 pt-16 sm:pt-20`}><BlocoVitrines base={d.base} Cartao={Cartao} /></div>
+          <section className={`${wrapE} min-w-0 pt-16 sm:pt-20`} aria-labelledby="emp-todas">
+            <Rotulo>Catálogo completo</Rotulo>
+            <h2 id="emp-todas" className="mt-3 mb-8 text-3xl sm:text-4xl" style={{ fontFamily: "var(--t-titulo)", fontWeight: 700, letterSpacing: "-0.02em" }}>Todas as cestas</h2>
+            <BlocoGradeOrdenavel base={d.base} Cartao={Cartao} classeGrade="grid gap-2.5" />
+          </section>
+          <div className={`${wrapE} min-w-0 pt-16 sm:pt-20`}><BlocoAvaliacoes /></div>
+          <div className={`${wrapE} min-w-0 pt-16 sm:pt-20`}><BlocoBeneficios /></div>
+          <div className={`${wrapE} min-w-0 pt-16 sm:pt-20`}><BlocoCartaozinho /></div>
+          <div className={`${wrapE} min-w-0 pt-16 sm:pt-20`}><BlocoFaq /></div>
+          <div className={`${wrapE} min-w-0 pt-16 sm:pt-20`}><BlocoWhatsapp /></div>
+          <div className={`${wrapE} min-w-0 py-16 sm:py-20`}><BlocoVistos base={d.base} Cartao={Cartao} /></div>
+          <JsonLdHome nome={d.loja} />
+        </>
+      ) : null}
+
+      {/* Tabela de quantidades (exemplo): só na demonstração */}
+      {d.demo ? (<>
       <section id="quantidades" className={`${wrapE} scroll-mt-4 grid grid-cols-[minmax(0,1fr)] gap-10 py-16 sm:py-20 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14`} aria-labelledby="emp-qtd">
         <div className="min-w-0">
           <Rotulo>Tabela de quantidades</Rotulo>
@@ -150,6 +175,7 @@ export function Home({ d }: { d: DadosLoja }) {
           <FormOrcamento demo={d.demo} whatsapp={d.whatsapp} base={d.base} loja={d.loja} />
         </div>
       </section>
+      </>) : null}
     </main>
   );
 }

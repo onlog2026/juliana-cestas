@@ -1,7 +1,14 @@
 import { Foto, brl } from "../../kit";
 import type { DadosLoja } from "../../types";
+import type { ReactNode } from "react";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "../../blocos";
 import { Historias, type Grupo } from "./historias";
-import { Avatar, COL, COL_STYLE, Post } from "./post";
+import { Avatar, COL, COL_STYLE, Cartao, Post } from "./post";
+
+/** Contêiner dos blocos reais da loja ao vivo (mesma medida e margens do feed). */
+function Bloco({ children, className = "pt-8" }: { children: ReactNode; className?: string }) {
+  return <div className={`min-w-0 px-4 md:px-6 lg:px-10 ${className}`}>{children}</div>;
+}
 
 /** STORIES (início) — círculos de histórias, apresentação da loja, feed de posts e grade de categorias. */
 export function Home({ d }: { d: DadosLoja }) {
@@ -16,6 +23,8 @@ export function Home({ d }: { d: DadosLoja }) {
     <main className={COL} style={COL_STYLE}>
       {grupos.length ? <Historias grupos={grupos} /> : null}
 
+      {!d.demo ? <BlocoBannersPromo /> : null}
+
       <section className="flex min-w-0 items-center gap-4 border-y px-4 py-5 md:px-6 lg:px-10" style={{ borderColor: "var(--t-line)", background: "var(--t-surface)" }}>
         <Avatar imagem={d.heroImagem} alt="" tamanho="size-20" />
         <div className="min-w-0 flex-1">
@@ -24,9 +33,25 @@ export function Home({ d }: { d: DadosLoja }) {
         </div>
       </section>
 
-      <section aria-label="Novidades" className="mt-2 md:mt-5 md:grid md:grid-cols-2 md:gap-5 md:px-6 lg:grid-cols-3 lg:px-10 2xl:grid-cols-4">
-        {d.cestas.slice(0, 8).map((c) => <Post key={c.href} p={c} loja={d.loja} avatar={d.heroImagem} />)}
-      </section>
+      {!d.demo ? <Bloco className="pt-5"><BlocoConfianca /></Bloco> : null}
+
+      {d.demo ? (
+        <section aria-label="Novidades" className="mt-2 md:mt-5 md:grid md:grid-cols-2 md:gap-5 md:px-6 lg:grid-cols-3 lg:px-10 2xl:grid-cols-4">
+          {d.cestas.slice(0, 8).map((c) => <Post key={c.href} p={c} loja={d.loja} avatar={d.heroImagem} />)}
+        </section>
+      ) : (
+        <>
+          <Bloco><BlocoVitrines base={d.base} Cartao={Cartao} /></Bloco>
+          <Bloco>
+            <BlocoGradeOrdenavel
+              base={d.base}
+              Cartao={Cartao}
+              titulo="Todas as cestas"
+              classeGrade="grid grid-cols-[minmax(0,1fr)] md:grid-cols-2 md:gap-5 lg:grid-cols-3 2xl:grid-cols-4"
+            />
+          </Bloco>
+        </>
+      )}
 
       <section className="px-4 pt-8 md:px-6 lg:px-10" aria-labelledby="explorar">
         <h2 id="explorar" className="text-lg font-bold" style={{ fontFamily: "var(--t-titulo)" }}>Explorar por ocasião</h2>
@@ -42,6 +67,18 @@ export function Home({ d }: { d: DadosLoja }) {
         </div>
         <a href={`${d.base}/categoria`} className="mt-6 flex min-h-12 w-full items-center justify-center rounded-full border font-semibold" style={{ borderColor: "var(--t-line)" }}>Ver todas as cestas</a>
       </section>
+
+      {!d.demo ? (
+        <>
+          <Bloco className="pt-10"><BlocoAvaliacoes /></Bloco>
+          <Bloco className="pt-10"><BlocoBeneficios /></Bloco>
+          <Bloco className="pt-10"><BlocoCartaozinho /></Bloco>
+          <Bloco className="pt-10"><BlocoFaq /></Bloco>
+          <Bloco className="pt-10"><BlocoWhatsapp /></Bloco>
+          <Bloco className="pt-10"><BlocoVistos base={d.base} Cartao={Cartao} /></Bloco>
+          <JsonLdHome nome={d.loja} />
+        </>
+      ) : null}
     </main>
   );
 }

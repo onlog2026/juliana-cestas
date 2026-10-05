@@ -1,6 +1,7 @@
 import { Gift, PenLine, Truck } from "lucide-react";
 import { Foto } from "../../kit";
 import type { DadosLoja } from "../../types";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "../../blocos";
 import { CAPS, Cartao, LARG, Titulo } from "./comum";
 
 /** SIMETRIA (início) — fotos em arco espelhadas, coleções em 2×2 com legenda sobre cor, destaques em 3 colunas iguais. */
@@ -12,6 +13,8 @@ export function Home({ d }: { d: DadosLoja }) {
   const arco = "overflow-hidden rounded-t-[999px] border";
   return (
     <main>
+      {!d.demo ? <BlocoBannersPromo /> : null}
+
       <section className={`${LARG} pt-10 sm:pt-14`}>
         <div className="grid grid-cols-2 items-end gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)] md:gap-8">
           <div className="col-span-2 px-2 text-center md:order-2 md:col-span-1 md:px-0 md:pb-6">
@@ -54,14 +57,35 @@ export function Home({ d }: { d: DadosLoja }) {
         ) : null}
       </section>
 
-      <section className={`${LARG} pt-24`} aria-labelledby="destaques">
-        <Titulo id="destaques">Destaques</Titulo>
-        <div className="mt-10 grid grid-cols-[minmax(0,1fr)] gap-x-6 gap-y-12 sm:grid-cols-3">
-          {destaques.map((c) => <Cartao key={c.href} p={c} />)}
-        </div>
-        <p className="mt-12 text-center"><a href={`${d.base}/categoria`} className={`inline-flex min-h-12 items-center border px-9 ${CAPS}`} style={{ borderColor: "var(--t-line)" }}>Ver todas as cestas</a></p>
-      </section>
+      {d.demo ? (
+        <section className={`${LARG} pt-24`} aria-labelledby="destaques">
+          <Titulo id="destaques">Destaques</Titulo>
+          <div className="mt-10 grid grid-cols-[minmax(0,1fr)] gap-x-6 gap-y-12 sm:grid-cols-3">
+            {destaques.map((c) => <Cartao key={c.href} p={c} />)}
+          </div>
+          <p className="mt-12 text-center"><a href={`${d.base}/categoria`} className={`inline-flex min-h-12 items-center border px-9 ${CAPS}`} style={{ borderColor: "var(--t-line)" }}>Ver todas as cestas</a></p>
+        </section>
+      ) : (
+        <>
+          <section className={`${LARG} min-w-0 pt-24`} aria-label="Mais vendidas">
+            <BlocoVitrines base={d.base} Cartao={Cartao} />
+          </section>
+          <section className={`${LARG} min-w-0 pt-24`} aria-labelledby="todas-cestas">
+            <Titulo id="todas-cestas">Todas as cestas</Titulo>
+            <div className="mt-10">
+              <BlocoGradeOrdenavel
+                base={d.base}
+                Cartao={Cartao}
+                classeGrade="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-3"
+              />
+            </div>
+          </section>
+        </>
+      )}
 
+      {!d.demo ? <section className={`${LARG} min-w-0 pt-16`} aria-label="Confiança"><BlocoConfianca /></section> : null}
+
+      {d.demo ? (
       <section className="mt-24 border-y py-14" style={{ background: "var(--t-surface)", borderColor: "var(--t-line)" }} aria-label="Como entregamos">
         <div className={`${LARG} grid grid-cols-[minmax(0,1fr)] gap-10 text-center sm:grid-cols-3`}>
           {[
@@ -77,6 +101,19 @@ export function Home({ d }: { d: DadosLoja }) {
           ))}
         </div>
       </section>
+      ) : null}
+
+      {!d.demo ? (
+        <>
+          <section className={`${LARG} min-w-0 pt-24`} aria-label="Benefícios"><BlocoBeneficios /></section>
+          <section className={`${LARG} min-w-0 pt-24`} aria-label="Avaliações"><BlocoAvaliacoes /></section>
+          <section className={`${LARG} min-w-0 pt-24`} aria-label="Cartãozinho"><BlocoCartaozinho /></section>
+          <section className={`${LARG} min-w-0 pt-24`} aria-label="Perguntas frequentes"><BlocoFaq /></section>
+          <section className={`${LARG} min-w-0 pt-24`} aria-label="Atendimento"><BlocoWhatsapp /></section>
+          <section className={`${LARG} min-w-0 pt-24`} aria-label="Vistos recentemente"><BlocoVistos base={d.base} Cartao={Cartao} /></section>
+          <JsonLdHome nome={d.loja} />
+        </>
+      ) : null}
     </main>
   );
 }

@@ -3,6 +3,8 @@
 import { Check } from "lucide-react";
 import { Foto, brl } from "../kit";
 import { useDemoCart } from "../demo-cart";
+import type { ReactNode } from "react";
+import type { EncaixesCategoria, EncaixesProduto } from "../encaixes";
 import type { DadosLoja, ProdutoLoja } from "../types";
 import { AvisoSemCobranca, CaminhoPao, CarrinhoVazio, FAIXAS, NaoEncontrada, ORDENS, Quantidade, itensLimpos, rotuloFinalizar, useCompra, useLista, wrap, type Ordem } from "./comum";
 
@@ -17,7 +19,7 @@ const PAPEL = {
 const MAO = { fontFamily: "var(--t-detalhe)" } as const;
 const SOMBRA = "shadow-[0_12px_28px_-16px_rgba(60,40,20,.55)]";
 
-function Cartao({ p, i }: { p: ProdutoLoja; i: number }) {
+export function Cartao({ p, i = 0 }: { p: ProdutoLoja; i?: number }) {
   return (
     <a href={p.href} className={`block min-w-0 bg-white p-2.5 pb-4 ${SOMBRA} ${i % 2 ? "rotate-[1.4deg]" : "-rotate-[1.4deg]"} transition-transform hover:rotate-0`}>
       <Foto src={p.fotos[0]} alt={p.nome} className="aspect-square w-full object-cover" />
@@ -27,7 +29,7 @@ function Cartao({ p, i }: { p: ProdutoLoja; i: number }) {
   );
 }
 
-export function CategoriaRustico({ d, slug }: { d: DadosLoja; slug?: string }) {
+export function CategoriaRustico({ d, slug, encaixes }: { d: DadosLoja; slug?: string; encaixes?: EncaixesCategoria }) {
   const { cat, titulo, lista, ordem, setOrdem, faixa, setFaixa } = useLista(d, slug);
   return (
     <div style={PAPEL}>
@@ -44,6 +46,7 @@ export function CategoriaRustico({ d, slug }: { d: DadosLoja; slug?: string }) {
             </select>
           </label>
         </div>
+        {encaixes?.filtrosExtras ? <div className="mt-4">{encaixes.filtrosExtras}</div> : null}
         <p className="mt-3 text-lg" style={{ ...MAO, color: "var(--t-muted)" }} aria-live="polite">{lista.length} {lista.length === 1 ? "cesta" : "cestas"} feitas à mão</p>
         {lista.length ? (
           <div className="mt-8 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-5 gap-y-10 px-1 sm:gap-x-8 lg:grid-cols-3 xl:grid-cols-4">
@@ -52,12 +55,13 @@ export function CategoriaRustico({ d, slug }: { d: DadosLoja; slug?: string }) {
         ) : (
           <p className="mt-10 border border-dashed p-8 text-center text-xl" style={{ ...MAO, borderColor: "var(--t-fg)" }}>Nada nessa faixa. <button type="button" className="underline" onClick={() => setFaixa("")}>Ver todas</button></p>
         )}
+        {encaixes?.rodape ? <div className="mt-14">{encaixes.rodape}</div> : null}
       </main>
     </div>
   );
 }
 
-export function ProdutoRustico({ d, slug }: { d: DadosLoja; slug: string }) {
+export function ProdutoRustico({ d, slug, encaixes }: { d: DadosLoja; slug: string; encaixes?: EncaixesProduto }) {
   const p = d.produtos.find((x) => x.slug === slug);
   const { comprar, ok } = useCompra(p);
   if (!p) return <NaoEncontrada d={d} />;
@@ -83,6 +87,7 @@ export function ProdutoRustico({ d, slug }: { d: DadosLoja; slug: string }) {
             <h1 className="text-4xl leading-tight sm:text-5xl" style={{ fontFamily: "var(--t-titulo)", fontWeight: 600 }}>{p.nome}</h1>
             {p.serve ? <p className="mt-1 text-xl" style={{ ...MAO, color: "var(--t-muted)" }}>{p.serve}</p> : null}
             <p className="mt-4 text-3xl font-semibold" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-accent)" }}>{p.precoDe ? <s className="mr-3 text-lg" style={{ color: "var(--t-muted)" }}>{brl(p.precoDe)}</s> : null}{brl(p.preco)}</p>
+            {encaixes?.entrega ? <div className="mt-3">{encaixes.entrega}</div> : null}
             <div className="mt-5 rotate-1 p-5 text-2xl leading-snug shadow-sm" style={{ background: "#fff8c7", color: "#3a2f1d", ...MAO }}>{p.descricao}</div>
             {itens.length ? (
               <section className="mt-7" aria-labelledby="o-que-vem">
@@ -92,13 +97,23 @@ export function ProdutoRustico({ d, slug }: { d: DadosLoja; slug: string }) {
                 </ul>
               </section>
             ) : null}
-            <button type="button" data-acao="comprar" onClick={comprar} className="mt-8 inline-flex min-h-14 w-full items-center justify-center gap-2 border-2 border-dashed text-2xl" style={{ ...MAO, borderColor: "var(--t-primary)", background: "var(--t-primary)", color: "var(--t-on-primary)" }}>
-              {ok ? <><Check className="size-5" /> Na sacola!</> : "Colocar na sacola"}
-            </button>
-            <a href={`${d.base}/carrinho`} className="mt-3 flex min-h-12 w-full items-center justify-center border-2 border-dashed text-xl" style={{ ...MAO, borderColor: "var(--t-fg)" }}>Ver minha sacola</a>
-            <p className="mt-3 text-lg" style={{ ...MAO, color: "var(--t-muted)" }}>Você escolhe o dia e o horário no pedido, e escreve o bilhete.</p>
+            {encaixes?.compra ? (
+              <div id="compra" className="mt-8 scroll-mt-24">{encaixes.compra}</div>
+            ) : (
+              <>
+                <button type="button" data-acao="comprar" onClick={comprar} className="mt-8 inline-flex min-h-14 w-full items-center justify-center gap-2 border-2 border-dashed text-2xl" style={{ ...MAO, borderColor: "var(--t-primary)", background: "var(--t-primary)", color: "var(--t-on-primary)" }}>
+                  {ok ? <><Check className="size-5" /> Na sacola!</> : "Colocar na sacola"}
+                </button>
+                <a href={`${d.base}/carrinho`} className="mt-3 flex min-h-12 w-full items-center justify-center border-2 border-dashed text-xl" style={{ ...MAO, borderColor: "var(--t-fg)" }}>Ver minha sacola</a>
+                <p className="mt-3 text-lg" style={{ ...MAO, color: "var(--t-muted)" }}>Você escolhe o dia e o horário no pedido, e escreve o bilhete.</p>
+              </>
+            )}
           </div>
         </div>
+        {encaixes?.extras ? <section className="mt-14" aria-label="Embalagem e cartãozinho">{encaixes.extras}</section> : null}
+        {encaixes?.avaliacoes ? <section className="mt-14" aria-label="Avaliações">{encaixes.avaliacoes}</section> : null}
+        {encaixes?.quemComprou ? <section className="mt-14" aria-label="Quem comprou também levou">{encaixes.quemComprou}</section> : null}
+        {encaixes?.vistos ? <section className="mt-14" aria-label="Vistos recentemente">{encaixes.vistos}</section> : null}
         <section className="mt-16" aria-labelledby="outras">
           <h2 id="outras" className="text-4xl" style={{ ...MAO, color: "var(--t-primary)" }}>Outras da casa</h2>
           <div className="mt-6 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-5 gap-y-10 px-1 sm:grid-cols-4 sm:gap-x-8">
@@ -108,13 +123,17 @@ export function ProdutoRustico({ d, slug }: { d: DadosLoja; slug: string }) {
       </main>
       <div className="fixed inset-x-0 z-30 flex items-center gap-3 border-t-2 border-dashed px-4 py-2 lg:hidden" style={{ bottom: "var(--demo-barra-baixo, 0px)", background: "#fff8c7", borderColor: "var(--t-fg)", color: "#3a2f1d" }}>
         <p className="min-w-0 flex-1 text-xl font-semibold" style={{ fontFamily: "var(--t-titulo)" }}>{brl(p.preco)}</p>
-        <button type="button" onClick={comprar} className="min-h-11 border-2 border-dashed px-6 text-xl" style={{ ...MAO, borderColor: "var(--t-primary)", background: "var(--t-primary)", color: "var(--t-on-primary)" }}>{ok ? "Na sacola!" : "Quero"}</button>
+        {encaixes?.compra ? (
+          <a href="#compra" className="inline-flex min-h-11 items-center border-2 border-dashed px-6 text-xl" style={{ ...MAO, borderColor: "var(--t-primary)", background: "var(--t-primary)", color: "var(--t-on-primary)" }}>Comprar</a>
+        ) : (
+          <button type="button" onClick={comprar} className="min-h-11 border-2 border-dashed px-6 text-xl" style={{ ...MAO, borderColor: "var(--t-primary)", background: "var(--t-primary)", color: "var(--t-on-primary)" }}>{ok ? "Na sacola!" : "Quero"}</button>
+        )}
       </div>
     </div>
   );
 }
 
-export function CarrinhoRustico({ d }: { d: DadosLoja }) {
+export function CarrinhoRustico({ d, conteudo }: { d: DadosLoja; conteudo?: ReactNode }) {
   const { itens, total } = useDemoCart();
   return (
     <div style={PAPEL}>
@@ -122,7 +141,7 @@ export function CarrinhoRustico({ d }: { d: DadosLoja }) {
         <div className={`bg-white px-5 py-8 sm:px-10 ${SOMBRA}`}>
           <h1 className="text-center text-5xl" style={{ ...MAO, color: "var(--t-primary)" }}>Minha sacola</h1>
           <p className="text-center text-lg" style={{ ...MAO, color: "var(--t-muted)" }}>{d.loja}</p>
-          {itens.length === 0 ? <CarrinhoVazio d={d} className="mt-8 border-y border-dashed py-10 text-center" botao="mt-4 inline-flex min-h-12 items-center px-8 text-2xl" /> : (
+          {conteudo ? <div className="mt-6 min-w-0">{conteudo}</div> : itens.length === 0 ? <CarrinhoVazio d={d} className="mt-8 border-y border-dashed py-10 text-center" botao="mt-4 inline-flex min-h-12 items-center px-8 text-2xl" /> : (
             <>
               <ul className="mt-6 border-t-2 border-dashed" style={{ borderColor: "var(--t-fg)" }}>
                 {itens.map((i) => (

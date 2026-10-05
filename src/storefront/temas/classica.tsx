@@ -1,5 +1,7 @@
 import { Gift, Search, ShoppingBag, Truck, User } from "lucide-react";
 import { Foto, brl } from "./kit";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "./blocos";
+import { Cartao } from "./internas/classica";
 import type { DadosLoja } from "./types";
 
 /** CLÁSSICA — a vitrine da Juliana: faixa de aviso, carrossel com texto, categorias em círculo, cartão com moldura. */
@@ -15,6 +17,8 @@ export function HomeClassica({ d }: { d: DadosLoja }) {
           <span className="mt-4 inline-flex h-11 items-center rounded-full px-6 text-sm font-semibold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>Ver cestas</span>
         </div>
       </section>
+
+      {!d.demo ? <BlocoBannersPromo /> : null}
 
       <div className="mx-auto max-w-[2000px] px-5">
         <div className="flex flex-wrap gap-6 py-8">
@@ -48,6 +52,21 @@ export function HomeClassica({ d }: { d: DadosLoja }) {
           })}
         </div>
       </div>
+
+      {!d.demo ? (
+        <div className="mx-auto grid max-w-[2000px] gap-14 px-5 pb-14">
+          <BlocoConfianca />
+          <BlocoVitrines base={d.base} Cartao={Cartao} />
+          <BlocoGradeOrdenavel base={d.base} Cartao={Cartao} titulo="Todas as cestas" classeGrade="grid grid-cols-2 gap-x-5 gap-y-9 sm:grid-cols-3 lg:grid-cols-4" />
+          <BlocoAvaliacoes />
+          <BlocoBeneficios />
+          <BlocoCartaozinho />
+          <BlocoFaq />
+          <BlocoWhatsapp />
+          <BlocoVistos base={d.base} Cartao={Cartao} />
+          <JsonLdHome nome={d.loja} />
+        </div>
+      ) : null}
 
     </>
   );

@@ -8,9 +8,7 @@ import { isSuperAdminEmail } from "@/lib/platform/super-admins";
 import { LEGACY_TENANT_ID } from "@/lib/tenant/legacy";
 import { getStoreOfUser, painelUrlDaLoja } from "@/modules/platform/onboarding";
 import { PlatformLoginForm } from "@/components/platform/signup/login-form";
-import { PLATFORM_DEFAULTS } from "@/modules/platform/landing-content";
-import { getAllPlatformContent } from "@/modules/platform/landing-service";
-import { LandingHeader } from "@/components/platform/landing/header";
+import { PlataformaShell } from "@/components/platform/site/shell";
 
 /**
  * Entrar na plataforma.
@@ -42,22 +40,14 @@ export default async function EntrarPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let branding = PLATFORM_DEFAULTS.branding;
-  try {
-    branding = (await getAllPlatformContent()).branding;
-  } catch (e) {
-    console.error("[entrar] conteúdo caiu no padrão:", e);
-  }
-
   // Ainda não entrou: mostra o formulário.
   if (!user) {
     return (
-      <div className="min-h-dvh bg-background">
-        <LandingHeader branding={branding} />
-        <main className="flex min-h-[calc(100dvh-4rem)] items-start justify-center bg-secondary/40 px-4 py-10 sm:items-center sm:py-14">
+      <PlataformaShell>
+        <main className="flex min-h-[70dvh] items-start justify-center bg-secondary/40 px-4 py-10 sm:items-center sm:py-14">
           <PlatformLoginForm />
         </main>
-      </div>
+      </PlataformaShell>
     );
   }
 
@@ -82,8 +72,7 @@ export default async function EntrarPage() {
   // que recusaria esta conta — a pessoa veria "e-mail ou senha incorretos"
   // logo depois de ter entrado, e isso não é o que está acontecendo.
   return (
-    <div className="min-h-dvh bg-background">
-      <LandingHeader branding={branding} />
+    <PlataformaShell>
       <main className="mx-auto max-w-xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="rounded-card border border-border bg-card p-6 shadow-[var(--jc-shadow)] sm:p-8">
           <div className="flex items-start gap-3">
@@ -105,13 +94,13 @@ export default async function EntrarPage() {
           </div>
 
           <Link
-            href="/plataforma"
+            href="/inicio"
             className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-full border border-primary/30 text-sm font-semibold text-primary transition-colors hover:bg-accent"
           >
             Voltar para a página inicial
           </Link>
         </div>
       </main>
-    </div>
+    </PlataformaShell>
   );
 }

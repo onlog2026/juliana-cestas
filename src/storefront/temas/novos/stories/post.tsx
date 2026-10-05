@@ -1,4 +1,5 @@
 import { Foto, brl } from "../../kit";
+import type { ProdutoLoja } from "../../types";
 
 /** STORIES — cartão de post do feed (foto quadrada, legenda, preço e botão). Sem hooks: serve para servidor e cliente. */
 
@@ -17,17 +18,24 @@ export function Avatar({ imagem, alt, tamanho = "size-10" }: { imagem?: string; 
   );
 }
 
-export function Post({ p, loja, avatar }: { p: DadosPost; loja: string; avatar?: string }) {
+/** Cartão de produto do modelo (sem cabeçalho da loja) para os blocos reais: vitrines, grade, vistos. */
+export function Cartao({ p }: { p: ProdutoLoja }) {
+  return <Post p={{ nome: p.nome, preco: p.preco, precoDe: p.precoDe, imagem: p.fotos[0] ?? "", serve: p.serve, href: p.href }} />;
+}
+
+export function Post({ p, loja, avatar }: { p: DadosPost; loja?: string; avatar?: string }) {
   const pct = p.precoDe && p.precoDe > p.preco ? Math.round((1 - p.preco / p.precoDe) * 100) : null;
   return (
-    <article className="border-b pb-5 md:overflow-hidden md:rounded-2xl md:border" style={{ borderColor: "var(--t-line)" }}>
-      <div className="flex min-w-0 items-center gap-3 px-4 py-3">
-        <Avatar imagem={avatar} alt="" />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{loja}</p>
-          <p className="truncate text-xs" style={{ color: "var(--t-muted)" }}>{p.serve || "Entrega com data marcada"}</p>
+    <article className="min-w-0 border-b pb-5 md:overflow-hidden md:rounded-2xl md:border" style={{ borderColor: "var(--t-line)" }}>
+      {loja ? (
+        <div className="flex min-w-0 items-center gap-3 px-4 py-3">
+          <Avatar imagem={avatar} alt="" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">{loja}</p>
+            <p className="truncate text-xs" style={{ color: "var(--t-muted)" }}>{p.serve || "Entrega com data marcada"}</p>
+          </div>
         </div>
-      </div>
+      ) : null}
       <a href={p.href} className="group block" aria-label={p.nome}>
         <div className="relative overflow-hidden border-y" style={{ borderColor: "var(--t-line)" }}>
           <Foto src={p.imagem} alt={p.nome} className="aspect-square w-full object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transition-none" />

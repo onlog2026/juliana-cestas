@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Gift, Search, ShoppingBag, ShoppingBasket, ShoppingCart, Truck, User, CreditCard, Headphones, ShieldCheck } from "lucide-react";
 import { CartIcon } from "./cart-icon";
 import { Foto } from "./kit";
+import { BlocoBusca } from "./blocos";
 import type { DadosLoja } from "./types";
 
 const PASTEIS = ["color-mix(in srgb, var(--t-primary) 14%, white)", "color-mix(in srgb, var(--t-accent) 22%, white)", "color-mix(in srgb, var(--t-primary) 8%, var(--t-accent) 12%)"];
@@ -15,14 +16,19 @@ export function CabecalhoClassica({ d }: { d: DadosLoja }) {
       <header className="border-b" style={{ borderColor: "var(--t-line)" }}>
         <div className="mx-auto flex max-w-[2000px] items-center gap-6 px-5 py-4">
           <p className="text-3xl whitespace-nowrap" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}><a href={d.base || "/"}>{d.loja}</a></p>
-          <div className="mx-auto hidden h-11 max-w-xl flex-1 items-center gap-2 rounded-full border bg-white px-4 text-sm md:flex" style={{ borderColor: "var(--t-line)", color: "var(--t-muted)" }}>
-            <Search className="size-4" aria-hidden="true" /> Buscar cestas, ocasiões…
-          </div>
+          {!d.demo ? (
+            <div className="mx-auto hidden max-w-xl min-w-0 flex-1 md:block"><BlocoBusca base={d.base} id="busca-classica" /></div>
+          ) : (
+            <div className="mx-auto hidden h-11 max-w-xl flex-1 items-center gap-2 rounded-full border bg-white px-4 text-sm md:flex" style={{ borderColor: "var(--t-line)", color: "var(--t-muted)" }}>
+              <Search className="size-4" aria-hidden="true" /> Buscar cestas, ocasiões…
+            </div>
+          )}
           <div className="ml-auto flex items-center gap-5"><User className="size-5" /><CartIcon base={d.base} icone="sacola" className="size-5" /></div>
         </div>
         <nav className="mx-auto hidden max-w-[2000px] gap-8 px-5 pb-3 text-sm md:flex" aria-label="Categorias">
           {d.categorias.map((c) => <a key={c.nome} href={c.href}>{c.nome}</a>)}
         </nav>
+        {!d.demo ? <div className="mx-auto max-w-[2000px] px-5 pb-3 md:hidden"><BlocoBusca base={d.base} id="busca-classica-cel" /></div> : null}
       </header>
     </>
   );
@@ -52,6 +58,7 @@ export function CabecalhoBoutique({ d }: { d: DadosLoja }) {
           {d.categorias.map((c) => <a key={c.nome} href={c.href}>{c.nome}</a>)}
         </nav>
         <div className="absolute top-1/2 right-5 flex -translate-y-1/2 gap-5"><Search className="size-4" /><CartIcon base={d.base} icone="sacola" className="size-4" /></div>
+        {!d.demo ? <div className="mx-auto mt-4 max-w-md min-w-0 text-left"><BlocoBusca base={d.base} id="busca-boutique" /></div> : null}
       </header>
     </>
   );
@@ -75,10 +82,14 @@ export function CabecalhoMercado({ d }: { d: DadosLoja }) {
       <header className="bg-white">
         <div className="mx-auto flex max-w-[2000px] flex-wrap items-center gap-4 px-4 py-4">
           <p className="text-2xl font-black tracking-tight" style={{ fontFamily: "var(--t-titulo)", color: "var(--t-primary)" }}><a href={d.base || "/"}>{d.loja}</a></p>
-          <div className="order-3 flex h-12 w-full overflow-hidden rounded-lg border-2 sm:order-none sm:w-auto sm:flex-1" style={{ borderColor: "var(--t-primary)" }}>
-            <span className="flex flex-1 items-center gap-2 px-3 text-sm" style={{ color: "var(--t-muted)" }}><Search className="size-4" />O que você procura?</span>
-            <span className="flex items-center px-5 text-sm font-bold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>Buscar</span>
-          </div>
+          {!d.demo ? (
+            <div className="order-3 w-full min-w-0 sm:order-none sm:w-auto sm:flex-1"><BlocoBusca base={d.base} id="busca-mercado" /></div>
+          ) : (
+            <div className="order-3 flex h-12 w-full overflow-hidden rounded-lg border-2 sm:order-none sm:w-auto sm:flex-1" style={{ borderColor: "var(--t-primary)" }}>
+              <span className="flex flex-1 items-center gap-2 px-3 text-sm" style={{ color: "var(--t-muted)" }}><Search className="size-4" />O que você procura?</span>
+              <span className="flex items-center px-5 text-sm font-bold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>Buscar</span>
+            </div>
+          )}
           <div className="ml-auto flex gap-5 text-xs"><span className="flex flex-col items-center"><User className="size-5" />Entrar</span><span className="flex flex-col items-center"><CartIcon base={d.base} icone="carrinho" className="size-5" />Carrinho</span></div>
         </div>
         <nav className="border-t" style={{ borderColor: "var(--t-line)" }} aria-label="Categorias">
@@ -117,7 +128,8 @@ export function CabecalhoFesta({ d }: { d: DadosLoja }) {
             <a key={c.nome} href={c.href} className="rounded-full px-4 py-2 text-sm font-bold" style={{ background: PASTEIS[i % 3] }}>{c.nome}</a>
           ))}
         </nav>
-        <span className="ml-auto flex size-12 items-center justify-center rounded-full" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}><CartIcon base={d.base} icone="sacola" className="size-5" /></span>
+        {!d.demo ? <div className="order-last w-full min-w-0 md:order-none md:ml-auto md:w-72 lg:w-96"><BlocoBusca base={d.base} id="busca-festa" /></div> : null}
+        <span className={`${d.demo ? "ml-auto" : "ml-auto md:ml-0"} flex size-12 items-center justify-center rounded-full`} style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}><CartIcon base={d.base} icone="sacola" className="size-5" /></span>
       </header>
     </>
   );
@@ -146,7 +158,10 @@ export function CabecalhoNoir({ d }: { d: DadosLoja }) {
           <nav className="hidden gap-8 text-[12px] tracking-[0.25em] uppercase md:flex" style={{ color: "var(--t-muted)" }} aria-label="Categorias">
             {d.categorias.map((c) => <a key={c.nome} href={c.href}>{c.nome}</a>)}
           </nav>
-          <div className="ml-auto flex gap-5" style={{ color: "var(--t-primary)" }}><Search className="size-4" /><CartIcon base={d.base} icone="sacola" className="size-4" /></div>
+          <div className="ml-auto flex items-center gap-5" style={{ color: "var(--t-primary)" }}>
+            {!d.demo ? <div className="w-36 min-w-0 sm:w-64" style={{ color: "var(--t-fg)" }}><BlocoBusca base={d.base} id="busca-noir" /></div> : <Search className="size-4" />}
+            <CartIcon base={d.base} icone="sacola" className="size-4" />
+          </div>
         </div>
       </header>
     </>
@@ -175,6 +190,7 @@ export function CabecalhoRustico({ d }: { d: DadosLoja }) {
         </nav>
         <CartIcon base={d.base} icone="cesta" className="absolute top-6 right-6 size-6" style={{ color: "var(--t-primary)" }} />
       </header>
+      {!d.demo ? <div className="mx-auto w-full max-w-md px-5 pt-4"><BlocoBusca base={d.base} id="busca-rustico" /></div> : null}
     </>
   );
 }

@@ -4,6 +4,7 @@ import { getActiveCategories } from "@/modules/catalog/categories";
 import { getTenantId } from "@/lib/tenant/context";
 import { getSiteUrlOrFallback } from "@/lib/tenant/site-url";
 import { isPublicCategory } from "@/modules/seo/public-category";
+import { tipoDoHostAtual, urlBaseDaPlataforma, sitemapDaPlataforma } from "@/modules/platform/seo-plataforma";
 
 /** Páginas que toda loja tem, independente do catálogo. */
 const STATIC_PAGES = [
@@ -18,6 +19,9 @@ const STATIC_PAGES = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const { tipo, host } = await tipoDoHostAtual();
+  if (tipo === "plataforma") return sitemapDaPlataforma(urlBaseDaPlataforma(host));
+
   const tenantId = await getTenantId();
   const SITE_URL = await getSiteUrlOrFallback(tenantId);
   const [products, categories] = await Promise.all([

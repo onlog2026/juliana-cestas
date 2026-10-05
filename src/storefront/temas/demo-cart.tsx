@@ -69,10 +69,23 @@ export function DemoCartProvider({ chave, children }: { chave: string; children:
   return <CartCtx.Provider value={value}>{children}</CartCtx.Provider>;
 }
 
+/**
+ * Carrinho vazio e inerte, devolvido quando NÃO há <DemoCartProvider>. A loja ao vivo não tem esse
+ * provedor (ela usa o carrinho real), e os modelos usam estes hooks em componentes que também
+ * rodam ao vivo: lançar erro aqui derrubaria a página inteira. Sem provedor, nada é adicionado.
+ */
+const SEM_CARRINHO: Ctx = {
+  itens: [],
+  total: 0,
+  quantidade: 0,
+  adicionar: () => {},
+  mudar: () => {},
+  remover: () => {},
+  limpar: () => {},
+};
+
 export function useDemoCart(): Ctx {
-  const c = useContext(CartCtx);
-  if (!c) throw new Error("useDemoCart precisa estar dentro de <DemoCartProvider>.");
-  return c;
+  return useContext(CartCtx) ?? SEM_CARRINHO;
 }
 
 /** Como useDemoCart, mas devolve null fora do provider. */

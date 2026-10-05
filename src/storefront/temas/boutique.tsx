@@ -1,5 +1,7 @@
 import { Search, ShoppingBag } from "lucide-react";
 import { Foto, brl } from "./kit";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "./blocos";
+import { Cartao } from "./internas/boutique";
 import type { DadosLoja } from "./types";
 
 /** BOUTIQUE — branco, respiro, logo centralizado, foto de abertura limpa, cartões altos sem moldura. */
@@ -8,6 +10,7 @@ export function HomeBoutique({ d }: { d: DadosLoja }) {
   return (
     <>
 
+      {!d.demo ? <BlocoBannersPromo /> : null}
       <Foto src={d.heroImagem} alt="" className="aspect-[4/5] w-full object-cover sm:aspect-[16/7]" />
       <section className="mx-auto max-w-xl px-6 py-16 text-center">
         <h1 className="text-3xl leading-tight sm:text-5xl" style={{ fontFamily: "var(--t-titulo)", fontWeight: 400 }}>{d.titulo}</h1>
@@ -38,6 +41,24 @@ export function HomeBoutique({ d }: { d: DadosLoja }) {
             <p className="mt-6 text-lg">{brl(destaque.preco)}</p>
           </div>
         </section>
+      ) : null}
+
+      {!d.demo ? (
+        <div className="mx-auto mt-24 grid max-w-[2000px] gap-20 px-5">
+          <BlocoConfianca />
+          <BlocoVitrines base={d.base} Cartao={Cartao} />
+          <div>
+            <p className="mb-8 text-center text-[11px] tracking-[0.3em] uppercase" style={{ color: "var(--t-accent)" }}>Todas as cestas</p>
+            <BlocoGradeOrdenavel base={d.base} Cartao={Cartao} classeGrade="grid grid-cols-2 gap-x-6 gap-y-14 md:grid-cols-3" />
+          </div>
+          <BlocoAvaliacoes />
+          <BlocoBeneficios />
+          <BlocoCartaozinho />
+          <BlocoFaq />
+          <BlocoWhatsapp />
+          <BlocoVistos base={d.base} Cartao={Cartao} />
+          <JsonLdHome nome={d.loja} />
+        </div>
       ) : null}
 
     </>

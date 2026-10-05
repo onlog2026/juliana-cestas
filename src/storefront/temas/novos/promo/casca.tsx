@@ -1,6 +1,7 @@
 import { CreditCard, Gift, PackageCheck, Search, ShieldCheck, Truck } from "lucide-react";
 import { CartIcon } from "../../cart-icon";
 import type { DadosLoja } from "../../types";
+import { BlocoBusca } from "../../blocos";
 
 /** PROMO — faixa rolante de avisos, busca grande e barra de categorias colorida; rodapé denso com garantias. */
 
@@ -38,17 +39,23 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
         </div>
       </div>
       <header style={{ background: "var(--t-bg)" }}>
-        <div className="mx-auto flex max-w-[2000px] items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6">
+        <div className={`mx-auto flex max-w-[2000px] items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6${!d.demo ? " flex-wrap sm:flex-nowrap" : ""}`}>
           <p className="text-2xl leading-none font-bold tracking-tight whitespace-nowrap uppercase sm:text-4xl" style={{ fontFamily: "var(--t-titulo)" }}>
             <a href={d.base || "/"}>{d.loja}</a>
           </p>
-          <a href={`${d.base}/categoria`} className="hidden h-12 flex-1 items-center gap-3 rounded-md border-2 px-4 text-sm sm:flex" style={{ borderColor: "var(--t-fg)", background: "var(--t-surface)", color: "var(--t-muted)" }}>
-            <Search className="size-5 shrink-0" aria-hidden="true" />
-            <span className="min-w-0 flex-1 truncate">Buscar cestas, flores, ocasiões…</span>
-            <span className="rounded px-3 py-1.5 text-xs font-bold uppercase" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>Buscar</span>
-          </a>
+          {!d.demo ? (
+            <div className="order-last w-full basis-full sm:order-none sm:w-auto sm:min-w-0 sm:flex-1 sm:basis-auto">
+              <BlocoBusca base={d.base} id="busca-promo" />
+            </div>
+          ) : (
+            <a href={`${d.base}/categoria`} className="hidden h-12 flex-1 items-center gap-3 rounded-md border-2 px-4 text-sm sm:flex" style={{ borderColor: "var(--t-fg)", background: "var(--t-surface)", color: "var(--t-muted)" }}>
+              <Search className="size-5 shrink-0" aria-hidden="true" />
+              <span className="min-w-0 flex-1 truncate">Buscar cestas, flores, ocasiões…</span>
+              <span className="rounded px-3 py-1.5 text-xs font-bold uppercase" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>Buscar</span>
+            </a>
+          )}
           <div className="ml-auto flex items-center gap-1 sm:ml-0">
-            <a href={`${d.base}/categoria`} aria-label="Buscar cestas" className="flex size-11 items-center justify-center sm:hidden"><Search className="size-5" aria-hidden="true" /></a>
+            {!d.demo ? null : <a href={`${d.base}/categoria`} aria-label="Buscar cestas" className="flex size-11 items-center justify-center sm:hidden"><Search className="size-5" aria-hidden="true" /></a>}
             <CartIcon base={d.base} icone="carrinho" className="size-6" />
           </div>
         </div>

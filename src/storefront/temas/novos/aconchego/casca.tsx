@@ -1,4 +1,5 @@
 import { CartIcon } from "../../cart-icon";
+import { BlocoBusca } from "../../blocos";
 import type { DadosLoja } from "../../types";
 import { Coracao, Folha, Onda, wrapA } from "./formas";
 
@@ -32,6 +33,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
             <CartIcon base={d.base} icone="cesta" className="size-6" />
           </div>
         </div>
+        {!d.demo ? <div className="mt-3 min-w-0"><BlocoBusca base={d.base} id="busca-aconchego" /></div> : null}
         <nav className="-mx-5 mt-2 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] md:hidden [&::-webkit-scrollbar]:hidden" aria-label="Categorias">
           {d.categorias.map((c) => (
             <a key={c.slug} href={c.href} className="shrink-0 rounded-full border px-4 text-sm font-semibold whitespace-nowrap" style={{ borderColor: "var(--t-line)", background: "var(--t-surface)" }}>{c.nome}</a>

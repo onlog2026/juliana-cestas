@@ -1,5 +1,7 @@
 import { ShoppingBag } from "lucide-react";
 import { Foto, brl } from "./kit";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "./blocos";
+import { Cartao } from "./internas/festa";
 import type { DadosLoja } from "./types";
 
 const PASTEIS = ["color-mix(in srgb, var(--t-primary) 14%, white)", "color-mix(in srgb, var(--t-accent) 22%, white)", "color-mix(in srgb, var(--t-primary) 8%, var(--t-accent) 12%)"];
@@ -8,6 +10,7 @@ const PASTEIS = ["color-mix(in srgb, var(--t-primary) 14%, white)", "color-mix(i
 export function HomeFesta({ d }: { d: DadosLoja }) {
   return (
     <>
+      {!d.demo ? <BlocoBannersPromo /> : null}
 
       <section className="relative mx-3 overflow-hidden rounded-[2.5rem] sm:mx-5" style={{ background: "var(--t-primary)" }}>
         <span className="absolute -top-10 -left-10 size-48 rounded-full opacity-70" style={{ background: "var(--t-accent)" }} aria-hidden="true" />
@@ -46,6 +49,24 @@ export function HomeFesta({ d }: { d: DadosLoja }) {
             </a>
           ))}
         </div>
+
+        {!d.demo ? (
+          <>
+            <div className="mt-12"><BlocoConfianca /></div>
+            <div className="mt-14"><BlocoVitrines Cartao={Cartao} /></div>
+            <section className="mt-16" aria-labelledby="todas-festa">
+              <h2 id="todas-festa" className="mb-8 text-center text-4xl font-extrabold" style={{ fontFamily: "var(--t-titulo)" }}>Todas as cestas</h2>
+              <BlocoGradeOrdenavel Cartao={Cartao} classeGrade="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4 sm:gap-6 lg:grid-cols-4" />
+            </section>
+            <div className="mt-16"><BlocoAvaliacoes /></div>
+            <div className="mt-16"><BlocoBeneficios /></div>
+            <div className="mt-16"><BlocoCartaozinho /></div>
+            <div className="mt-16"><BlocoFaq /></div>
+            <div className="mt-16"><BlocoWhatsapp /></div>
+            <div className="mt-16"><BlocoVistos Cartao={Cartao} /></div>
+            <JsonLdHome />
+          </>
+        ) : null}
       </div>
 
     </>

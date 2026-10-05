@@ -1,7 +1,10 @@
+import type { ReactNode } from "react";
 import { ArrowRight } from "lucide-react";
 import { Foto, brl } from "../../kit";
 import type { DadosLoja } from "../../types";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "../../blocos";
 import Contador from "./contador";
+import { Cartao as CartaoProduto } from "./internas";
 
 /** PROMO — banners empilhados com contador do dia, "Mais vendidas" em grade densa, selos de desconto só quando há preço "de". */
 
@@ -35,6 +38,11 @@ function Cartao({ c }: { c: Cesta }) {
   );
 }
 
+/** Contêiner dos blocos reais da loja ao vivo: anula o respiro do <main> (os blocos já trazem o seu). */
+function Faixa({ children }: { children: ReactNode }) {
+  return <div className="-mx-4 mt-6 sm:-mx-6">{children}</div>;
+}
+
 export function Home({ d }: { d: DadosLoja }) {
   const [b1, b2] = d.cestas;
   const vendidas = d.cestas.slice(0, 10);
@@ -55,6 +63,9 @@ export function Home({ d }: { d: DadosLoja }) {
         </div>
         <Foto src={d.heroImagem} alt="" className="aspect-[4/3] size-full object-cover lg:aspect-auto lg:min-h-[420px]" />
       </section>
+
+      {!d.demo ? <Faixa><BlocoBannersPromo /></Faixa> : null}
+      {!d.demo ? <Faixa><BlocoConfianca /></Faixa> : null}
 
       {/* Dois banners */}
       <section className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-4 sm:grid-cols-2" aria-label="Destaques">
@@ -101,6 +112,25 @@ export function Home({ d }: { d: DadosLoja }) {
         </div>
       </section>
 
+      {!d.demo ? (
+        <>
+          <Faixa><BlocoVitrines base={d.base} Cartao={CartaoProduto} /></Faixa>
+          <section className="mt-10" aria-labelledby="todas">
+            <div className="border-b-4 pb-2" style={{ borderColor: "var(--t-primary)" }}>
+              <h2 id="todas" className="text-2xl font-bold uppercase sm:text-3xl" style={{ fontFamily: "var(--t-titulo)" }}>Todas as ofertas</h2>
+            </div>
+            <div className="mt-5">
+              <BlocoGradeOrdenavel
+                base={d.base}
+                Cartao={CartaoProduto}
+                classeGrade="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-5"
+              />
+            </div>
+          </section>
+          <Faixa><BlocoAvaliacoes /></Faixa>
+        </>
+      ) : null}
+
       {/* Frete e entrega */}
       <section className="mt-12 rounded-lg p-5 sm:p-8" style={{ background: "var(--t-surface)" }} aria-labelledby="entrega">
         <h2 id="entrega" className="text-2xl font-bold uppercase sm:text-3xl" style={{ fontFamily: "var(--t-titulo)" }}>Frete e entrega</h2>
@@ -113,6 +143,17 @@ export function Home({ d }: { d: DadosLoja }) {
           ))}
         </ol>
       </section>
+
+      {!d.demo ? (
+        <>
+          <Faixa><BlocoBeneficios /></Faixa>
+          <Faixa><BlocoCartaozinho /></Faixa>
+          <Faixa><BlocoFaq /></Faixa>
+          <Faixa><BlocoWhatsapp /></Faixa>
+          <Faixa><BlocoVistos base={d.base} Cartao={CartaoProduto} /></Faixa>
+          <JsonLdHome nome={d.loja} />
+        </>
+      ) : null}
     </main>
   );
 }

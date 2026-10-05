@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Check, Minus, Plus } from "lucide-react";
 import { Foto, brl } from "../../kit";
 import { useDemoCart } from "../../demo-cart";
+import type { ReactNode } from "react";
 import type { DadosLoja, ProdutoLoja } from "../../types";
+import type { EncaixesCategoria, EncaixesProduto } from "../../encaixes";
 import { AvisoSemCobranca, CaminhoPao, CarrinhoVazio, FAIXAS, NaoEncontrada, ORDENS, Quantidade, itensLimpos, rotuloFinalizar, useCompra, useLista, type Ordem } from "../../internas/comum";
 import { Rotulo, SELOS, wrapE } from "./pecas";
 
@@ -39,7 +41,7 @@ function Linha({ p }: { p: ProdutoLoja }) {
   );
 }
 
-export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
+export function Categoria({ d, slug, encaixes }: { d: DadosLoja; slug?: string; encaixes?: EncaixesCategoria }) {
   const { cat, titulo, lista, ordem, setOrdem, faixa, setFaixa } = useLista(d, slug);
   return (
     <main className={`${wrapE} py-8 sm:py-12`}>
@@ -59,6 +61,7 @@ export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
               {ORDENS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
             </select>
           </label>
+          {encaixes?.filtrosExtras ? <div className="mt-5 flex min-w-0 flex-wrap gap-2 lg:flex-col lg:gap-1.5">{encaixes.filtrosExtras}</div> : null}
         </aside>
         <section className="min-w-0" aria-label="Cestas">
           <p className="text-sm" style={{ color: "var(--t-muted)" }} aria-live="polite">{lista.length} {lista.length === 1 ? "cesta" : "cestas"} · valores unitários, quantidade no orçamento</p>
@@ -74,11 +77,17 @@ export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
           )}
         </section>
       </div>
+      {encaixes?.rodape ? <div className="mt-14 min-w-0">{encaixes.rodape}</div> : null}
     </main>
   );
 }
 
-export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
+/** Cartão do modelo (usado pelos blocos reais da loja ao vivo). */
+export function Cartao({ p }: { p: ProdutoLoja }) {
+  return <Linha p={p} />;
+}
+
+export function Produto({ d, slug, encaixes }: { d: DadosLoja; slug: string; encaixes?: EncaixesProduto }) {
   const p = d.produtos.find((x) => x.slug === slug);
   const { comprar, ok } = useCompra(p);
   const { mudar } = useDemoCart();
@@ -133,6 +142,12 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
           </p>
           <p className="mt-4 leading-relaxed" style={{ color: "var(--t-muted)" }}>{p.descricao}</p>
 
+          {encaixes?.compra ? (
+            <div className="mt-6 min-w-0 rounded-md border p-4 sm:p-5" style={{ borderColor: "var(--t-line)", background: "var(--t-surface)" }}>
+              <div id="compra" className="min-w-0 scroll-mt-4">{encaixes.compra}</div>
+              {encaixes.entrega ? <div className="mt-4 min-w-0">{encaixes.entrega}</div> : null}
+            </div>
+          ) : (
           <div className="mt-6 rounded-md border p-4 sm:p-5" style={{ borderColor: "var(--t-line)", background: "var(--t-surface)" }}>
             <p className="text-sm font-bold" id="emp-qtd-rotulo">Quantidade de cestas</p>
             <div className="mt-2 flex items-center gap-2" role="group" aria-labelledby="emp-qtd-rotulo">
@@ -150,6 +165,7 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
             <a href={`${d.base}/carrinho`} className="mt-2 flex min-h-11 items-center justify-center rounded-md border text-sm font-semibold" style={{ borderColor: "var(--t-line)" }}>Ver meu orçamento</a>
             <p className="mt-3 text-xs leading-relaxed" style={{ color: "var(--t-muted)" }}>Até {MAX_QTD} por item neste orçamento. Para lotes maiores, peça pelo formulário da página inicial.</p>
           </div>
+          )}
 
           <ul className="mt-5 grid gap-2 sm:grid-cols-3">
             {SELOS.slice(0, 3).map(({ Icone, titulo }) => (
@@ -189,6 +205,11 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
         </section>
       ) : null}
 
+      {encaixes?.extras ? <section className="mt-12 min-w-0" aria-labelledby="emp-extras"><Rotulo>Personalização</Rotulo><h2 id="emp-extras" className="mt-2 mb-4 text-2xl" style={h}>Embalagem e cartão</h2>{encaixes.extras}</section> : null}
+      {encaixes?.avaliacoes ? <section className="mt-12 min-w-0" aria-label="Avaliações">{encaixes.avaliacoes}</section> : null}
+      {encaixes?.quemComprou ? <section className="mt-12 min-w-0" aria-label="Quem comprou também levou">{encaixes.quemComprou}</section> : null}
+      {encaixes?.vistos ? <section className="mt-12 min-w-0" aria-label="Vistos recentemente">{encaixes.vistos}</section> : null}
+
       <section className="mt-14" aria-labelledby="emp-outras">
         <h2 id="emp-outras" className="text-2xl" style={h}>Outras cestas do catálogo</h2>
         <div className="mt-4 grid gap-2.5">
@@ -197,23 +218,34 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
       </section>
 
       <div className="fixed inset-x-0 z-30 flex items-center gap-3 border-t px-4 pt-2.5 lg:hidden" style={{ bottom: "var(--demo-barra-baixo, 0px)", paddingBottom: "max(0.625rem, env(safe-area-inset-bottom))", background: "var(--t-surface)", borderColor: "var(--t-line)" }}>
-        <div className="min-w-0 flex-1">
-          <p className="text-xs" style={{ color: "var(--t-muted)" }}>{qtd} {qtd === 1 ? "cesta" : "cestas"}</p>
-          <p className="text-lg font-bold tabular-nums">{brl(p.preco * qtd)}</p>
-        </div>
-        <button type="button" onClick={adicionar} className="min-h-11 rounded-md border px-5 font-bold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)", borderColor: "var(--t-primary)" }}>{ok ? "Adicionado" : "Adicionar ao orçamento"}</button>
+        {encaixes?.compra ? (
+          <>
+            <p className="min-w-0 flex-1 text-lg font-bold tabular-nums">{brl(p.preco)}</p>
+            <a href="#compra" className="inline-flex min-h-11 items-center rounded-md border px-5 font-bold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)", borderColor: "var(--t-primary)" }}>Comprar</a>
+          </>
+        ) : (
+          <>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs" style={{ color: "var(--t-muted)" }}>{qtd} {qtd === 1 ? "cesta" : "cestas"}</p>
+              <p className="text-lg font-bold tabular-nums">{brl(p.preco * qtd)}</p>
+            </div>
+            <button type="button" onClick={adicionar} className="min-h-11 rounded-md border px-5 font-bold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)", borderColor: "var(--t-primary)" }}>{ok ? "Adicionado" : "Adicionar ao orçamento"}</button>
+          </>
+        )}
       </div>
     </main>
   );
 }
 
-export function Carrinho({ d }: { d: DadosLoja }) {
+export function Carrinho({ d, conteudo }: { d: DadosLoja; conteudo?: ReactNode }) {
   const { itens, total, quantidade } = useDemoCart();
   return (
     <main className={`${wrapE} py-8 sm:py-12`}>
       <Rotulo>Seu pedido</Rotulo>
-      <h1 className="mt-2 text-4xl sm:text-5xl" style={h}>Orçamento</h1>
-      {itens.length === 0 ? (
+      <h1 className="mt-2 text-4xl sm:text-5xl" style={h}>{conteudo ? "Pedido" : "Orçamento"}</h1>
+      {conteudo ? (
+        <div className="mt-8 min-w-0">{conteudo}</div>
+      ) : itens.length === 0 ? (
         <CarrinhoVazio d={d} className="mt-8 rounded-md border border-dashed p-10 text-center" botao="mt-4 inline-flex min-h-12 items-center rounded-md border px-8 font-bold" />
       ) : (
         <div className="mt-8 grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">

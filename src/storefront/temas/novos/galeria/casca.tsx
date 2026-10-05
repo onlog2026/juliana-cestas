@@ -1,5 +1,6 @@
 import { CartIcon } from "../../cart-icon";
 import type { DadosLoja } from "../../types";
+import { BlocoBusca } from "../../blocos";
 
 /** GALERIA — cabeçalho com logo central pequeno em caixa-alta espaçada, menu fino e rodapé de ateliê. */
 
@@ -38,6 +39,11 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
             <CartIcon base={d.base} icone="sacola" className="size-[18px]" />
           </div>
         </div>
+        {!d.demo ? (
+          <div className="mx-auto max-w-[2000px] border-t px-4 py-2 sm:px-8" style={{ borderColor: "var(--t-line)" }}>
+            <div className="mx-auto max-w-xl"><BlocoBusca base={d.base} id="busca-galeria" /></div>
+          </div>
+        ) : null}
       </header>
     </>
   );

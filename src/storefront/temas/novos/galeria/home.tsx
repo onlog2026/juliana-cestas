@@ -1,7 +1,10 @@
 import { ArrowUpRight } from "lucide-react";
 import { Foto, brl } from "../../kit";
+import type { ReactNode } from "react";
 import type { DadosLoja } from "../../types";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "../../blocos";
 import { GAL_CSS } from "./casca";
+import { Cartao } from "./internas";
 
 /** GALERIA — abertura em tela cheia, vitrine assimétrica numerada, "nossa história" em duas colunas. */
 
@@ -17,6 +20,11 @@ const LAYOUT = [
   { col: "col-span-1 lg:col-span-5", asp: "aspect-[4/5]", off: "lg:mt-4" },
   { col: "col-span-1 lg:col-span-3 lg:col-start-9", asp: "aspect-[3/4]", off: "lg:mt-24" },
 ];
+
+/** Contêiner dos blocos reais da loja ao vivo, no ritmo da galeria. */
+function Faixa({ children }: { children: ReactNode }) {
+  return <div className="mx-auto max-w-[2000px] px-5 pt-16 sm:px-10 sm:pt-24">{children}</div>;
+}
 
 export function Home({ d }: { d: DadosLoja }) {
   const pecas = d.cestas.slice(0, 6);
@@ -36,6 +44,9 @@ export function Home({ d }: { d: DadosLoja }) {
           <a href={`${d.base}/categoria`} className={`gal-ul w-fit ${CAPS} inline-flex min-h-11 items-center`}>Ver a coleção</a>
         </div>
       </section>
+
+      {!d.demo ? <BlocoBannersPromo /> : null}
+      {!d.demo ? <Faixa><BlocoConfianca /></Faixa> : null}
 
       {/* Vitrine */}
       <section className="mx-auto max-w-[2000px] px-5 pt-24 pb-10 sm:px-10 sm:pt-36" aria-labelledby="vitrine">
@@ -65,6 +76,20 @@ export function Home({ d }: { d: DadosLoja }) {
         </p>
       </section>
 
+      {!d.demo ? (
+        <Faixa>
+          <BlocoVitrines base={d.base} Cartao={Cartao} />
+          <div className="mt-16">
+            <BlocoGradeOrdenavel
+              base={d.base}
+              Cartao={Cartao}
+              titulo="Todas as peças"
+              classeGrade="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-4 gap-y-10 sm:gap-x-8 lg:grid-cols-4"
+            />
+          </div>
+        </Faixa>
+      ) : null}
+
       {/* Nossa história */}
       <section className="mt-16 border-y" style={{ background: "var(--t-surface)", borderColor: "var(--t-line)" }} aria-labelledby="historia">
         <div className="mx-auto grid max-w-[2000px] grid-cols-[minmax(0,1fr)] items-center gap-12 px-5 py-20 sm:px-10 lg:grid-cols-2 lg:gap-24 lg:py-32">
@@ -80,6 +105,8 @@ export function Home({ d }: { d: DadosLoja }) {
           </div>
         </div>
       </section>
+
+      {!d.demo ? <Faixa><BlocoAvaliacoes /></Faixa> : null}
 
       {/* Coleções em lista */}
       <section className="mx-auto max-w-[2000px] px-5 pt-24 sm:px-10" aria-labelledby="colecoes">
@@ -107,6 +134,17 @@ export function Home({ d }: { d: DadosLoja }) {
           </div>
         ))}
       </section>
+
+      {!d.demo ? (
+        <>
+          <Faixa><BlocoBeneficios /></Faixa>
+          <Faixa><BlocoCartaozinho /></Faixa>
+          <Faixa><BlocoFaq /></Faixa>
+          <Faixa><BlocoWhatsapp /></Faixa>
+          <Faixa><BlocoVistos base={d.base} Cartao={Cartao} /></Faixa>
+          <JsonLdHome nome={d.loja} />
+        </>
+      ) : null}
     </main>
   );
 }

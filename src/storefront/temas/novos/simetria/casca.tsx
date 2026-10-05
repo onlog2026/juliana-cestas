@@ -1,5 +1,6 @@
 import { CartIcon } from "../../cart-icon";
 import type { DadosLoja } from "../../types";
+import { BlocoBusca } from "../../blocos";
 import { CAPS, LARG } from "./comum";
 
 /** SIMETRIA — logo ao centro; o menu se divide em duas metades iguais, uma de cada lado. Rodapé em três colunas espelhadas. */
@@ -24,6 +25,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
           <CartIcon base={d.base} icone="sacola" className="size-5" />
         </div>
       </div>
+      {!d.demo ? <div className={`${LARG} mx-auto max-w-xl min-w-0 pb-3`}><BlocoBusca base={d.base} id="busca-simetria" /></div> : null}
       <nav aria-label="Categorias no celular" className="flex overflow-x-auto md:hidden" style={{ scrollbarWidth: "none" }}>
         {d.categorias.map((c) => <a key={c.slug} href={c.href} className={`shrink-0 px-4 first:ml-auto last:mr-auto ${CAPS}`}>{c.nome}</a>)}
       </nav>

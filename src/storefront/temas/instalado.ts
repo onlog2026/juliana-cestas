@@ -22,6 +22,18 @@ export function planoPermite(planSlug: string | null, plano: Tema["plano"]): boo
  * modelo sem gravar nada no banco; nunca é definida na Vercel.
  */
 export const getTemaInstalado = cache(async (tenantId: string): Promise<TemaInstalado | null> => {
+  // Só em build/servidor de TESTE (TEMA_TESTE=1; nunca na Vercel): o modelo vem de um cabeçalho da
+  // requisição, para o verificador percorrer os 17 modelos na loja real sem gravar nada no banco.
+  // Fora do modo de teste `headers()` nem é chamado, e as páginas estáticas continuam estáticas.
+  if (process.env.TEMA_TESTE === "1") {
+    const { headers } = await import("next/headers");
+    const pedido = ((await headers()).get("x-tema-teste") ?? "").trim();
+    if (pedido) {
+      const [m, v] = pedido.split(":");
+      const tema = getTema(m);
+      if (tema) return { tema, variacao: getVariacao(tema, v) };
+    }
+  }
   const forcado = (process.env.TEMA_FORCADO ?? "").trim();
   if (forcado) {
     const [m, v] = forcado.split(":");

@@ -1,5 +1,6 @@
 import { CartIcon } from "../../cart-icon";
 import type { DadosLoja } from "../../types";
+import { BlocoBusca } from "../../blocos";
 import { wrapE } from "./pecas";
 
 /**
@@ -24,11 +25,12 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-1 sm:gap-2">
-            <a href={`${inicio}#orcamento`} className="hidden min-h-11 items-center rounded-md border px-4 text-sm font-semibold sm:inline-flex" style={{ borderColor: "var(--t-primary)", color: "var(--t-primary)" }}>Pedir orçamento</a>
-            <a href={`${d.base}/carrinho`} className="hidden min-h-11 items-center text-sm font-semibold sm:inline-flex">Orçamento</a>
+            {d.demo ? <a href={`${inicio}#orcamento`} className="hidden min-h-11 items-center rounded-md border px-4 text-sm font-semibold sm:inline-flex" style={{ borderColor: "var(--t-primary)", color: "var(--t-primary)" }}>Pedir orçamento</a> : null}
+            <a href={`${d.base}/carrinho`} className="hidden min-h-11 items-center text-sm font-semibold sm:inline-flex">{d.demo ? "Orçamento" : "Pedido"}</a>
             <CartIcon base={d.base} icone="carrinho" className="size-5" />
           </div>
         </div>
+        {!d.demo ? <div className={`${wrapE} min-w-0 pb-2.5`}><BlocoBusca base={d.base} id="busca-empresas" /></div> : null}
         <nav className="flex gap-2 overflow-x-auto border-t px-4 py-1.5 [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden" style={{ borderColor: "var(--t-line)" }} aria-label="Categorias">
           {d.categorias.map((c) => (
             <a key={c.slug} href={c.href} className="shrink-0 rounded-md px-3 text-sm font-medium whitespace-nowrap">{c.nome}</a>
@@ -60,12 +62,12 @@ export function Rodape({ d }: { d: DadosLoja }) {
           </ul>
         </div>
         <div className="min-w-0 text-sm">
-          <p className="text-xs font-semibold tracking-[0.16em] uppercase" style={titulo}>Orçamento</p>
+          <p className="text-xs font-semibold tracking-[0.16em] uppercase" style={titulo}>{d.demo ? "Orçamento" : "Pedido"}</p>
           <ul className="mt-2">
             <li><a href={`${inicio}#como`}>Como funciona</a></li>
-            <li><a href={`${inicio}#quantidades`}>Tabela de quantidades</a></li>
-            <li><a href={`${inicio}#orcamento`}>Pedir orçamento</a></li>
-            <li><a href={`${d.base}/carrinho`}>Meu orçamento</a></li>
+            {d.demo ? <li><a href={`${inicio}#quantidades`}>Tabela de quantidades</a></li> : null}
+            {d.demo ? <li><a href={`${inicio}#orcamento`}>Pedir orçamento</a></li> : null}
+            <li><a href={`${d.base}/carrinho`}>{d.demo ? "Meu orçamento" : "Meu pedido"}</a></li>
           </ul>
         </div>
         <div className="min-w-0 text-sm">

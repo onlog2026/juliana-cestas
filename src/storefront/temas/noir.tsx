@@ -1,11 +1,14 @@
 import { Search, ShoppingBag } from "lucide-react";
 import { Foto, brl } from "./kit";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "./blocos";
+import { Cartao } from "./internas/noir";
 import type { DadosLoja } from "./types";
 
 /** NOIR — escuro e dourado: barra preta, foto em tela cheia com título serifado, cartões com fio dourado. */
 export function HomeNoir({ d }: { d: DadosLoja }) {
   return (
     <>
+      {!d.demo ? <BlocoBannersPromo /> : null}
 
       <section className="relative">
         <Foto src={d.heroImagem} alt="" className="aspect-[3/4] w-full object-cover sm:aspect-[16/7]" style={{ filter: "brightness(.55) saturate(.9)" }} />
@@ -37,10 +40,37 @@ export function HomeNoir({ d }: { d: DadosLoja }) {
         </div>
       </section>
 
+      {!d.demo ? (
+        <div className="mx-auto max-w-[2000px] px-6 pb-20" style={{ color: "var(--t-fg)" }}>
+          <div className="mb-16"><BlocoConfianca /></div>
+          <div className="mb-20"><BlocoVitrines Cartao={Cartao} /></div>
+          <section aria-labelledby="todas-noir">
+            <div className="mb-12 flex items-center gap-6">
+              <span className="h-px flex-1" style={{ background: "var(--t-line)" }} />
+              <h2 id="todas-noir" className="text-3xl italic" style={{ fontFamily: "var(--t-titulo)" }}>Todas as seleções</h2>
+              <span className="h-px flex-1" style={{ background: "var(--t-line)" }} />
+            </div>
+            <BlocoGradeOrdenavel Cartao={Cartao} classeGrade="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-4 gap-y-12 sm:gap-x-8 lg:grid-cols-3 xl:grid-cols-4" />
+          </section>
+        </div>
+      ) : null}
+
       <section className="px-6 py-20 text-center" style={{ background: "var(--t-surface)" }}>
         <p className="mx-auto max-w-3xl text-3xl leading-snug italic sm:text-4xl" style={{ fontFamily: "var(--t-titulo)" }}>“{d.texto}”</p>
         <p className="mt-6 text-[12px] tracking-[0.35em] uppercase" style={{ color: "var(--t-primary)" }}>{d.loja}</p>
       </section>
+
+      {!d.demo ? (
+        <div className="mx-auto max-w-[2000px] px-6 py-20" style={{ color: "var(--t-fg)" }}>
+          <BlocoAvaliacoes />
+          <div className="mt-20"><BlocoBeneficios /></div>
+          <div className="mt-20"><BlocoCartaozinho /></div>
+          <div className="mt-20"><BlocoFaq /></div>
+          <div className="mt-20"><BlocoWhatsapp /></div>
+          <div className="mt-20"><BlocoVistos Cartao={Cartao} /></div>
+          <JsonLdHome />
+        </div>
+      ) : null}
 
     </>
   );

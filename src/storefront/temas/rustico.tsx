@@ -1,5 +1,7 @@
 import { ShoppingBasket } from "lucide-react";
 import { Foto, brl } from "./kit";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "./blocos";
+import { Cartao } from "./internas/rustico";
 import type { DadosLoja } from "./types";
 
 const PAPEL = {
@@ -13,6 +15,7 @@ const PAPEL = {
 export function HomeRustico({ d }: { d: DadosLoja }) {
   return (
     <div style={PAPEL}>
+      {!d.demo ? <BlocoBannersPromo /> : null}
 
       <section className="mx-auto grid max-w-[2000px] items-center gap-10 px-6 py-12 md:grid-cols-[1.1fr_1fr]">
         <div className="relative mx-auto w-full max-w-xl -rotate-2 bg-white p-3 pb-14 shadow-[0_18px_40px_-18px_rgba(60,40,20,.5)]">
@@ -39,6 +42,24 @@ export function HomeRustico({ d }: { d: DadosLoja }) {
           ))}
         </div>
       </section>
+
+      {!d.demo ? (
+        <div className="mx-auto max-w-[2000px] px-6 pb-16">
+          <BlocoConfianca />
+          <div className="mt-14"><BlocoVitrines Cartao={Cartao} /></div>
+          <section className="mt-16" aria-labelledby="todas-rustico">
+            <h2 id="todas-rustico" className="mb-10 text-center text-4xl" style={{ fontFamily: "var(--t-detalhe)", color: "var(--t-primary)" }}>Todas as cestas da casa</h2>
+            <BlocoGradeOrdenavel Cartao={Cartao} classeGrade="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-5 gap-y-10 px-1 sm:gap-x-8 lg:grid-cols-3 xl:grid-cols-4" />
+          </section>
+          <div className="mt-16"><BlocoAvaliacoes /></div>
+          <div className="mt-16"><BlocoBeneficios /></div>
+          <div className="mt-16"><BlocoCartaozinho /></div>
+          <div className="mt-16"><BlocoFaq /></div>
+          <div className="mt-16"><BlocoWhatsapp /></div>
+          <div className="mt-16"><BlocoVistos Cartao={Cartao} /></div>
+          <JsonLdHome />
+        </div>
+      ) : null}
 
     </div>
   );

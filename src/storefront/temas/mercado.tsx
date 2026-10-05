@@ -1,5 +1,7 @@
 import { CreditCard, Headphones, Search, ShieldCheck, ShoppingCart, Truck, User } from "lucide-react";
 import { Foto, brl } from "./kit";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "./blocos";
+import { Cartao } from "./internas/mercado";
 import type { DadosLoja } from "./types";
 
 /** MERCADO — utilitário e denso: busca larga, banners em grade, ofertas com botão Adicionar. */
@@ -25,6 +27,7 @@ export function HomeMercado({ d }: { d: DadosLoja }) {
   return (
     <>
 
+      {!d.demo ? <BlocoBannersPromo /> : null}
       <div className="mx-auto max-w-[2000px] px-4 py-5">
         <section className="grid gap-3 md:grid-cols-3 md:grid-rows-2">
           {[b1, b2, b3].map((b, i) => b ? (
@@ -53,6 +56,21 @@ export function HomeMercado({ d }: { d: DadosLoja }) {
         </div>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{d.cestas.slice(0, 10).map(card)}</div>
       </div>
+
+      {!d.demo ? (
+        <div className="mx-auto grid max-w-[2000px] gap-8 px-4 pt-8">
+          <BlocoConfianca />
+          <BlocoVitrines base={d.base} Cartao={Cartao} />
+          <BlocoGradeOrdenavel base={d.base} Cartao={Cartao} titulo="Todas as cestas" classeGrade="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5" />
+          <BlocoAvaliacoes />
+          <BlocoBeneficios />
+          <BlocoCartaozinho />
+          <BlocoFaq />
+          <BlocoWhatsapp />
+          <BlocoVistos base={d.base} Cartao={Cartao} />
+          <JsonLdHome nome={d.loja} />
+        </div>
+      ) : null}
 
     </>
   );

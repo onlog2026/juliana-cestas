@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { getStoreProfile, getStoreWhatsapp } from "@/modules/settings/store-profile";
 import { getTenantId } from "@/lib/tenant/context";
 import { CartPageClient } from "@/components/loja/cart/cart-page-client";
+import { getTemaInstalado } from "@/storefront/temas/instalado";
+import { dadosLoja } from "@/storefront/temas/dados-loja";
+import { CarrinhoAoVivo } from "@/storefront/temas/ao-vivo";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +12,12 @@ export const metadata: Metadata = { title: "Carrinho", robots: { index: false, f
 
 export default async function CarrinhoPage() {
   const tenantId = await getTenantId();
+  // Loja com modelo instalado: o carrinho REAL (e o checkout) dentro da casca do modelo.
+  const instalado = await getTemaInstalado(tenantId);
+  if (instalado) {
+    const d = await dadosLoja(tenantId, "", instalado.variacao);
+    return <CarrinhoAoVivo tema={instalado.tema.key} d={d} />;
+  }
   const [storeProfile, whatsapp] = await Promise.all([
     getStoreProfile(tenantId),
     getStoreWhatsapp(tenantId),

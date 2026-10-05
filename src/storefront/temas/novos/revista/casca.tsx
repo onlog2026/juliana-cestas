@@ -1,6 +1,7 @@
 import { CartIcon } from "../../cart-icon";
 import type { DadosLoja } from "../../types";
 import { Regua } from "./pecas";
+import { BlocoBusca } from "../../blocos";
 
 /* REVISTA — cabeçalho de jornal (nome gigante centralizado entre réguas, seções em caixa-alta) e rodapé de expediente. */
 
@@ -17,6 +18,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
           <a href={d.base || "/"} className="inline-flex min-h-11 items-center">{d.loja}</a>
         </p>
         <Regua />
+        {!d.demo ? <div className="mx-auto max-w-xl py-2"><BlocoBusca base={d.base} id="busca-revista" /></div> : null}
         <nav aria-label="Seções" className="flex gap-1 overflow-x-auto border-b [scrollbar-width:none] sm:justify-center [&::-webkit-scrollbar]:hidden" style={{ borderColor: "var(--t-line)" }}>
           <a href={`${d.base}/categoria`} className="shrink-0 px-3 text-[12px] font-bold tracking-[0.16em] whitespace-nowrap uppercase" style={{ fontFamily: "var(--t-detalhe)" }}>Todas</a>
           {d.categorias.map((c) => (

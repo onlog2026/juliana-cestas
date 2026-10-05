@@ -3,6 +3,7 @@ import { CartIcon } from "../../cart-icon";
 import type { DadosLoja } from "../../types";
 import { ENDERECO_EXEMPLO, HORARIOS, linkWhats, regioes } from "./dados";
 import { Whats } from "./pecas";
+import { BlocoBusca } from "../../blocos";
 
 /* BAIRRO — cabeçalho: faixa "Entregamos em", nome + endereço + WhatsApp, chips de categorias. Rodapé em 3 colunas. */
 
@@ -38,6 +39,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
             <CartIcon base={d.base} icone="cesta" className="size-6" />
           </div>
         </div>
+        {!d.demo ? <div className="border-t" style={{ borderColor: "var(--t-line)" }}><div className="mx-auto max-w-[2000px] px-4 py-2 sm:px-6 lg:px-10"><BlocoBusca base={d.base} id="busca-bairro" /></div></div> : null}
         <nav aria-label="Categorias" className="border-t" style={{ borderColor: "var(--t-line)" }}>
           <div className="mx-auto flex max-w-[2000px] gap-1 overflow-x-auto px-3 sm:px-5 lg:px-9 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <a href={`${d.base}/categoria`} className="shrink-0 px-3 text-sm font-semibold whitespace-nowrap">Todas</a>

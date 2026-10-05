@@ -1,19 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Check } from "lucide-react";
 import { Foto, brl } from "../../kit";
-import { useDemoCart } from "../../demo-cart";
+import { useDemoCart, useDemoCartOptional } from "../../demo-cart";
 import type { DadosLoja, ProdutoLoja } from "../../types";
-import { AvisoSemCobranca, CaminhoPao, CarrinhoVazio, FAIXAS, NaoEncontrada, ORDENS, Quantidade, descontoPct, itensLimpos, rotuloFinalizar, useCompra, useLista, wrap, type Ordem } from "../../internas/comum";
+import type { EncaixesCategoria, EncaixesProduto } from "../../encaixes";
+import { AvisoSemCobranca, CaminhoPao, CarrinhoVazio, FAIXAS, NaoEncontrada, ORDENS, Quantidade, descontoPct, itensLimpos, rotuloFinalizar, useLista, wrap, type Ordem } from "../../internas/comum";
 import { Kicker, Regua } from "./pecas";
 
 /* REVISTA — páginas internas: lista editorial (foto, título, resumo, preço), cesta em formato de artigo e carrinho como "pedido" tipográfico. */
 
 const CAPS = "text-[12px] font-bold tracking-[0.16em] uppercase";
 
+/** Adicionar ao carrinho de demonstração; fora do carrinho de demonstração (loja ao vivo) não faz nada. */
+function useCompraSegura(p: ProdutoLoja | undefined) {
+  const c = useDemoCartOptional();
+  const [ok, setOk] = useState(false);
+  function comprar() {
+    if (!p || !c) return;
+    c.adicionar({ slug: p.slug, nome: p.nome, preco: p.preco, foto: p.fotos[0] });
+    setOk(true);
+    window.setTimeout(() => setOk(false), 2000);
+  }
+  return { comprar, ok, temCarrinho: Boolean(c) };
+}
+
+/** Cartão visual do modelo (estilo matéria, sem botão de demonstração): é o que os blocos reais da loja ao vivo usam. */
+export function Cartao({ p }: { p: ProdutoLoja }) {
+  const off = descontoPct(p);
+  return (
+    <a href={p.href} className="group block min-w-0">
+      <div className="overflow-hidden">
+        <Foto src={p.fotos[0]} alt={p.nome} className="aspect-[3/4] w-full object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:group-hover:scale-[1.04]" />
+      </div>
+      {p.serve ? <p className="mt-3 line-clamp-1 text-[11px] font-bold tracking-[0.2em] uppercase" style={{ fontFamily: "var(--t-detalhe)", color: "var(--t-muted)" }}>{p.serve}</p> : null}
+      <p className="mt-1 line-clamp-2 text-lg leading-snug underline-offset-4 group-hover:underline sm:text-xl" style={{ fontFamily: "var(--t-titulo)" }}>{p.nome}</p>
+      <p className="mt-2 flex flex-wrap items-baseline gap-x-2 text-base font-bold tabular-nums">
+        {brl(p.preco)}
+        {p.precoDe ? <s className="text-xs font-normal" style={{ color: "var(--t-muted)" }}>{brl(p.precoDe)}</s> : null}
+        {off ? <span className="text-xs" style={{ color: "var(--t-accent)" }}>-{off}%</span> : null}
+      </p>
+    </a>
+  );
+}
+
 function Linha({ p, categoria }: { p: ProdutoLoja; categoria?: string }) {
-  const { comprar, ok } = useCompra(p);
+  const { comprar, ok, temCarrinho } = useCompraSegura(p);
   const itens = itensLimpos(p);
   return (
     <li className="grid grid-cols-[104px_minmax(0,1fr)] gap-x-4 gap-y-3 border-b py-6 sm:grid-cols-[220px_minmax(0,1fr)_auto] sm:gap-x-8" style={{ borderColor: "var(--t-line)" }}>
@@ -37,15 +70,19 @@ function Linha({ p, categoria }: { p: ProdutoLoja; categoria?: string }) {
           <span className="block text-2xl font-bold tabular-nums" style={{ fontFamily: "var(--t-titulo)" }}>{brl(p.preco)}</span>
           {p.precoDe ? <s className="text-xs tabular-nums" style={{ color: "var(--t-muted)" }}>{brl(p.precoDe)}</s> : null}
         </p>
-        <button type="button" onClick={comprar} className={`inline-flex min-h-11 items-center justify-center gap-2 border-2 px-5 ${CAPS}`} style={{ borderColor: "var(--t-fg)", fontFamily: "var(--t-detalhe)" }}>
-          {ok ? <><Check className="size-4" aria-hidden="true" /> Adicionada</> : "Adicionar"}
-        </button>
+        {temCarrinho ? (
+          <button type="button" onClick={comprar} className={`inline-flex min-h-11 items-center justify-center gap-2 border-2 px-5 ${CAPS}`} style={{ borderColor: "var(--t-fg)", fontFamily: "var(--t-detalhe)" }}>
+            {ok ? <><Check className="size-4" aria-hidden="true" /> Adicionada</> : "Adicionar"}
+          </button>
+        ) : (
+          <a href={p.href} className={`inline-flex min-h-11 items-center justify-center border-2 px-5 ${CAPS}`} style={{ borderColor: "var(--t-fg)", fontFamily: "var(--t-detalhe)" }}>Ver cesta</a>
+        )}
       </div>
     </li>
   );
 }
 
-export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
+export function Categoria({ d, slug, encaixes }: { d: DadosLoja; slug?: string; encaixes?: EncaixesCategoria }) {
   const { cat, titulo, lista, ordem, setOrdem, faixa, setFaixa } = useLista(d, slug);
   return (
     <main className={`${wrap} py-6 sm:py-10`}>
@@ -62,6 +99,7 @@ export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
           <a key={c.slug} href={c.href} className={`inline-flex min-h-11 items-center px-2 ${CAPS} ${c.slug === slug ? "underline decoration-2 underline-offset-8" : ""}`} style={{ fontFamily: "var(--t-detalhe)", color: c.slug === slug ? "var(--t-fg)" : "var(--t-muted)" }}>{c.nome}</a>
         ))}
       </div>
+      {encaixes?.filtrosExtras ? <div className="mt-3 min-w-0">{encaixes.filtrosExtras}</div> : null}
       <div className="flex flex-wrap items-center gap-x-1">
         <span className="px-2 text-xs" style={{ color: "var(--t-muted)", fontFamily: "var(--t-detalhe)" }}>Preço:</span>
         {FAIXAS.map(([k, l]) => (
@@ -83,13 +121,14 @@ export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
       ) : (
         <p className="mt-8 border-y py-8 text-center" style={{ borderColor: "var(--t-line)" }}>Nenhuma cesta nessa faixa. <button type="button" className="min-h-11 underline" onClick={() => setFaixa("")}>Limpar filtro</button></p>
       )}
+      {encaixes?.rodape ? <div className="mt-10 min-w-0">{encaixes.rodape}</div> : null}
     </main>
   );
 }
 
-export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
+export function Produto({ d, slug, encaixes }: { d: DadosLoja; slug: string; encaixes?: EncaixesProduto }) {
   const p = d.produtos.find((x) => x.slug === slug);
-  const { comprar, ok } = useCompra(p);
+  const { comprar, ok } = useCompraSegura(p);
   const [foto, setFoto] = useState(0);
   if (!p) return <NaoEncontrada d={d} />;
   const cat = d.categorias.find((c) => c.slug === p.categoria);
@@ -150,22 +189,53 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
             <p className="text-4xl tabular-nums" style={{ fontFamily: "var(--t-titulo)" }}>{brl(p.preco)}</p>
             <p className="mt-1 text-xs" style={{ color: "var(--t-muted)" }}>Entrega com data e horário marcados; o frete é calculado no pedido.</p>
           </div>
-          <button type="button" data-acao="comprar" onClick={comprar} className={`mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 px-4 ${CAPS}`} style={{ background: "var(--t-primary)", color: "var(--t-on-primary)", fontFamily: "var(--t-detalhe)" }}>
-            {ok ? <><Check className="size-4" aria-hidden="true" /> Adicionada ao carrinho</> : "Adicionar ao carrinho"}
-          </button>
-          <a href={`${d.base}/carrinho`} className={`mt-2 inline-flex min-h-11 w-full items-center justify-center border-2 px-4 ${CAPS}`} style={{ borderColor: "var(--t-fg)", fontFamily: "var(--t-detalhe)" }}>Ver carrinho</a>
+          {encaixes?.compra ? (
+            <div id="compra" className="mt-4 min-w-0 scroll-mt-24">
+              {encaixes.compra}
+              {encaixes.entrega ? <div className="mt-3 min-w-0">{encaixes.entrega}</div> : null}
+            </div>
+          ) : (
+            <>
+              <button type="button" data-acao="comprar" onClick={comprar} className={`mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 px-4 ${CAPS}`} style={{ background: "var(--t-primary)", color: "var(--t-on-primary)", fontFamily: "var(--t-detalhe)" }}>
+                {ok ? <><Check className="size-4" aria-hidden="true" /> Adicionada ao carrinho</> : "Adicionar ao carrinho"}
+              </button>
+              <a href={`${d.base}/carrinho`} className={`mt-2 inline-flex min-h-11 w-full items-center justify-center border-2 px-4 ${CAPS}`} style={{ borderColor: "var(--t-fg)", fontFamily: "var(--t-detalhe)" }}>Ver carrinho</a>
+            </>
+          )}
         </aside>
       </article>
 
+      {[encaixes?.extras, encaixes?.avaliacoes, encaixes?.quemComprou, encaixes?.vistos].map((no, n) => (no ? <section key={n} className="mt-10 min-w-0 border-t-[3px] pt-6 pb-4" style={{ borderColor: "var(--t-fg)" }}>{no}</section> : null))}
+
       <div className="fixed inset-x-0 z-30 flex items-center gap-3 border-t-2 px-4 py-2 lg:hidden" style={{ bottom: "var(--demo-barra-baixo, 0px)", borderColor: "var(--t-fg)", background: "var(--t-bg)" }}>
         <p className="min-w-0 flex-1 text-2xl tabular-nums" style={{ fontFamily: "var(--t-titulo)" }}>{brl(p.preco)}</p>
-        <button type="button" onClick={comprar} className={`min-h-11 px-5 ${CAPS}`} style={{ background: "var(--t-primary)", color: "var(--t-on-primary)", fontFamily: "var(--t-detalhe)" }}>{ok ? "Adicionada" : "Adicionar"}</button>
+        {encaixes?.compra ? (
+          <a href="#compra" className={`inline-flex min-h-11 items-center px-5 ${CAPS}`} style={{ background: "var(--t-primary)", color: "var(--t-on-primary)", fontFamily: "var(--t-detalhe)" }}>Comprar</a>
+        ) : (
+          <button type="button" onClick={comprar} className={`min-h-11 px-5 ${CAPS}`} style={{ background: "var(--t-primary)", color: "var(--t-on-primary)", fontFamily: "var(--t-detalhe)" }}>{ok ? "Adicionada" : "Adicionar"}</button>
+        )}
       </div>
     </main>
   );
 }
 
-export function Carrinho({ d }: { d: DadosLoja }) {
+export function Carrinho({ d, conteudo }: { d: DadosLoja; conteudo?: ReactNode }) {
+  if (conteudo) {
+    return (
+      <main className={`${wrap} py-6 sm:py-10`}>
+        <header>
+          <Kicker>Seu pedido</Kicker>
+          <h1 className="mt-1 text-[clamp(2.2rem,7vw,4.5rem)] leading-none" style={{ fontFamily: "var(--t-titulo)" }}>Carrinho</h1>
+          <Regua className="mt-5" />
+        </header>
+        <div className="mt-6 min-w-0">{conteudo}</div>
+      </main>
+    );
+  }
+  return <CarrinhoDemo d={d} />;
+}
+
+function CarrinhoDemo({ d }: { d: DadosLoja }) {
   const { itens, total, quantidade } = useDemoCart();
   return (
     <main className={`${wrap} py-6 sm:py-10`}>

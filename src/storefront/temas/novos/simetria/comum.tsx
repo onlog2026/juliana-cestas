@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Foto, brl } from "../../kit";
+import type { ProdutoLoja } from "../../types";
 
 /** SIMETRIA — peças compartilhadas (sem hooks): título entre dois fios, cartão centralizado e medida da página. */
 
@@ -20,7 +21,10 @@ export function Titulo({ children, id }: { children: ReactNode; id?: string }) {
 export type DadosCartao = { nome: string; preco: number; precoDe?: number; imagem: string; serve?: string; href: string };
 
 /** Cartão: foto, e embaixo nome, detalhe e preço, tudo centralizado. */
-export function Cartao({ p }: { p: DadosCartao }) {
+export function Cartao({ p: dados }: { p: DadosCartao | ProdutoLoja }) {
+  // Aceita o cartão da demo (`imagem`) e a cesta real da loja (`fotos`).
+  const imagem = "imagem" in dados ? dados.imagem : (dados.fotos[0] ?? "");
+  const p = { nome: dados.nome, preco: dados.preco, precoDe: dados.precoDe, serve: dados.serve, href: dados.href, imagem };
   return (
     <a href={p.href} className="group block min-w-0 text-center">
       <div className="overflow-hidden border" style={{ borderColor: "var(--t-line)" }}>

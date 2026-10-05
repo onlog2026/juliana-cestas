@@ -5,16 +5,27 @@ import { Check } from "lucide-react";
 import { CartIcon } from "../../cart-icon";
 import { Foto, brl } from "../../kit";
 import { useDemoCart } from "../../demo-cart";
+import type { ReactNode } from "react";
 import type { DadosLoja } from "../../types";
+import type { EncaixesCategoria, EncaixesProduto } from "../../encaixes";
 import { AvisoSemCobranca, CaminhoPao, CarrinhoVazio, FAIXAS, NaoEncontrada, ORDENS, Quantidade, descontoPct, itensLimpos, rotuloFinalizar, useCompra, useLista, type Ordem } from "../../internas/comum";
-import { COL, COL_STYLE, Post } from "./post";
+import { COL, COL_STYLE, Cartao, Post } from "./post";
 
 /** STORIES (internas) — categoria = feed; cesta = galeria que desliza + folha de compra fixa; carrinho = lista de app. */
+
+/** Cartão do modelo, usado pelos blocos reais da loja ao vivo. */
+export { Cartao };
 
 const CHIP = "inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 text-sm font-semibold whitespace-nowrap";
 const ROLA = { scrollbarWidth: "none" } as const;
 
-export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
+/** Seção de um encaixe real (o próprio bloco já traz o título); some quando o encaixe não vem. */
+function Encaixe({ rotulo, children }: { rotulo: string; children?: ReactNode }) {
+  if (!children) return null;
+  return <section aria-label={rotulo} className="mt-8 min-w-0 px-4 md:px-6 lg:px-10">{children}</section>;
+}
+
+export function Categoria({ d, slug, encaixes }: { d: DadosLoja; slug?: string; encaixes?: EncaixesCategoria }) {
   const { cat, titulo, lista, ordem, setOrdem, faixa, setFaixa } = useLista(d, slug);
   const avatar = d.heroImagem;
   return (
@@ -31,6 +42,8 @@ export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
           return <a key={c.slug} href={c.href} aria-current={ativa ? "page" : undefined} className={CHIP} style={{ borderColor: ativa ? "var(--t-primary)" : "var(--t-line)", background: ativa ? "var(--t-primary)" : "transparent", color: ativa ? "var(--t-on-primary)" : "var(--t-fg)" }}>{c.nome}</a>;
         })}
       </div>
+
+      {encaixes?.filtrosExtras ? <div className="mt-2 min-w-0 px-4">{encaixes.filtrosExtras}</div> : null}
 
       <div className="relative mt-2 flex items-center gap-2 overflow-x-auto px-4 pb-2" style={ROLA}>
         {FAIXAS.map(([k, l]) => (
@@ -53,11 +66,13 @@ export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
       ) : (
         <p className="px-4 py-12 text-center" style={{ color: "var(--t-muted)" }}>Nenhuma cesta nessa faixa de preço. <button type="button" className="underline" onClick={() => setFaixa("")}>Ver todas</button></p>
       )}
+
+      {encaixes?.rodape ? <div className="mt-10 min-w-0 px-4 md:px-6 lg:px-10">{encaixes.rodape}</div> : null}
     </main>
   );
 }
 
-export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
+export function Produto({ d, slug, encaixes }: { d: DadosLoja; slug: string; encaixes?: EncaixesProduto }) {
   const p = d.produtos.find((x) => x.slug === slug);
   const { comprar, ok } = useCompra(p);
   const trilho = useRef<HTMLDivElement | null>(null);
@@ -115,7 +130,22 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
           </section>
         ) : null}
         <p className="mt-6 rounded-2xl p-4 text-sm" style={{ background: "var(--t-surface)", color: "var(--t-muted)" }}>Dia e horário de entrega escolhidos no pedido. Cartão de mensagem incluso.</p>
-      {/* Folha de compra: fica no lugar da barra de app e acompanha a rolagem. */}
+      {encaixes?.compra ? (
+        <>
+          {/* Loja ao vivo: a compra real fica no corpo da página; no celular a folha fixa leva até ela. */}
+          <div id="compra" className="mt-6 min-w-0 scroll-mt-20">{encaixes.compra}</div>
+          {encaixes.entrega ? <div className="mt-3 min-w-0">{encaixes.entrega}</div> : null}
+          <div data-stories-sheet className="fixed inset-x-0 z-50 mx-auto flex w-full max-w-[560px] items-center gap-3 rounded-t-3xl border-t px-4 pt-3 md:hidden" style={{ bottom: "var(--demo-barra-baixo, 0px)", paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))", background: "var(--t-surface)", borderColor: "var(--t-line)" }}>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs" style={{ color: "var(--t-muted)" }}>{p.nome}</p>
+              <p className="text-xl font-bold tabular-nums">{brl(p.preco)}</p>
+            </div>
+            <a href="#compra" className="inline-flex min-h-12 items-center justify-center rounded-full px-7 font-semibold" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>Comprar</a>
+            <CartIcon base={d.base} icone="sacola" className="size-6" />
+          </div>
+        </>
+      ) : (
+      /* Folha de compra: fica no lugar da barra de app e acompanha a rolagem. */
       <div data-stories-sheet className="fixed inset-x-0 z-50 mx-auto flex w-full max-w-[560px] items-center gap-3 rounded-t-3xl border-t px-4 pt-3 md:static md:z-auto md:mt-6 md:max-w-none md:rounded-2xl md:border md:px-5 md:py-4" style={{ bottom: "var(--demo-barra-baixo, 0px)", paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))", background: "var(--t-surface)", borderColor: "var(--t-line)" }}>
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs" style={{ color: "var(--t-muted)" }}>{p.nome}</p>
@@ -126,6 +156,7 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
         </button>
         <CartIcon base={d.base} icone="sacola" className="size-6" />
       </div>
+      )}
       </div>
       </div>
 
@@ -146,12 +177,24 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
         </section>
       ) : null}
 
+      <Encaixe rotulo="Avaliações">{encaixes?.avaliacoes}</Encaixe>
+      <Encaixe rotulo="Quem comprou também levou">{encaixes?.quemComprou}</Encaixe>
+      <Encaixe rotulo="Embalagem e cartãozinho">{encaixes?.extras}</Encaixe>
+      <Encaixe rotulo="Vistos recentemente">{encaixes?.vistos}</Encaixe>
     </main>
   );
 }
 
-export function Carrinho({ d }: { d: DadosLoja }) {
+export function Carrinho({ d, conteudo }: { d: DadosLoja; conteudo?: ReactNode }) {
   const { itens, total } = useDemoCart();
+  if (conteudo) {
+    return (
+      <main className={`${COL} px-4 pt-5 pb-8 md:max-w-4xl`} style={COL_STYLE}>
+        <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--t-titulo)" }}>Carrinho</h1>
+        <div className="mt-4 min-w-0">{conteudo}</div>
+      </main>
+    );
+  }
   return (
     <main className={`${COL} px-4 pt-5 pb-8 md:max-w-4xl`} style={COL_STYLE}>
       <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--t-titulo)" }}>Carrinho</h1>

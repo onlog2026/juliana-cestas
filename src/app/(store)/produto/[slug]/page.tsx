@@ -17,6 +17,10 @@ import { getTenantId } from "@/lib/tenant/context";
 import { getStoreProfile, getStoreWhatsapp } from "@/modules/settings/store-profile";
 import { descricaoProdutoReserva, ehLojaOriginal, entregaNeutra } from "@/modules/seo/texto-legado";
 import { getCategoryById } from "@/modules/catalog/categories";
+import { getTemaInstalado } from "@/storefront/temas/instalado";
+import { dadosLoja } from "@/storefront/temas/dados-loja";
+import { ProdutoAoVivo } from "@/storefront/temas/ao-vivo";
+import { CARTOES } from "@/storefront/temas/internas";
 import { LEGACY_TENANT_ID } from "@/lib/tenant/legacy";
 import { getDeliverySettings } from "@/modules/delivery/settings";
 import { getAlsoBought } from "@/modules/catalog/also-bought";
@@ -69,6 +73,12 @@ export default async function ProdutoPage(
 ) {
   const { slug } = await props.params;
   const tenantId = await getTenantId();
+  // Loja com modelo instalado: a cesta REAL dentro do layout do modelo (sem modelo = a página de sempre).
+  const instalado = await getTemaInstalado(tenantId);
+  if (instalado) {
+    const d = await dadosLoja(tenantId, "", instalado.variacao);
+    return <ProdutoAoVivo tema={instalado.tema.key} d={d} slug={slug} Cartao={CARTOES[instalado.tema.key]} />;
+  }
   const whatsapp = await getStoreWhatsapp(tenantId);
   const product = await getProductBySlug(tenantId, slug);
   if (!product) notFound();

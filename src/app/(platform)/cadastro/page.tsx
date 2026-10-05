@@ -4,9 +4,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LEGACY_TENANT_ID } from "@/lib/tenant/legacy";
 import { getStoreOfUser, painelUrlDaLoja } from "@/modules/platform/onboarding";
 import { getPublicPlansPage } from "@/modules/platform/plans-public";
-import { PLATFORM_DEFAULTS } from "@/modules/platform/landing-content";
-import { getAllPlatformContent } from "@/modules/platform/landing-service";
-import { LandingHeader } from "@/components/platform/landing/header";
+import { PlataformaShell } from "@/components/platform/site/shell";
 import { SignupWizard } from "@/components/platform/signup/signup-wizard";
 
 /**
@@ -55,13 +53,6 @@ export default async function CadastroPage(props: PageProps<"/cadastro">) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let branding = PLATFORM_DEFAULTS.branding;
-  try {
-    branding = (await getAllPlatformContent()).branding;
-  } catch (e) {
-    console.error("[cadastro] conteúdo caiu no padrão:", e);
-  }
-
   const { plans, trialDays } = await getPublicPlansPage();
 
   // O nome do plano só aparece se ele EXISTIR e estiver visível. `?plano=` é
@@ -74,9 +65,7 @@ export default async function CadastroPage(props: PageProps<"/cadastro">) {
   const loja = user ? await getStoreOfUser(user.id) : null;
 
   return (
-    <div className="min-h-dvh bg-background">
-      <LandingHeader branding={branding} />
-
+    <PlataformaShell>
       <main className="bg-secondary/40">
         <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
           <div className="mx-auto max-w-xl">
@@ -121,6 +110,6 @@ export default async function CadastroPage(props: PageProps<"/cadastro">) {
           </div>
         </div>
       </main>
-    </div>
+    </PlataformaShell>
   );
 }

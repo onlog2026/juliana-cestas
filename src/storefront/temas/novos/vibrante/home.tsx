@@ -2,6 +2,8 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Foto, brl } from "../../kit";
 import type { DadosLoja } from "../../types";
 import { Estrela, Faixa, GIGANTE, PILULA, blocoEstilo } from "./pecas";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "../../blocos";
+import { Cartao } from "./internas";
 
 /**
  * VIBRANTE — blocos de cor chapada de ponta a ponta, títulos gigantes, faixa em movimento,
@@ -17,6 +19,9 @@ export function Home({ d }: { d: DadosLoja }) {
   ];
   return (
     <main>
+      {/* Blocos reais: sempre sobre o fundo da superfície do modelo (nunca sobre a cor chapada), para o texto ter contraste. */}
+      {!d.demo ? <div style={{ background: "var(--t-bg)", color: "var(--t-fg)" }}><BlocoBannersPromo /></div> : null}
+
       {/* Abertura */}
       <section style={{ background: "var(--t-accent)", color: "var(--t-fg)" }} aria-label="Apresentação">
         <div className={`${area} grid grid-cols-[minmax(0,1fr)] items-center gap-8 py-10 sm:py-14 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-12`}>
@@ -44,6 +49,15 @@ export function Home({ d }: { d: DadosLoja }) {
       </section>
 
       <Faixa frases={["Cartão escrito do seu jeito", "Entrega com data e horário marcados", "PIX e cartão"]} fundo="var(--t-fg)" texto="var(--t-bg)" />
+
+      {!d.demo ? (
+        <section style={{ background: "var(--t-bg)", color: "var(--t-fg)" }} aria-label="Confiança e destaques">
+          <div className={`${area} grid gap-8 py-8 sm:py-10`}>
+            <BlocoConfianca />
+            <BlocoVitrines base={d.base} Cartao={Cartao} />
+          </div>
+        </section>
+      ) : null}
 
       {/* Categorias */}
       <section style={{ background: "var(--t-bg)" }} aria-labelledby="clima">
@@ -94,6 +108,15 @@ export function Home({ d }: { d: DadosLoja }) {
         </div>
       </section>
 
+      {!d.demo ? (
+        <section style={{ background: "var(--t-bg)", color: "var(--t-fg)" }} aria-labelledby="todas-cestas">
+          <div className={`${area} py-12 sm:py-16`}>
+            <h2 id="todas-cestas" className="sr-only">Todas as cestas</h2>
+            <BlocoGradeOrdenavel base={d.base} Cartao={Cartao} titulo="Todas as cestas" classeGrade="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 sm:gap-5 lg:grid-cols-4" />
+          </div>
+        </section>
+      ) : null}
+
       {/* Como funciona */}
       <section style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }} aria-labelledby="como">
         <div className={`${area} py-12 sm:py-16`}>
@@ -110,6 +133,19 @@ export function Home({ d }: { d: DadosLoja }) {
         </div>
       </section>
 
+      {!d.demo ? (
+        <section style={{ background: "var(--t-surface)", color: "var(--t-fg)" }} aria-label="Avaliações, benefícios e perguntas">
+          <div className={`${area} grid gap-10 py-12 sm:py-16`}>
+            <BlocoAvaliacoes />
+            <BlocoBeneficios />
+            <BlocoCartaozinho />
+            <BlocoFaq />
+            <BlocoWhatsapp />
+            <BlocoVistos base={d.base} Cartao={Cartao} />
+          </div>
+        </section>
+      ) : null}
+
       {/* Fecho */}
       <section style={{ background: "var(--t-accent)", color: "var(--t-fg)" }} aria-labelledby="fecho">
         <div className={`${area} flex flex-col items-start gap-6 py-14 sm:py-20`}>
@@ -120,6 +156,7 @@ export function Home({ d }: { d: DadosLoja }) {
           </a>
         </div>
       </section>
+      {!d.demo ? <JsonLdHome nome={d.loja} /> : null}
     </main>
   );
 }

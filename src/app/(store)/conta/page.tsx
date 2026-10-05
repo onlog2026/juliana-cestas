@@ -3,6 +3,9 @@ import { Package, Headset } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCustomerOrders } from "@/modules/customers/service";
 import { getTenantId } from "@/lib/tenant/context";
+import { getTemaInstalado } from "@/storefront/temas/instalado";
+import { dadosLoja } from "@/storefront/temas/dados-loja";
+import { ContaAoVivo } from "@/storefront/temas/ao-vivo";
 import { getStoreProfile } from "@/modules/settings/store-profile";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { formatCents } from "@/lib/money";
@@ -20,6 +23,12 @@ export default async function ContaPage() {
   if (!user) return null;
 
   const tenantId = await getTenantId();
+  // Loja com modelo instalado: "Meus pedidos" com a cara do modelo (mesmos dados).
+  const instalado = await getTemaInstalado(tenantId);
+  if (instalado) {
+    const d = await dadosLoja(tenantId, "", instalado.variacao);
+    return <ContaAoVivo tema={instalado.tema.key} d={d} />;
+  }
   const orders = await getCustomerOrders(tenantId, user.id, user.email ?? null);
   const displayName = (user.user_metadata?.name as string | undefined) || user.email || "";
   const storeName = (await getStoreProfile(tenantId)).businessName?.trim() || "";

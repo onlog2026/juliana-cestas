@@ -3,6 +3,8 @@ import { Foto, brl } from "../../kit";
 import type { DadosLoja } from "../../types";
 import { Horarios, PediuHoje, Regioes, Retirada, SeloEntrega, Whats } from "./pecas";
 import { linkWhats } from "./dados";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "../../blocos";
+import { Cartao } from "./internas";
 
 /**
  * BAIRRO — loja de vizinhança: abertura com o bloco "Pediu até 14h, chega hoje", chips de ocasião,
@@ -17,6 +19,9 @@ export function Home({ d }: { d: DadosLoja }) {
   ];
   return (
     <main>
+      {!d.demo ? <BlocoBannersPromo /> : null}
+      {!d.demo ? <div className={`${area} pt-4`}><BlocoConfianca /></div> : null}
+
       {/* Abertura */}
       <section className={`${area} grid grid-cols-[minmax(0,1fr)] items-center gap-8 py-8 sm:py-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-14`}>
         <div className="min-w-0">
@@ -53,6 +58,8 @@ export function Home({ d }: { d: DadosLoja }) {
         </div>
       </section>
 
+      {!d.demo ? <div className={`${area} py-4`}><BlocoVitrines base={d.base} Cartao={Cartao} /></div> : null}
+
       {/* Vitrine */}
       <section className={`${area} py-10`} aria-labelledby="vitrine">
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -80,6 +87,13 @@ export function Home({ d }: { d: DadosLoja }) {
           ))}
         </div>
       </section>
+
+      {!d.demo ? (
+        <section className={`${area} py-8`} aria-labelledby="todas-cestas">
+          <h2 id="todas-cestas" className="sr-only">Todas as cestas</h2>
+          <BlocoGradeOrdenavel base={d.base} Cartao={Cartao} titulo="Todas as cestas" classeGrade="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 sm:gap-5 lg:grid-cols-4" />
+        </section>
+      ) : null}
 
       {/* Horários e regiões */}
       <section className={`${area} py-6`} aria-labelledby="entrega">
@@ -115,8 +129,18 @@ export function Home({ d }: { d: DadosLoja }) {
         </ol>
       </section>
 
+      {!d.demo ? (
+        <div className={`${area} grid gap-8 py-6`}>
+          <BlocoAvaliacoes />
+          <BlocoBeneficios />
+          <BlocoCartaozinho />
+          <BlocoFaq />
+        </div>
+      ) : null}
+
       {/* WhatsApp */}
-      {linkWhats(d) || d.demo ? (
+      {!d.demo ? <div className={`${area} py-4`}><BlocoWhatsapp /></div> : null}
+      {d.demo ? (
       <section className={`${area} pb-4`} aria-labelledby="whats">
         <div className="relative overflow-hidden rounded-3xl px-6 py-10 sm:px-12 sm:py-14" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>
           <svg aria-hidden="true" viewBox="0 0 200 200" className="pointer-events-none absolute -top-10 -right-10 size-56 opacity-20 sm:size-72"><circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="6 8" /><circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="6 8" /></svg>
@@ -134,6 +158,9 @@ export function Home({ d }: { d: DadosLoja }) {
         </div>
       </section>
       ) : null}
+
+      {!d.demo ? <div className={`${area} py-6`}><BlocoVistos base={d.base} Cartao={Cartao} /></div> : null}
+      {!d.demo ? <JsonLdHome nome={d.loja} /> : null}
     </main>
   );
 }

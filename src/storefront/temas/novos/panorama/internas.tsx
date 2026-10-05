@@ -1,19 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import { Foto, brl } from "../../kit";
 import { useDemoCart } from "../../demo-cart";
 import type { DadosLoja } from "../../types";
+import type { EncaixesCategoria, EncaixesProduto } from "../../encaixes";
 import { AvisoSemCobranca, CaminhoPao, CarrinhoVazio, FAIXAS, NaoEncontrada, ORDENS, Quantidade, descontoPct, itensLimpos, rotuloFinalizar, useCompra, useLista, type Ordem } from "../../internas/comum";
 import { ALTURA_TELA } from "./estilo";
+import { Cartao } from "./cartao";
 
 /** PANORAMA (internas) — categoria em painéis grandes alternados; cesta com foto presa à esquerda e texto rolando à direita; carrinho em duas metades. */
+
+/** Cartão do modelo, usado pelos blocos reais da loja ao vivo. */
+export { Cartao };
 
 const EYEBROW = "text-xs font-semibold tracking-[0.25em] uppercase";
 const LARG = "mx-auto w-full max-w-[2000px] px-5 sm:px-8";
 
-export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
+export function Categoria({ d, slug, encaixes }: { d: DadosLoja; slug?: string; encaixes?: EncaixesCategoria }) {
   const { cat, titulo, lista, ordem, setOrdem, faixa, setFaixa } = useLista(d, slug);
   return (
     <main>
@@ -32,6 +37,7 @@ export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
               </select>
             </label>
           </div>
+          {encaixes?.filtrosExtras ? <div className="mt-4 min-w-0">{encaixes.filtrosExtras}</div> : null}
           <p className="mt-2 text-sm" style={{ color: "var(--t-muted)" }} aria-live="polite">{lista.length} {lista.length === 1 ? "cesta" : "cestas"}</p>
         </div>
       </section>
@@ -64,11 +70,13 @@ export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
       }) : (
         <p className="px-6 py-24 text-center" style={{ color: "var(--t-muted)" }}>Nenhuma cesta nessa faixa de preço. <button type="button" className="underline" onClick={() => setFaixa("")}>Ver todas</button></p>
       )}
+
+      {encaixes?.rodape ? <div className={`${LARG} min-w-0 py-16`}>{encaixes.rodape}</div> : null}
     </main>
   );
 }
 
-export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
+export function Produto({ d, slug, encaixes }: { d: DadosLoja; slug: string; encaixes?: EncaixesProduto }) {
   const p = d.produtos.find((x) => x.slug === slug);
   const { comprar, ok } = useCompra(p);
   const [foto, setFoto] = useState(0);
@@ -118,6 +126,18 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
             </section>
           ) : null}
 
+          {encaixes?.compra ? (
+            <>
+              {/* Loja ao vivo: a compra real fica no corpo; no celular a barra fixa leva até ela. */}
+              <div id="compra" className="mt-10 min-w-0 scroll-mt-20">{encaixes.compra}</div>
+              {encaixes.entrega ? <div className="mt-5 min-w-0">{encaixes.entrega}</div> : null}
+              <div className="fixed inset-x-0 z-30 flex items-center gap-3 border-t px-4 py-2 lg:hidden" style={{ bottom: "var(--demo-barra-baixo, 0px)", background: "var(--t-bg)", borderColor: "var(--t-line)" }}>
+                <p className="min-w-0 flex-1 text-xl tabular-nums" style={{ fontFamily: "var(--t-titulo)" }}>{brl(p.preco)}</p>
+                <a href="#compra" className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full px-8 font-medium" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>Comprar</a>
+              </div>
+            </>
+          ) : (
+          <>
           {/* Um só botão de compra: barra fixa no celular, bloco comum no computador. */}
           <div className="max-lg:fixed max-lg:inset-x-0 max-lg:z-30 max-lg:flex max-lg:items-center max-lg:gap-3 max-lg:border-t max-lg:px-4 max-lg:py-2 lg:mt-10" style={{ bottom: "var(--demo-barra-baixo, 0px)", background: "var(--t-bg)", borderColor: "var(--t-line)" }}>
             <p className="min-w-0 flex-1 text-xl tabular-nums lg:hidden" style={{ fontFamily: "var(--t-titulo)" }}>{brl(p.preco)}</p>
@@ -126,6 +146,8 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
             </button>
           </div>
           <a href={`${d.base}/carrinho`} className="pn-link mt-6 inline-flex min-h-11 items-center gap-2 font-medium max-lg:mb-0">Ver carrinho <ArrowRight className="size-4" aria-hidden="true" /></a>
+          </>
+          )}
           <p className="mt-6 text-sm" style={{ color: "var(--t-muted)" }}>Dia e horário de entrega escolhidos no pedido. Cartão de mensagem incluso.</p>
         </div>
       </div>
@@ -146,12 +168,28 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
           </div>
         </div>
       </section>
+
+      {[
+        ["Avaliações", encaixes?.avaliacoes],
+        ["Quem comprou também levou", encaixes?.quemComprou],
+        ["Embalagem e cartãozinho", encaixes?.extras],
+        ["Vistos recentemente", encaixes?.vistos],
+      ].map(([rotulo, no]) => (no ? <section key={rotulo as string} aria-label={rotulo as string} className="border-t py-14" style={{ borderColor: "var(--t-line)" }}><div className={`${LARG} min-w-0`}>{no as ReactNode}</div></section> : null))}
     </main>
   );
 }
 
-export function Carrinho({ d }: { d: DadosLoja }) {
+export function Carrinho({ d, conteudo }: { d: DadosLoja; conteudo?: ReactNode }) {
   const { itens, total } = useDemoCart();
+  if (conteudo) {
+    return (
+      <main className={`${LARG} min-w-0 py-12 lg:py-20 ${ALTURA_TELA}`}>
+        <p className={EYEBROW} style={{ color: "var(--t-primary)" }}>Seu pedido</p>
+        <h1 className="mt-4 text-[clamp(2.5rem,6vw,5rem)] leading-[0.98] tracking-tight" style={{ fontFamily: "var(--t-titulo)" }}>Carrinho</h1>
+        <div className="mt-10 min-w-0">{conteudo}</div>
+      </main>
+    );
+  }
   return (
     <main className={`grid grid-cols-[minmax(0,1fr)] lg:grid-cols-2 ${ALTURA_TELA}`}>
       <section className="min-w-0 px-6 py-12 sm:px-12 lg:px-16 lg:py-20 xl:px-24" style={{ background: "var(--t-surface)" }}>

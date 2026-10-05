@@ -16,6 +16,9 @@ import { Faq } from "@/components/loja/faq";
 import { WhatsappCta } from "@/components/loja/whatsapp-cta";
 import { Reveal } from "@/components/loja/reveal";
 import { getTenantId } from "@/lib/tenant/context";
+import { getTemaInstalado } from "@/storefront/temas/instalado";
+import { dadosLoja } from "@/storefront/temas/dados-loja";
+import { CategoriaAoVivo } from "@/storefront/temas/ao-vivo";
 import { getStoreProfile } from "@/modules/settings/store-profile";
 import { descricaoCategoriaReserva } from "@/modules/seo/texto-legado";
 
@@ -44,6 +47,12 @@ export default async function CategoriaPage(props: PageProps<"/categoria/[slug]"
   const tenantId = await getTenantId();
   const category = await getCategoryBySlug(tenantId, slug);
   if (!category) notFound();
+  // Loja com modelo instalado: a categoria REAL dentro do layout do modelo (sem modelo = a página de sempre).
+  const instalado = await getTemaInstalado(tenantId);
+  if (instalado) {
+    const d = await dadosLoja(tenantId, "", instalado.variacao);
+    return <CategoriaAoVivo tema={instalado.tema.key} d={d} slug={slug} />;
+  }
 
   // Categoria principal: mostra produtos dela E das subcategorias, e oferece
   // atalhos para cada subcategoria. Subcategoria: mostra só os dela, com o

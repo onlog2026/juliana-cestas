@@ -1,6 +1,7 @@
 import { Menu } from "lucide-react";
 import { CartIcon } from "../../cart-icon";
 import type { DadosLoja } from "../../types";
+import { BlocoBusca } from "../../blocos";
 import { EstiloPanorama } from "./estilo";
 
 /** PANORAMA — cabeçalho mínimo: nome à esquerda, carrinho e botão de menu (details, sem JavaScript) à direita. */
@@ -11,12 +12,14 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
       <EstiloPanorama />
       <div className="mx-auto flex h-full w-full max-w-[2000px] items-center gap-2 px-5 sm:px-8">
         <p className="min-w-0 flex-1 truncate text-2xl leading-none" style={{ fontFamily: "var(--t-titulo)" }}><a href={d.base || "/"}>{d.loja}</a></p>
+        {!d.demo ? <div className="hidden w-64 min-w-0 md:block lg:w-80"><BlocoBusca base={d.base} id="busca-panorama" /></div> : null}
         <CartIcon base={d.base} icone="sacola" className="size-5" />
         <details className="group">
           <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full border px-4 text-sm font-medium [&::-webkit-details-marker]:hidden" style={{ borderColor: "var(--t-line)" }}>
             <Menu className="size-4" aria-hidden="true" /> Menu
           </summary>
           <nav aria-label="Categorias" className="absolute inset-x-0 top-full max-h-[calc(100dvh-4rem)] overflow-y-auto border-b px-5 py-8 sm:px-8" style={{ background: "var(--t-surface)", borderColor: "var(--t-line)" }}>
+            {!d.demo ? <div className="mx-auto mb-6 max-w-[2000px] min-w-0 md:hidden"><BlocoBusca base={d.base} id="busca-panorama-menu" /></div> : null}
             <ul className="mx-auto grid max-w-[2000px] gap-x-12 sm:grid-cols-2">
               {d.categorias.map((c) => (
                 <li key={c.slug} className="min-w-0 border-b" style={{ borderColor: "var(--t-line)" }}>

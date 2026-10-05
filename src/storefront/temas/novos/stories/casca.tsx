@@ -1,6 +1,7 @@
 import { Grid2x2, House } from "lucide-react";
 import { CartIcon } from "../../cart-icon";
 import type { DadosLoja } from "../../types";
+import { BlocoBusca } from "../../blocos";
 import { COL, COL_STYLE } from "./post";
 
 /** STORIES — topo enxuto (nome + carrinho) e barra de app fixa embaixo (início, cestas, carrinho). */
@@ -21,6 +22,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
           </nav>
           <CartIcon base={d.base} icone="sacola" className="size-6" />
         </div>
+        {!d.demo ? <div className="min-w-0 px-4 pb-2 md:px-6 lg:px-10"><BlocoBusca base={d.base} id="busca-stories" /></div> : null}
       </div>
     </header>
   );

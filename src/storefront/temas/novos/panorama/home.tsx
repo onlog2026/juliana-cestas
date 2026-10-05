@@ -2,7 +2,18 @@ import type { ReactNode } from "react";
 import { ArrowRight } from "lucide-react";
 import { Foto, brl } from "../../kit";
 import type { DadosLoja } from "../../types";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "../../blocos";
 import { ALTURA_TELA } from "./estilo";
+import { Cartao } from "./cartao";
+
+/** Faixa dos blocos reais da loja ao vivo: mesma medida do modelo, título no tipo do modelo. */
+function Faixa({ children, fundo = "var(--t-bg)" }: { children: ReactNode; fundo?: string }) {
+  return (
+    <section className="border-t py-14 sm:py-20" style={{ borderColor: "var(--t-line)", background: fundo }}>
+      <div className="mx-auto w-full min-w-0 max-w-[2000px] px-5 sm:px-8">{children}</div>
+    </section>
+  );
+}
 
 /** PANORAMA (início) — seções de tela inteira: foto numa metade, texto na outra, alternando os lados. */
 
@@ -31,6 +42,13 @@ export function Home({ d }: { d: DadosLoja }) {
         <p className="mt-6 max-w-md text-lg leading-relaxed" style={{ color: "var(--t-muted)" }}>{d.texto}</p>
         <a href={`${d.base}/categoria`} className="pn-link mt-10 inline-flex min-h-11 items-center gap-2 font-medium">Ver as cestas <ArrowRight className="size-4" aria-hidden="true" /></a>
       </Metade>
+
+      {!d.demo ? (
+        <>
+          <BlocoBannersPromo />
+          <Faixa fundo="var(--t-surface)"><BlocoConfianca /></Faixa>
+        </>
+      ) : null}
 
       {destaques.map((c, n) => (
         <Metade key={c.href} lado={n % 2 === 0 ? "foto-esquerda" : "foto-direita"} imagem={c.imagem} alt={c.nome} fundo={n % 2 === 0 ? "var(--t-surface)" : "var(--t-bg)"}>
@@ -66,6 +84,30 @@ export function Home({ d }: { d: DadosLoja }) {
           <Foto src={ultima?.imagem ?? d.heroImagem} alt="" className="pn-foto absolute inset-0 size-full object-cover" />
         </div>
       </section>
+
+      {!d.demo ? (
+        <>
+          <Faixa><BlocoVitrines base={d.base} Cartao={Cartao} /></Faixa>
+          <Faixa fundo="var(--t-surface)">
+            <p className="text-xs font-semibold tracking-[0.25em] uppercase" style={{ color: "var(--t-primary)" }}>Catálogo</p>
+            <div className="mt-4">
+              <BlocoGradeOrdenavel
+                base={d.base}
+                Cartao={Cartao}
+                titulo="Todas as cestas"
+                classeGrade="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4 lg:grid-cols-4 lg:gap-6"
+              />
+            </div>
+          </Faixa>
+          <Faixa><BlocoAvaliacoes /></Faixa>
+          <Faixa fundo="var(--t-surface)"><BlocoBeneficios /></Faixa>
+          <Faixa><BlocoCartaozinho /></Faixa>
+          <Faixa fundo="var(--t-surface)"><BlocoFaq /></Faixa>
+          <Faixa><BlocoWhatsapp /></Faixa>
+          <Faixa fundo="var(--t-surface)"><BlocoVistos base={d.base} Cartao={Cartao} /></Faixa>
+          <JsonLdHome nome={d.loja} />
+        </>
+      ) : null}
 
       <section className="px-6 py-24 text-center sm:py-32" style={{ background: "var(--t-primary)", color: "var(--t-on-primary)" }}>
         <p className="pn-rev mx-auto max-w-4xl text-[clamp(1.75rem,4vw,3.25rem)] leading-tight" style={{ fontFamily: "var(--t-titulo)" }}>Cada cesta é montada à mão e chega no dia e no horário que você escolher.</p>

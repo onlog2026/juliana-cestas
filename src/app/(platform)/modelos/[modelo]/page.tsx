@@ -2,26 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Check } from "lucide-react";
-import { LandingHeader } from "@/components/platform/landing/header";
+import { PlataformaShell } from "@/components/platform/site/shell";
 import { ModelStage } from "@/components/platform/modelos/model-stage";
-import { PLATFORM_DEFAULTS } from "@/modules/platform/landing-content";
-import { getAllPlatformContent } from "@/modules/platform/landing-service";
 import { MODELOS, getModelo } from "@/modules/platform/modelos-catalog";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Modelo de loja", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Modelo de loja" };
 
 export default async function ModeloPage(props: { params: Promise<{ modelo: string }> }) {
   const { modelo: key } = await props.params;
   const modelo = getModelo(key);
   if (!modelo) notFound();
 
-  let branding = PLATFORM_DEFAULTS.branding;
-  try {
-    branding = (await getAllPlatformContent()).branding;
-  } catch {
-    /* usa o padrão */
-  }
   const outros = MODELOS.filter((m) => m.key !== modelo.key);
 
   const ficha = (
@@ -43,8 +35,7 @@ export default async function ModeloPage(props: { params: Promise<{ modelo: stri
   );
 
   return (
-    <>
-      <LandingHeader branding={branding} />
+    <PlataformaShell>
       <main className="mx-auto max-w-[2000px] px-4 pt-8 pb-32 sm:px-6 lg:px-10 lg:pb-24 2xl:px-14">
         <p className="mb-5 text-sm text-muted-foreground">
           <Link href="/modelos" className="hover:text-foreground">Modelos</Link> / {modelo.name}
@@ -65,6 +56,6 @@ export default async function ModeloPage(props: { params: Promise<{ modelo: stri
           ))}
         </div>
       </main>
-    </>
+    </PlataformaShell>
   );
 }

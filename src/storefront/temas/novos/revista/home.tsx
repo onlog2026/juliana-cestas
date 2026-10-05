@@ -2,6 +2,8 @@ import { ArrowRight } from "lucide-react";
 import { Foto, brl } from "../../kit";
 import type { DadosLoja } from "../../types";
 import { Kicker, MATERIAS, TituloSecao } from "./pecas";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "../../blocos";
+import { Cartao } from "./internas";
 
 /**
  * REVISTA — editorial: manchete com foto e legenda, coluna lateral de matérias (cada uma leva à
@@ -15,6 +17,9 @@ export function Home({ d }: { d: DadosLoja }) {
   const materias = MATERIAS.slice(0, 4).map((m, i) => ({ ...m, cat: d.categorias[i % nCat] }));
   return (
     <main>
+      {!d.demo ? <BlocoBannersPromo /> : null}
+      {!d.demo ? <div className={`${area} pt-4`}><BlocoConfianca /></div> : null}
+
       {/* Manchete + matérias */}
       <section className={`${area} grid grid-cols-[minmax(0,1fr)] gap-8 py-8 sm:py-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-0`} aria-labelledby="manchete">
         <article className="min-w-0 lg:pr-10">
@@ -75,6 +80,13 @@ export function Home({ d }: { d: DadosLoja }) {
         </div>
       </section>
 
+      {!d.demo ? (
+        <section className={`${area} py-8`} aria-labelledby="mais-lidas">
+          <TituloSecao id="mais-lidas" direita="Mais comprados e mais clicados">Mais lidas da edição</TituloSecao>
+          <div className="mt-4 min-w-0"><BlocoVitrines base={d.base} Cartao={Cartao} /></div>
+        </section>
+      ) : null}
+
       {/* Do editor */}
       <section className="mt-6 py-12" style={{ background: "var(--t-surface)" }} aria-labelledby="editor">
         <div className={`${area} grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-14`}>
@@ -108,6 +120,15 @@ export function Home({ d }: { d: DadosLoja }) {
         </ol>
       </section>
 
+      {!d.demo ? (
+        <section className={`${area} py-8`} aria-labelledby="acervo">
+          <TituloSecao id="acervo" direita="Ordene e filtre">Todas as cestas</TituloSecao>
+          <div className="mt-6 min-w-0">
+            <BlocoGradeOrdenavel base={d.base} Cartao={Cartao} classeGrade="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4" />
+          </div>
+        </section>
+      ) : null}
+
       {/* Mais da edição */}
       {mais.length ? (
         <section className={`${area} pb-4`} aria-labelledby="mais">
@@ -129,6 +150,18 @@ export function Home({ d }: { d: DadosLoja }) {
           </ul>
         </section>
       ) : null}
+
+      {!d.demo ? (
+        <div className={`${area} grid gap-10 py-8`}>
+          <BlocoAvaliacoes />
+          <BlocoBeneficios />
+          <BlocoCartaozinho />
+          <BlocoFaq />
+          <BlocoWhatsapp />
+          <BlocoVistos base={d.base} Cartao={Cartao} />
+        </div>
+      ) : null}
+      {!d.demo ? <JsonLdHome nome={d.loja} /> : null}
     </main>
   );
 }

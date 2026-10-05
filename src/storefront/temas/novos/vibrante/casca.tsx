@@ -2,6 +2,7 @@ import { Menu } from "lucide-react";
 import { CartIcon } from "../../cart-icon";
 import type { DadosLoja } from "../../types";
 import { Estrela, Faixa, GIGANTE, PILULA } from "./pecas";
+import { BlocoBusca } from "../../blocos";
 
 /* VIBRANTE — cabeçalho: faixa em movimento, logo grande e menu em pílulas (no celular, botão Menu em <details>). Rodapé: bloco escuro com o nome gigante. */
 
@@ -15,6 +16,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
             <Estrela className="size-6 shrink-0 sm:size-7" style={{ color: "var(--t-primary)" }} />
             <span className="truncate">{d.loja}</span>
           </a>
+          {!d.demo ? <div className="ml-2 hidden min-w-0 max-w-sm flex-1 lg:block" style={{ color: "var(--t-fg)" }}><BlocoBusca base={d.base} id="busca-vibrante" /></div> : null}
           <nav aria-label="Categorias" className="ml-4 hidden flex-wrap gap-2 lg:flex">
             {d.categorias.map((c) => (
               <a key={c.slug} href={c.href} className="rounded-full border-2 px-4 text-sm font-bold" style={{ borderColor: "var(--t-fg)" }}>{c.nome}</a>
@@ -29,6 +31,7 @@ export function Cabecalho({ d }: { d: DadosLoja }) {
                 <Menu className="size-4" aria-hidden="true" /> Menu
               </summary>
               <div className="absolute inset-x-0 top-full z-40 border-b-[3px] px-4 pt-2 pb-5" style={{ background: "var(--t-bg)", borderColor: "var(--t-fg)" }}>
+                {!d.demo ? <div className="mb-3 min-w-0" style={{ color: "var(--t-fg)" }}><BlocoBusca base={d.base} id="busca-vibrante-m" /></div> : null}
                 <nav aria-label="Menu" className="flex flex-col">
                   <a href={`${d.base}/categoria`} className="text-2xl font-extrabold sm:text-3xl [overflow-wrap:anywhere]" style={{ fontFamily: "var(--t-titulo)" }}>Todas as cestas</a>
                   {d.categorias.map((c) => (

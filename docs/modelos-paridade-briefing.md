@@ -22,3 +22,24 @@ Hoje, quando um lojista instala um modelo, só mudam cabeçalho, rodapé e home.
 - Servidor → cliente: só dados e elementos já renderizados como props (nunca funções).
 - `<style>` com CSS: `dangerouslySetInnerHTML`. Sem `href="#"`. Toque ≥ 44 px. Sem rolagem lateral. Contraste ≥ 4,5.
 - Relatório final curto (arquivos, decisões, pendências).
+
+---
+
+# ONDA 2 — adaptar cada modelo ao kit (instruções por modelo)
+
+O kit já existe e compila: `src/storefront/temas/encaixes.ts` (contrato) e `src/storefront/temas/blocos/index.tsx` (blocos de servidor). **Leia os dois antes de começar** e leia também `src/storefront/temas/ao-vivo/*.tsx` para ver COMO eles são chamados (`ProdutoAoVivo` passa `encaixes`, `CategoriaAoVivo` passa `encaixes`, `CarrinhoAoVivo` passa `conteudo`).
+
+## O que cada modelo precisa fazer (sem quebrar a demo)
+A demo (`d.demo === true`) e a prévia/loja ao vivo (`d.demo === false`) usam os MESMOS componentes. Regra de ouro: **na demo nada muda** (continua com o carrinho local, o botão `data-acao="comprar"` e os textos de demonstração).
+
+1. **Exportar o cartão do modelo:** `export function Cartao({ p }: { p: ProdutoLoja })` (o mesmo cartão visual que o modelo já usa na categoria/vitrine; em `internas`/`internas/<modelo>.tsx`). O kit passa esse componente aos blocos (`Cartao={Cartao}`).
+2. **`Produto` aceita `encaixes?: EncaixesProduto`** (tipo de `@/storefront/temas/encaixes`):
+   - se `encaixes?.compra` existir, renderize-o NO LUGAR do botão "Adicionar ao carrinho" do modelo e NÃO renderize o botão de demonstração, a barra fixa de compra do celular de demonstração, nem o link "Ver carrinho" de demonstração (o `compra` real já traz botão + atalhos); mantenha o PREÇO e o título do modelo. Na barra fixa do celular, quando `encaixes?.compra` existir, mostre só preço + um link "Comprar" que leva a `#compra` (âncora no bloco de compra; dê `id="compra"` ao contêiner do encaixe) — nunca `href="#"` vazio.
+   - `encaixes?.entrega` (texto "peça até X e receba hoje") logo abaixo do preço/compra; `encaixes?.avaliacoes`, `encaixes?.quemComprou`, `encaixes?.vistos` e `encaixes?.extras` em seções próprias abaixo do conteúdo principal, no estilo do modelo (cada uma envolta num `<section>` com título quando o encaixe vier preenchido; se vier `undefined`, nada é renderizado).
+3. **`Categoria` aceita `encaixes?: EncaixesCategoria`:** `filtrosExtras` junto dos filtros; `rodape` no fim da página.
+4. **`Carrinho` aceita `conteudo?: ReactNode`:** quando existir, mantenha a casca do modelo (título, espaçamento, fundo, cores) e renderize `conteudo` no lugar do carrinho de demonstração (lista, resumo, aviso "Loja de demonstração", botão "Finalizar") — o `conteudo` real já é o carrinho e o checkout de verdade e traz tudo.
+5. **Home (`Home({ d })`) ganha os blocos reais quando `!d.demo`** (na demo não aparecem, porque leem dados da loja ao vivo). No estilo e no ritmo do modelo, inclua (cada um dentro de `{!d.demo ? … : null}`): `BlocoBannersPromo` (topo), `BlocoConfianca`, `BlocoVitrines Cartao={Cartao}`, `BlocoGradeOrdenavel Cartao={Cartao}` (seção "Todas as cestas" com ordenação e filtros), `BlocoAvaliacoes`, `BlocoBeneficios`, `BlocoCartaozinho`, `BlocoFaq`, `BlocoWhatsapp`, `BlocoVistos Cartao={Cartao}`, `JsonLdHome`. Dê a cada bloco um contêiner do modelo (largura `max-w-[2000px]`, espaçamentos, título de seção no tipo do modelo). No `Cabecalho` (em `casca`/`casca.tsx`), quando `!d.demo`, troque a "busca de enfeite" (se o modelo tiver uma) por `BlocoBusca` (e, se o modelo não tiver busca, adicione uma discreta); na demo mantenha como está.
+6. **Páginas internas fora do modelo** (conta, avaliações, institucionais) são tratadas por outra frente; não mexa nelas.
+
+## Rodar e conferir
+Só `npx tsc --noEmit` (olhe apenas sua área). Não rode build/dev/start/vitest/git. Ao final, releia: nenhuma mudança de comportamento com `d.demo === true`; sem `href="#"`; sem rolagem lateral; todo bloco real entre `{!d.demo ? … : null}`. Relatório curto: o que cada modelo ganhou e onde pôs cada encaixe/bloco.

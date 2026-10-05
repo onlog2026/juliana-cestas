@@ -1,5 +1,7 @@
 import { Foto } from "../../kit";
 import type { DadosLoja } from "../../types";
+import { BlocoAvaliacoes, BlocoBannersPromo, BlocoBeneficios, BlocoCartaozinho, BlocoConfianca, BlocoFaq, BlocoGradeOrdenavel, BlocoVistos, BlocoVitrines, BlocoWhatsapp, JsonLdHome } from "../../blocos";
+import { Cartao } from "./internas";
 import { Blob, CartaoNuvem, Coracao, Faisca, Folha, IconeDe, Laco, Onda, Xicara, forma, wrapA } from "./formas";
 
 /**
@@ -28,6 +30,8 @@ export function Home({ d }: { d: DadosLoja }) {
   return (
     <main>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
+
+      {!d.demo ? <BlocoBannersPromo /> : null}
 
       {/* Abertura */}
       <section className={`${wrapA} grid grid-cols-[minmax(0,1fr)] items-center gap-10 pt-8 pb-14 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] md:gap-6 md:pt-14 md:pb-20`}>
@@ -63,6 +67,8 @@ export function Home({ d }: { d: DadosLoja }) {
           </span>
         </div>
       </section>
+
+      {!d.demo ? <div className={`${wrapA} pb-12`}><BlocoConfianca /></div> : null}
 
       {/* Categorias */}
       {d.categorias.length ? (
@@ -104,6 +110,20 @@ export function Home({ d }: { d: DadosLoja }) {
         </section>
       ) : null}
 
+      {!d.demo ? (
+        <>
+          <div className={`${wrapA} min-w-0 pt-16`}><BlocoVitrines base={d.base} Cartao={Cartao} /></div>
+          <section className={`${wrapA} min-w-0 pt-16`} aria-labelledby="aco-todas">
+            <div className="mb-8 text-center">
+              <h2 id="aco-todas" className="text-3xl sm:text-4xl" style={{ fontFamily: "var(--t-titulo)", fontWeight: 700 }}>Todas as cestas</h2>
+              <Onda className="mx-auto mt-3 h-3 w-24" style={{ color: "var(--t-primary)" }} />
+            </div>
+            <BlocoGradeOrdenavel base={d.base} Cartao={Cartao} classeGrade="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3.5 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4" />
+          </section>
+          <div className={`${wrapA} min-w-0 pt-16`}><BlocoAvaliacoes /></div>
+        </>
+      ) : null}
+
       {/* Cuidados */}
       <section className={`${wrapA} py-20`} aria-labelledby="aco-cuidados">
         <div className="text-center">
@@ -123,6 +143,17 @@ export function Home({ d }: { d: DadosLoja }) {
           ))}
         </ul>
       </section>
+
+      {!d.demo ? (
+        <>
+          <div className={`${wrapA} min-w-0 pb-16`}><BlocoBeneficios /></div>
+          <div className={`${wrapA} min-w-0 pb-16`}><BlocoCartaozinho /></div>
+          <div className={`${wrapA} min-w-0 pb-16`}><BlocoFaq /></div>
+          <div className={`${wrapA} min-w-0 pb-16`}><BlocoWhatsapp /></div>
+          <div className={`${wrapA} min-w-0 pb-16`}><BlocoVistos base={d.base} Cartao={Cartao} /></div>
+          <JsonLdHome nome={d.loja} />
+        </>
+      ) : null}
 
       {/* Cartão-carta */}
       <section className={`${wrapA} pb-8`} aria-labelledby="aco-carta">

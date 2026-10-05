@@ -1,8 +1,10 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Check } from "lucide-react";
 import { Foto, brl } from "../kit";
 import { useDemoCart } from "../demo-cart";
+import type { EncaixesCategoria, EncaixesProduto } from "../encaixes";
 import type { DadosLoja, ProdutoLoja } from "../types";
 import { AvisoSemCobranca, CaminhoPao, CarrinhoVazio, FAIXAS, NaoEncontrada, ORDENS, Quantidade, itensLimpos, rotuloFinalizar, useCompra, useLista, wrap, type Ordem } from "./comum";
 
@@ -10,7 +12,7 @@ import { AvisoSemCobranca, CaminhoPao, CarrinhoVazio, FAIXAS, NaoEncontrada, ORD
 
 const CAPS = "text-[11px] tracking-[0.22em] uppercase";
 
-function Cartao({ p }: { p: ProdutoLoja }) {
+export function Cartao({ p }: { p: ProdutoLoja }) {
   return (
     <a href={p.href} className="group block min-w-0">
       <div className="overflow-hidden" style={{ background: "var(--t-surface)" }}>
@@ -22,7 +24,7 @@ function Cartao({ p }: { p: ProdutoLoja }) {
   );
 }
 
-export function CategoriaBoutique({ d, slug }: { d: DadosLoja; slug?: string }) {
+export function CategoriaBoutique({ d, slug, encaixes }: { d: DadosLoja; slug?: string; encaixes?: EncaixesCategoria }) {
   const { titulo, lista, ordem, setOrdem, faixa, setFaixa } = useLista(d, slug);
   return (
     <main className={`${wrap} py-12 sm:py-20`}>
@@ -33,6 +35,7 @@ export function CategoriaBoutique({ d, slug }: { d: DadosLoja; slug?: string }) 
         <a href={`${d.base}/categoria`} className={CAPS} style={{ borderBottom: slug ? "1px solid transparent" : "1px solid var(--t-fg)" }}>Todas</a>
         {d.categorias.map((c) => <a key={c.slug} href={c.href} className={CAPS} style={{ borderBottom: c.slug === slug ? "1px solid var(--t-fg)" : "1px solid transparent" }}>{c.nome}</a>)}
       </nav>
+      {encaixes?.filtrosExtras ? <div className="mt-5 flex justify-center">{encaixes.filtrosExtras}</div> : null}
 
       <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 border-y py-1" style={{ borderColor: "var(--t-line)" }}>
         {FAIXAS.map(([k, l]) => (
@@ -53,11 +56,21 @@ export function CategoriaBoutique({ d, slug }: { d: DadosLoja; slug?: string }) 
       ) : (
         <p className="mt-16 text-center" style={{ color: "var(--t-muted)" }}>Nada nessa faixa. <button type="button" className="underline" onClick={() => setFaixa("")}>Ver tudo</button></p>
       )}
+      {encaixes?.rodape ? <div className="mt-20 grid gap-10">{encaixes.rodape}</div> : null}
     </main>
   );
 }
 
-export function ProdutoBoutique({ d, slug }: { d: DadosLoja; slug: string }) {
+function SecaoEncaixe({ titulo, children }: { titulo: string; children: ReactNode }) {
+  return (
+    <section className="mt-20 min-w-0" aria-label={titulo}>
+      <h2 className={`mb-6 text-center ${CAPS}`}>{titulo}</h2>
+      {children}
+    </section>
+  );
+}
+
+export function ProdutoBoutique({ d, slug, encaixes }: { d: DadosLoja; slug: string; encaixes?: EncaixesProduto }) {
   const p = d.produtos.find((x) => x.slug === slug);
   const { comprar, ok } = useCompra(p);
   if (!p) return <NaoEncontrada d={d} />;
@@ -80,10 +93,17 @@ export function ProdutoBoutique({ d, slug }: { d: DadosLoja; slug: string }) {
           <p className="mt-4 text-xl">{p.precoDe ? <s className="mr-3 text-base" style={{ color: "var(--t-muted)" }}>{brl(p.precoDe)}</s> : null}{brl(p.preco)}</p>
           {p.serve ? <p className="mt-1 text-sm" style={{ color: "var(--t-muted)" }}>{p.serve}</p> : null}
           <p className="mt-6 leading-[1.8]" style={{ color: "var(--t-muted)" }}>{p.descricao}</p>
-          <button type="button" onClick={comprar} className={`mt-8 inline-flex min-h-14 w-full items-center justify-center gap-2 ${CAPS} font-semibold`} style={{ background: "var(--t-fg)", color: "var(--t-bg)" }}>
-            {ok ? <><Check className="size-4" /> Adicionada</> : "Adicionar ao carrinho"}
-          </button>
-          <a href={`${d.base}/carrinho`} className={`mt-3 flex min-h-12 w-full items-center justify-center border ${CAPS}`} style={{ borderColor: "var(--t-fg)" }}>Ver carrinho</a>
+          {encaixes?.compra ? (
+            <div id="compra" className="mt-8 min-w-0 scroll-mt-24">{encaixes.compra}</div>
+          ) : (
+            <>
+              <button type="button" onClick={comprar} className={`mt-8 inline-flex min-h-14 w-full items-center justify-center gap-2 ${CAPS} font-semibold`} style={{ background: "var(--t-fg)", color: "var(--t-bg)" }}>
+                {ok ? <><Check className="size-4" /> Adicionada</> : "Adicionar ao carrinho"}
+              </button>
+              <a href={`${d.base}/carrinho`} className={`mt-3 flex min-h-12 w-full items-center justify-center border ${CAPS}`} style={{ borderColor: "var(--t-fg)" }}>Ver carrinho</a>
+            </>
+          )}
+          {encaixes?.entrega ? <div className="mt-4 text-sm" style={{ color: "var(--t-muted)" }}>{encaixes.entrega}</div> : null}
           {itens.length ? (
             <details className="mt-8 border-t" style={{ borderColor: "var(--t-line)" }} open>
               <summary className={`flex min-h-12 cursor-pointer items-center ${CAPS}`}>O que vem na cesta</summary>
@@ -96,6 +116,10 @@ export function ProdutoBoutique({ d, slug }: { d: DadosLoja; slug: string }) {
           </details>
         </div>
       </div>
+      {encaixes?.extras ? <SecaoEncaixe titulo="Embalagem e cartãozinho">{encaixes.extras}</SecaoEncaixe> : null}
+      {encaixes?.avaliacoes ? <section className="mt-20 min-w-0">{encaixes.avaliacoes}</section> : null}
+      {encaixes?.quemComprou ? <section className="mt-20 min-w-0">{encaixes.quemComprou}</section> : null}
+      {encaixes?.vistos ? <section className="mt-20 min-w-0">{encaixes.vistos}</section> : null}
       <section className="mt-24" aria-labelledby="outras">
         <h2 id="outras" className={`text-center ${CAPS}`}>Você também pode gostar</h2>
         <div className="mt-8 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-4 gap-y-12 sm:grid-cols-4 sm:gap-x-8">
@@ -104,18 +128,22 @@ export function ProdutoBoutique({ d, slug }: { d: DadosLoja; slug: string }) {
       </section>
       <div className="fixed inset-x-0 z-30 flex items-center gap-3 border-t px-4 py-2 lg:hidden" style={{ bottom: "var(--demo-barra-baixo, 0px)", background: "var(--t-bg)", borderColor: "var(--t-line)" }}>
         <p className="min-w-0 flex-1">{brl(p.preco)}</p>
-        <button type="button" onClick={comprar} className={`min-h-11 px-6 ${CAPS} font-semibold`} style={{ background: "var(--t-fg)", color: "var(--t-bg)" }}>{ok ? "Adicionada" : "Adicionar"}</button>
+        {encaixes?.compra ? (
+          <a href="#compra" className={`inline-flex min-h-11 items-center px-6 ${CAPS} font-semibold`} style={{ background: "var(--t-fg)", color: "var(--t-bg)" }}>Comprar</a>
+        ) : (
+          <button type="button" onClick={comprar} className={`min-h-11 px-6 ${CAPS} font-semibold`} style={{ background: "var(--t-fg)", color: "var(--t-bg)" }}>{ok ? "Adicionada" : "Adicionar"}</button>
+        )}
       </div>
     </main>
   );
 }
 
-export function CarrinhoBoutique({ d }: { d: DadosLoja }) {
+export function CarrinhoBoutique({ d, conteudo }: { d: DadosLoja; conteudo?: ReactNode }) {
   const { itens, total } = useDemoCart();
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 sm:py-20">
+    <main className={`mx-auto w-full px-4 py-12 sm:px-6 sm:py-20 ${conteudo ? "max-w-6xl" : "max-w-3xl"}`}>
       <h1 className="text-center text-4xl sm:text-5xl" style={{ fontFamily: "var(--t-titulo)", fontWeight: 400 }}>Sacola</h1>
-      {itens.length === 0 ? <CarrinhoVazio d={d} className="mt-10 border-y py-12 text-center" botao={`mt-6 inline-flex min-h-12 items-center px-8 ${CAPS} font-semibold`} /> : (
+      {conteudo ? <div className="mt-10">{conteudo}</div> : itens.length === 0 ? <CarrinhoVazio d={d} className="mt-10 border-y py-12 text-center" botao={`mt-6 inline-flex min-h-12 items-center px-8 ${CAPS} font-semibold`} /> : (
         <>
           <ul className="mt-10 border-t" style={{ borderColor: "var(--t-line)" }}>
             {itens.map((i) => (

@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { ShieldCheck, Sparkles, Store } from "lucide-react";
-import { LandingHeader } from "@/components/platform/landing/header";
+import { PlataformaShell } from "@/components/platform/site/shell";
 import { LandingPlans } from "@/components/platform/landing/plans";
-import { LandingClosing } from "@/components/platform/landing/closing";
 import { PLATFORM_DEFAULTS, type PlatformContent } from "@/modules/platform/landing-content";
 import { getAllPlatformContent } from "@/modules/platform/landing-service";
 import { getPublicPlansPage } from "@/modules/platform/plans-public";
@@ -57,9 +56,7 @@ export default async function PlanosPage() {
   const { plans, trialDays } = await getPublicPlansPage();
 
   return (
-    <div className="min-h-dvh bg-background">
-      <LandingHeader branding={conteudo.branding} />
-
+    <PlataformaShell>
       <main>
         <section className="border-b border-border">
           <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
@@ -100,9 +97,7 @@ export default async function PlanosPage() {
           </div>
         </section>
       </main>
-
-      <LandingClosing closing={conteudo.closing} wordmark={conteudo.branding.wordmark} />
-    </div>
+    </PlataformaShell>
   );
 }
 

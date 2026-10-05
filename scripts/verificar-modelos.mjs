@@ -19,7 +19,7 @@ let telas = 0;
 const browser = await chromium.launch();
 for (const [tema, vars] of Object.entries(TEMAS)) {
   if (SO_MODELO && SO_MODELO !== tema) continue;
-  for (const v of vars) {
+  for (const v of (process.env.SO_PRIMEIRA ? vars.slice(0, 1) : vars)) {
     for (const w of LARGURAS) {
       const ctx = await browser.newContext({ viewport: { width: w, height: w < 500 ? 780 : 900 }, hasTouch: w < 500 });
       const page = await ctx.newPage();

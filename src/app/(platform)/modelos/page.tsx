@@ -1,24 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LandingHeader } from "@/components/platform/landing/header";
-import { PLATFORM_DEFAULTS } from "@/modules/platform/landing-content";
-import { getAllPlatformContent } from "@/modules/platform/landing-service";
+import { PlataformaShell } from "@/components/platform/site/shell";
 import { MODELOS } from "@/modules/platform/modelos-catalog";
 
 export const dynamic = "force-dynamic";
 // Enquanto a plataforma não tem domínio próprio, estas páginas ficam fora do Google.
-export const metadata: Metadata = { title: "Modelos de loja", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Modelos de loja", alternates: { canonical: "/modelos" } };
 
 export default async function ModelosPage() {
-  let branding = PLATFORM_DEFAULTS.branding;
-  try {
-    branding = (await getAllPlatformContent()).branding;
-  } catch {
-    /* usa o padrão */
-  }
   return (
-    <>
-      <LandingHeader branding={branding} />
+    <PlataformaShell>
       <main className="mx-auto max-w-[2000px] px-4 pt-12 pb-24 sm:px-6 lg:px-10 2xl:px-14">
         <h1 className="font-display text-4xl text-foreground sm:text-5xl">Modelos de loja para cestas</h1>
         <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
@@ -49,6 +40,6 @@ export default async function ModelosPage() {
           ))}
         </div>
       </main>
-    </>
+    </PlataformaShell>
   );
 }

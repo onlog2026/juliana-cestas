@@ -1,16 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Check } from "lucide-react";
 import { Foto, brl } from "../../kit";
 import { useDemoCart } from "../../demo-cart";
 import type { DadosLoja } from "../../types";
+import type { EncaixesCategoria, EncaixesProduto } from "../../encaixes";
 import { AvisoSemCobranca, CaminhoPao, CarrinhoVazio, FAIXAS, NaoEncontrada, ORDENS, Quantidade, descontoPct, itensLimpos, rotuloFinalizar, useCompra, useLista, type Ordem } from "../../internas/comum";
 import { CAPS, Cartao, LARG, Titulo } from "./comum";
 
 /** SIMETRIA (internas) — categoria em 3 colunas com filtros centralizados; cesta com foto central e tudo no eixo; carrinho em coluna única. */
 
-export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
+/** Cartão do modelo, usado pelos blocos reais da loja ao vivo. */
+export { Cartao };
+
+export function Categoria({ d, slug, encaixes }: { d: DadosLoja; slug?: string; encaixes?: EncaixesCategoria }) {
   const { cat, titulo, lista, ordem, setOrdem, faixa, setFaixa } = useLista(d, slug);
   return (
     <main className={`${LARG} py-10 sm:py-14`}>
@@ -32,6 +36,7 @@ export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
         </label>
         <p className="text-sm" style={{ color: "var(--t-muted)" }} aria-live="polite">{lista.length} {lista.length === 1 ? "cesta" : "cestas"}</p>
       </div>
+      {encaixes?.filtrosExtras ? <div className="mx-auto mt-4 flex min-w-0 max-w-3xl justify-center">{encaixes.filtrosExtras}</div> : null}
 
       {lista.length ? (
         <div className="mt-10 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-3">
@@ -40,11 +45,13 @@ export function Categoria({ d, slug }: { d: DadosLoja; slug?: string }) {
       ) : (
         <p className="mt-16 text-center" style={{ color: "var(--t-muted)" }}>Nenhuma cesta nessa faixa de preço. <button type="button" className="underline" onClick={() => setFaixa("")}>Ver todas</button></p>
       )}
+
+      {encaixes?.rodape ? <div className="mt-20 min-w-0">{encaixes.rodape}</div> : null}
     </main>
   );
 }
 
-export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
+export function Produto({ d, slug, encaixes }: { d: DadosLoja; slug: string; encaixes?: EncaixesProduto }) {
   const p = d.produtos.find((x) => x.slug === slug);
   const { comprar, ok } = useCompra(p);
   const [foto, setFoto] = useState(0);
@@ -82,6 +89,18 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
         {p.serve ? <p className="mt-2 text-sm" style={{ color: "var(--t-muted)" }}>{p.serve}</p> : null}
         <p className="mt-6 leading-[1.85]" style={{ color: "var(--t-muted)" }}>{p.descricao}</p>
 
+        {encaixes?.compra ? (
+          <>
+            {/* Loja ao vivo: a compra real fica no corpo; no celular a barra fixa leva até ela. */}
+            <div id="compra" className="mx-auto mt-8 min-w-0 max-w-xl scroll-mt-20 text-left">{encaixes.compra}</div>
+            {encaixes.entrega ? <div className="mt-4 min-w-0">{encaixes.entrega}</div> : null}
+            <div className="fixed inset-x-0 z-30 flex items-center gap-3 border-t px-4 py-2 sm:hidden" style={{ bottom: "var(--demo-barra-baixo, 0px)", background: "var(--t-bg)", borderColor: "var(--t-line)" }}>
+              <p className="min-w-0 flex-1 text-left text-xl tabular-nums" style={{ fontFamily: "var(--t-titulo)" }}>{brl(p.preco)}</p>
+              <a href="#compra" className={`inline-flex min-h-12 shrink-0 items-center justify-center border px-10 ${CAPS}`} style={{ borderColor: "var(--t-primary)", background: "var(--t-primary)", color: "var(--t-on-primary)" }}>Comprar</a>
+            </div>
+          </>
+        ) : (
+        <>
         {/* Um só botão de compra: barra fixa no celular, bloco centralizado no computador. */}
         <div className="max-sm:fixed max-sm:inset-x-0 max-sm:z-30 max-sm:flex max-sm:items-center max-sm:gap-3 max-sm:border-t max-sm:px-4 max-sm:py-2 sm:mt-8" style={{ bottom: "var(--demo-barra-baixo, 0px)", background: "var(--t-bg)", borderColor: "var(--t-line)" }}>
           <p className="min-w-0 flex-1 text-left text-xl tabular-nums sm:hidden" style={{ fontFamily: "var(--t-titulo)" }}>{brl(p.preco)}</p>
@@ -90,6 +109,8 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
           </button>
         </div>
         <p className="mt-4"><a href={`${d.base}/carrinho`} className={`inline-flex min-h-11 items-center underline underline-offset-4 ${CAPS}`}>Ver carrinho</a></p>
+        </>
+        )}
         <p className="mt-2 text-sm" style={{ color: "var(--t-muted)" }}>Dia e horário de entrega escolhidos no pedido. Cartão de mensagem incluso.</p>
       </div>
 
@@ -108,12 +129,28 @@ export function Produto({ d, slug }: { d: DadosLoja; slug: string }) {
           {d.produtos.filter((x) => x.slug !== p.slug).slice(0, 4).map((x) => <Cartao key={x.slug} p={{ nome: x.nome, preco: x.preco, precoDe: x.precoDe, imagem: x.fotos[0] ?? "", serve: x.serve, href: x.href }} />)}
         </div>
       </section>
+
+      {[
+        ["Avaliações", encaixes?.avaliacoes],
+        ["Quem comprou também levou", encaixes?.quemComprou],
+        ["Embalagem e cartãozinho", encaixes?.extras],
+        ["Vistos recentemente", encaixes?.vistos],
+      ].map(([rotulo, no]) => (no ? <section key={rotulo as string} aria-label={rotulo as string} className="mt-20 min-w-0">{no as ReactNode}</section> : null))}
     </main>
   );
 }
 
-export function Carrinho({ d }: { d: DadosLoja }) {
+export function Carrinho({ d, conteudo }: { d: DadosLoja; conteudo?: ReactNode }) {
   const { itens, total } = useDemoCart();
+  if (conteudo) {
+    return (
+      <main className={`${LARG} py-10 sm:py-14`}>
+        <h1 className="text-center text-[clamp(2rem,5vw,3.5rem)] leading-tight" style={{ fontFamily: "var(--t-titulo)" }}>Carrinho</h1>
+        <span className="mx-auto mt-5 block h-px w-20" style={{ background: "var(--t-primary)" }} />
+        <div className="mx-auto mt-10 min-w-0 max-w-3xl">{conteudo}</div>
+      </main>
+    );
+  }
   return (
     <main className={`${LARG} py-10 sm:py-14`}>
       <h1 className="text-center text-[clamp(2rem,5vw,3.5rem)] leading-tight" style={{ fontFamily: "var(--t-titulo)" }}>Carrinho</h1>

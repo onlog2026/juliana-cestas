@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { resolveTenantFromHost } from "@/lib/tenant/resolve-host";
 import { vitrineSuspensa } from "@/lib/tenant/storefront-status";
+import { PREFIXOS_DA_LOJA, PREFIXOS_DA_PLATAFORMA, comecaCom, tipoDeHost } from "@/lib/tenant/host-kind";
 import {
   TENANT_HEADER_HOST_KIND,
   TENANT_HEADER_ID,
@@ -36,6 +37,9 @@ function ehAreaDeGestao(path: string): boolean {
   return path === "/admin" || path.startsWith("/admin/") || path === "/auth" || path.startsWith("/auth/");
 }
 
+/** Caminho que não existe em nenhuma página: o Next responde 404 de verdade (com a página de "não encontrado"). */
+const CAMINHO_INEXISTENTE = "/nao-encontrado-404";
+
 /** A própria página de aviso não pode redirecionar para ela mesma. */
 const PAGINA_INDISPONIVEL = "/loja-indisponivel";
 
@@ -58,10 +62,42 @@ export async function proxy(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
+  // ── Separação por endereço: site da PLATAFORMA × LOJA ────────────────────
+  // Endereço de loja (ex.: julianacestas.com.br) NUNCA serve páginas da plataforma; endereço da
+  // plataforma NUNCA serve páginas de loja. Previews (*.vercel.app, localhost) liberam tudo.
+  // `/api`, `/_next` e arquivos nem chegam aqui (ver o matcher no fim do arquivo).
+  const tipo = tipoDeHost(request.headers.get("host"), process.env.PLATFORM_HOSTS);
+  if (tipo === "loja" && comecaCom(path, PREFIXOS_DA_PLATAFORMA)) {
+    const url = request.nextUrl.clone();
+    url.pathname = CAMINHO_INEXISTENTE;
+    url.search = "";
+    return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
+  }
+  if (tipo === "plataforma") {
+    if (path === "/") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/inicio";
+      return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
+    }
+    if (path === "/plataforma" || path === "/inicio") {
+      // Endereço antigo/duplicado: a home é a raiz.
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      url.search = "";
+      return NextResponse.redirect(url, 308);
+    }
+    if (comecaCom(path, PREFIXOS_DA_LOJA)) {
+      const url = request.nextUrl.clone();
+      url.pathname = CAMINHO_INEXISTENTE;
+      url.search = "";
+      return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
+    }
+  }
+
   // ── Vitrine ──────────────────────────────────────────────────────────────
   // Tudo o que não é painel. `vitrineSuspensa` nunca lança e, em qualquer
   // dúvida, responde "não suspensa": erro de leitura não tira loja do ar.
-  if (!ehAreaDeGestao(path) && path !== PAGINA_INDISPONIVEL && tenant) {
+  if (tipo !== "plataforma" && !ehAreaDeGestao(path) && path !== PAGINA_INDISPONIVEL && tenant) {
     if (await vitrineSuspensa(tenant.id)) {
       const url = request.nextUrl.clone();
       url.pathname = PAGINA_INDISPONIVEL;

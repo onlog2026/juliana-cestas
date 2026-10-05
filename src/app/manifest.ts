@@ -4,6 +4,7 @@ import { getSiteSettings } from "@/modules/settings/site-settings";
 import { getStoreProfile } from "@/modules/settings/store-profile";
 import { shortHash } from "@/modules/pwa/version";
 import { getTemaInstalado } from "@/storefront/temas/instalado";
+import { manifestoDaPlataforma, tipoDoHostAtual } from "@/modules/platform/seo-plataforma";
 
 /**
  * Manifesto do "app" da loja: é o que deixa o cliente instalar a loja na tela
@@ -20,6 +21,8 @@ export const revalidate = 3600;
 const BRAND_BG = "#f6f1e8";
 
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  if ((await tipoDoHostAtual()).tipo === "plataforma") return manifestoDaPlataforma();
+
   const tenantId = await getTenantId();
   const [profile, settings] = await Promise.all([getStoreProfile(tenantId), getSiteSettings(tenantId)]);
   const name = profile.businessName?.trim() || "Loja";
