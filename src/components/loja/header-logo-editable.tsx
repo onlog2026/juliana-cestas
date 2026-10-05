@@ -31,12 +31,15 @@ export function HeaderLogo({
   faviconUrl,
   logoHeaderHeight,
   storeName,
+  fallbackSrc = "/logo/juliana-present-icon.svg",
 }: {
   logoHeaderUrl: string | null;
   logoFooterUrl: string | null;
   faviconUrl: string | null;
   logoHeaderHeight: number | null;
   storeName: string;
+  /** Ícone usado quando a loja ainda não enviou logo (cada loja recebe o seu padrão). */
+  fallbackSrc?: string;
 }) {
   const router = useRouter();
   // Compartilhado com o carrossel: uma pergunta ao servidor por página, e só
@@ -104,7 +107,7 @@ export function HeaderLogo({
             e leitores de tela. Sem nome, vira decorativo (alt vazio). */}
         {/* eslint-disable-next-line @next/next/no-img-element -- pode ser GIF animado; next/image reprocessaria e perderia a animação */}
         <img
-          src={logoHeaderUrl || "/logo/juliana-present-icon.svg"}
+          src={logoHeaderUrl || fallbackSrc}
           alt={storeName}
           // No celular a logo tem altura menor (64px) e LARGURA limitada ao que sobra
           // ao lado do carrinho e do menu (152px = margens + os 2 botões): antes, a logo

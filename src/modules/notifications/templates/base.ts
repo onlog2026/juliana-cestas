@@ -14,8 +14,7 @@ import { ctaButton, emailShell as shellV2, escapeHtml, type ShellOptions } from 
 export const NEUTRAL_BRAND: EmailBrand = {
   storeName: "",
   logoUrl: null,
-  // TODO F7: virá de tenant_domains
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "",
+  siteUrl: "",
   replyTo: null,
   whatsapp: null,
 };

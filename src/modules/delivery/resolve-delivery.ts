@@ -51,7 +51,7 @@ export async function resolveDelivery(
 
   if (!isEligibleForCarrierShipping(input.product)) return { kind: "not_served" };
 
-  const client = getMelhorEnvioClient();
+  const client = getMelhorEnvioClient(tenantId);
   if (!client) return { kind: "not_served" };
 
   const profile = await getStoreProfile(tenantId);

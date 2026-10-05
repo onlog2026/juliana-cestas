@@ -3,6 +3,7 @@ import { getTenantId } from "@/lib/tenant/context";
 import { getSiteSettings } from "@/modules/settings/site-settings";
 import { getStoreProfile } from "@/modules/settings/store-profile";
 import { shortHash } from "@/modules/pwa/version";
+import { getTemaInstalado } from "@/storefront/temas/instalado";
 
 /**
  * Manifesto do "app" da loja: é o que deixa o cliente instalar a loja na tela
@@ -22,6 +23,8 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
   const tenantId = await getTenantId();
   const [profile, settings] = await Promise.all([getStoreProfile(tenantId), getSiteSettings(tenantId)]);
   const name = profile.businessName?.trim() || "Loja";
+  // Loja com modelo instalado: a barra do aplicativo usa o fundo do modelo; sem modelo, o creme de sempre.
+  const fundo = (await getTemaInstalado(tenantId))?.variacao.paleta.bg ?? BRAND_BG;
   // Trocou o favicon -> `v` novo -> o celular busca o ícone novo.
   const v = settings.faviconUrl ? `?v=${shortHash(settings.faviconUrl)}` : "";
 
@@ -33,8 +36,8 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     scope: "/",
     display: "standalone",
     lang: "pt-BR",
-    background_color: BRAND_BG,
-    theme_color: BRAND_BG,
+    background_color: fundo,
+    theme_color: fundo,
     icons: [
       { src: `/pwa-icon/192${v}`, sizes: "192x192", type: "image/png", purpose: "any" },
       { src: `/pwa-icon/512${v}`, sizes: "512x512", type: "image/png", purpose: "any" },

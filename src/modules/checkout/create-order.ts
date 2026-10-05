@@ -210,8 +210,8 @@ export async function createOrder(
     return { ok: false, error: "Pedido criado, mas houve falha ao gerar o link de acesso. Fale no WhatsApp." };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
   const brand = await getEmailBrand(tenantId);
+  const siteUrl = brand.siteUrl;
   const { subject, html } = orderConfirmedEmail({
     orderNumber: order.number,
     buyerName: input.buyerName,

@@ -135,8 +135,8 @@ export async function runAutomations(env: Ambiente): Promise<ResultadoAutomacoes
       .in("reference_id", ids);
     const enviadosAntes = new Set((jaEnviados ?? []).map((r) => r.reference_id as string));
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
     const brand = await getEmailBrand(tenantId);
+    const siteUrl = brand.siteUrl;
 
     let enviados = 0;
     let ignorados = 0;

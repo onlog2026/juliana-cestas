@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { getTenantId } from "@/lib/tenant/context";
 import { getStoreProfile } from "@/modules/settings/store-profile";
+import { fraseProdutosTermos } from "@/modules/seo/texto-legado";
 
 export const revalidate = 3600;
 
@@ -17,7 +18,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TermosPage() {
-  const profile = await getStoreProfile(await getTenantId());
+  const tenantId = await getTenantId();
+  const profile = await getStoreProfile(tenantId);
   const storeName = profile.businessName?.trim() || "Nossa loja";
   const email = profile.email?.trim() || "";
   const phone = profile.phone?.trim() || "";
@@ -42,7 +44,7 @@ export default async function TermosPage() {
         <section>
           <p className="font-semibold text-foreground">1. Produtos</p>
           <p className="mt-1">
-            Trabalhamos com cestas de café da manhã, presentes e kits comemorativos, com opções de
+            {fraseProdutosTermos(tenantId)}
             personalização. As imagens são ilustrativas; pequenas variações de itens podem ocorrer conforme a
             disponibilidade, sempre preservando o valor e a proposta da cesta.
           </p>

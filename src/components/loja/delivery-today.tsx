@@ -11,7 +11,7 @@ import { deliveryHint, type PublicDeliverySettings } from "@/modules/delivery/to
  */
 export function DeliveryToday({
   settings,
-  neutral = "Entrega em Brasília",
+  neutral = "Entrega com data e horário marcados",
   className = "",
 }: {
   settings: PublicDeliverySettings;

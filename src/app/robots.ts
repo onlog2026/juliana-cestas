@@ -1,10 +1,9 @@
 import type { MetadataRoute } from "next";
+import { getTenantId } from "@/lib/tenant/context";
+import { getSiteUrlOrFallback } from "@/lib/tenant/site-url";
 
-// TODO F7: a URL pública de cada loja vai vir de `tenant_domains`. Enquanto
-// esse mapa não existe, a única fonte é o env da loja legada.
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://juliana-cestas-loja.vercel.app";
-
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const SITE_URL = await getSiteUrlOrFallback(await getTenantId());
   return {
     rules: [
       {

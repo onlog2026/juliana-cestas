@@ -160,3 +160,41 @@ export async function updateSiteSettings(input: {
   revalidatePath("/admin/cms");
   return { ok: true };
 }
+
+const GA4_RE = /^G-[A-Z0-9]{6,}$/;
+const GTM_RE = /^GTM-[A-Z0-9]{4,}$/;
+
+/**
+ * Grava os IDs de medição DA LOJA (Google Analytics 4 e Tag Manager). Vazio = sem medição.
+ * O formato é conferido aqui no servidor: um ID inválido nunca vira código na página da loja.
+ */
+export async function updateTrackingIds(input: {
+  ga4Id: string;
+  gtmId: string;
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  const gate = await ensureModuleForAction("seo");
+  if (!gate.ok) return { ok: false, error: gate.mensagem };
+
+  const ga4 = input.ga4Id.trim().toUpperCase();
+  const gtm = input.gtmId.trim().toUpperCase();
+  if (ga4 && !GA4_RE.test(ga4)) return { ok: false, error: "O ID do Google Analytics começa com G- (exemplo: G-ABC1234567)." };
+  if (gtm && !GTM_RE.test(gtm)) return { ok: false, error: "O ID do Tag Manager começa com GTM- (exemplo: GTM-ABC1234)." };
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("site_settings")
+    .upsert(
+      { tenant_id: gate.staff.tenantId, ga4_id: ga4 || null, gtm_id: gtm || null, updated_at: new Date().toISOString() },
+      { onConflict: "tenant_id" }
+    )
+    .select("tenant_id");
+
+  if (error?.code === "42703") {
+    return { ok: false, error: "O banco ainda não tem os campos de medição. Peça para rodar a migração 0053 e tente de novo." };
+  }
+  if (error || !data || data.length === 0) return { ok: false, error: "Não foi possível salvar. Tente de novo." };
+
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/seo");
+  return { ok: true };
+}

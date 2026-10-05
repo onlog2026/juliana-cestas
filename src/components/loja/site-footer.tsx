@@ -6,6 +6,7 @@ import { getStoreProfile, formatStoreAddress } from "@/modules/settings/store-pr
 import { SocialIcons } from "@/components/loja/social-icons";
 import { formatCnpj } from "@/modules/seo/schema";
 import { whatsappDigits } from "@/modules/notifications/templates/shell";
+import { ehLojaOriginal, fraseRodape, localRodape } from "@/modules/seo/texto-legado";
 
 const columns = [
   {
@@ -52,8 +53,7 @@ export async function SiteFooter() {
             <p className="font-display text-2xl text-primary">{storeName}</p>
           )}
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-            Cestas de café da manhã e presentes afetivos, feitos e entregues
-            em Brasília.
+            {fraseRodape(tenantId, storeProfile)}
           </p>
           <SocialIcons links={socialLinks} className="mt-4" />
         </div>
@@ -81,13 +81,14 @@ export async function SiteFooter() {
             Contato e horário
           </p>
           <p className="mt-3 text-sm text-muted-foreground">
-            {address ?? (
-              <>
-                QNL 7 Bloco D, Edifício São Raimundo
-                <br />
-                Brasília, DF
-              </>
-            )}
+            {address ??
+              (ehLojaOriginal(tenantId) ? (
+                <>
+                  QNL 7 Bloco D, Edifício São Raimundo
+                  <br />
+                  Brasília, DF
+                </>
+              ) : null)}
           </p>
           <p className="mt-3 text-sm text-muted-foreground">
             Retirada das 8h às 18h
@@ -117,7 +118,7 @@ export async function SiteFooter() {
       </div>
       <div className="border-t border-border px-4 py-5 text-center text-xs text-muted-foreground sm:px-6 lg:px-8 2xl:px-12">
         © {new Date().getFullYear()}{storeName ? ` ${storeName}` : ""}
-        {cnpj ? ` · CNPJ ${cnpj}` : ""}. Brasília, DF.
+        {cnpj ? ` · CNPJ ${cnpj}` : ""}.{localRodape(tenantId, storeProfile)}
       </div>
     </footer>
   );

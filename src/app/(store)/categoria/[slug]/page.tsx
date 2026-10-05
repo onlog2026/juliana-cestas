@@ -16,6 +16,8 @@ import { Faq } from "@/components/loja/faq";
 import { WhatsappCta } from "@/components/loja/whatsapp-cta";
 import { Reveal } from "@/components/loja/reveal";
 import { getTenantId } from "@/lib/tenant/context";
+import { getStoreProfile } from "@/modules/settings/store-profile";
+import { descricaoCategoriaReserva } from "@/modules/seo/texto-legado";
 
 export const revalidate = 300;
 
@@ -23,13 +25,15 @@ export async function generateMetadata(
   props: PageProps<"/categoria/[slug]">
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const category = await getCategoryBySlug(await getTenantId(), slug);
+  const tenantId = await getTenantId();
+  const category = await getCategoryBySlug(tenantId, slug);
   if (!category) return {};
+  const perfil = await getStoreProfile(tenantId);
   return {
     title: category.name,
     description: pickDescription(
       category.description,
-      `${category.name}: cestas de café da manhã e presentes feitos à mão em Brasília, com entrega no mesmo dia e cartão personalizado. Escolha a sua.`
+      descricaoCategoriaReserva(tenantId, perfil, category.name)
     ),
     alternates: { canonical: `/categoria/${slug}` },
   };

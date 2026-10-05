@@ -14,7 +14,9 @@ import { TrackViewItem } from "@/components/analytics/track-events";
 import { splitListText } from "@/modules/catalog/list-text";
 import { clampTitle, pickDescription } from "@/modules/seo/meta";
 import { getTenantId } from "@/lib/tenant/context";
-import { getStoreWhatsapp } from "@/modules/settings/store-profile";
+import { getStoreProfile, getStoreWhatsapp } from "@/modules/settings/store-profile";
+import { descricaoProdutoReserva, ehLojaOriginal, entregaNeutra } from "@/modules/seo/texto-legado";
+import { getCategoryById } from "@/modules/catalog/categories";
 import { LEGACY_TENANT_ID } from "@/lib/tenant/legacy";
 import { getDeliverySettings } from "@/modules/delivery/settings";
 import { getAlsoBought } from "@/modules/catalog/also-bought";
@@ -41,8 +43,10 @@ export async function generateMetadata(
   props: PageProps<"/produto/[slug]">
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const product = await getProductBySlug(await getTenantId(), slug);
+  const tenantId = await getTenantId();
+  const product = await getProductBySlug(tenantId, slug);
   if (!product) return {};
+  const perfilMeta = await getStoreProfile(tenantId);
 
   const seoTitle = product.seoTitle?.trim();
   return {
@@ -52,7 +56,7 @@ export async function generateMetadata(
     title: seoTitle ? { absolute: clampTitle(seoTitle) } : clampTitle(product.name),
     description: pickDescription(
       product.seoDescription || product.shortDescription,
-      `${product.name}: cesta ${product.serves ? `${product.serves.charAt(0).toLowerCase()}${product.serves.slice(1)}, ` : ""}feita à mão em Brasília, com entrega no mesmo dia e cartão personalizado. ${currency.format(product.price)}.`
+      descricaoProdutoReserva(tenantId, perfilMeta, { nome: product.name, serves: product.serves, precoFormatado: currency.format(product.price) })
     ),
     alternates: { canonical: `/produto/${slug}` },
     // Ao compartilhar a cesta no WhatsApp/Facebook, a foto dela vai no cartão.
@@ -72,10 +76,12 @@ export default async function ProdutoPage(
   const whatsappMessage = encodeURIComponent(
     `Olá! Quero encomendar a ${product.name} (${currency.format(product.price)}).`
   );
-  const [allProducts, delivery, alsoIds] = await Promise.all([
+  const [allProducts, delivery, alsoIds, perfilLoja, categoriaDoProduto] = await Promise.all([
     getAllProducts(tenantId),
     getDeliverySettings(tenantId).catch(() => null),
     getAlsoBought(tenantId, product.id).catch(() => []),
+    getStoreProfile(tenantId),
+    !ehLojaOriginal(tenantId) && product.categoryId ? getCategoryById(tenantId, product.categoryId).catch(() => null) : Promise.resolve(null),
   ]);
   const outrasCestas = allProducts.filter((item) => item.id !== product.id);
   // Só aparece com co-compra REAL de pelo menos 2 cestas (nunca palpite).
@@ -107,10 +113,21 @@ export default async function ProdutoPage(
           Início
         </Link>
         <ChevronRight className="size-3.5" />
-        <Link href="/categoria/cafe-da-manha" className="transition-colors hover:text-primary">
-          Cestas de café da manhã
-        </Link>
-        <ChevronRight className="size-3.5" />
+        {ehLojaOriginal(tenantId) ? (
+          <>
+            <Link href="/categoria/cafe-da-manha" className="transition-colors hover:text-primary">
+              Cestas de café da manhã
+            </Link>
+            <ChevronRight className="size-3.5" />
+          </>
+        ) : categoriaDoProduto ? (
+          <>
+            <Link href={`/categoria/${categoriaDoProduto.slug}`} className="transition-colors hover:text-primary">
+              {categoriaDoProduto.name}
+            </Link>
+            <ChevronRight className="size-3.5" />
+          </>
+        ) : null}
         <span className="text-foreground">{product.name}</span>
       </nav>
 
@@ -144,6 +161,7 @@ export default async function ProdutoPage(
           {delivery ? (
             <p className="mt-5 text-sm font-medium text-foreground">
               <DeliveryToday
+                neutral={entregaNeutra(tenantId, perfilLoja)}
                 settings={{
                   slotMinutes: delivery.slotMinutes,
                   leadTimeHours: delivery.leadTimeHours,

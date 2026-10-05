@@ -3,10 +3,11 @@ import { getAllProducts } from "@/modules/catalog/service";
 import { getActiveCategories } from "@/modules/catalog/categories";
 import { getStoreProfile } from "@/modules/settings/store-profile";
 import { getTenantId } from "@/lib/tenant/context";
+import { getSiteUrlOrFallback } from "@/lib/tenant/site-url";
+import { fraseLlms } from "@/modules/seo/texto-legado";
 import { formatCnpj } from "@/modules/seo/schema";
 import { isPublicCategory } from "@/modules/seo/public-category";
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://juliana-cestas-loja.vercel.app").replace(/\/$/, "");
 
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -16,6 +17,7 @@ const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" 
  */
 export async function buildLlmsText(full: boolean): Promise<string> {
   const tenantId = await getTenantId();
+  const SITE_URL = await getSiteUrlOrFallback(tenantId);
   const [products, categories, profile] = await Promise.all([
     getAllProducts(tenantId),
     getActiveCategories(tenantId),
@@ -28,7 +30,7 @@ export async function buildLlmsText(full: boolean): Promise<string> {
   const lines: string[] = [];
   lines.push(`# ${name}`, "");
   lines.push(
-    `> Cestas de café da manhã e presentes feitos à mão em Brasília, DF, com entrega no mesmo dia e cartão de mensagem personalizado.`,
+    `> ${fraseLlms(tenantId, profile)}`,
     ""
   );
 

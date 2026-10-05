@@ -6,12 +6,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ensureModuleForAction } from "@/lib/auth/require-module";
 import { getTenantId } from "@/lib/tenant/context";
+import { getSiteUrl } from "@/lib/tenant/site-url";
 import { sendTicketEmail, getEmailBrand } from "@/modules/notifications/send";
 import { ticketCreatedEmail } from "@/modules/notifications/templates/ticket-created";
 import { ticketReplyEmail } from "@/modules/notifications/templates/ticket-reply";
 import type { TicketCategory } from "@/modules/support/service";
-
-const siteUrl = () => process.env.NEXT_PUBLIC_SITE_URL ?? "";
 
 async function requireCustomerSession() {
   const supabase = await createServerSupabaseClient();
@@ -73,7 +72,7 @@ export async function createTicket(input: {
   const { subject, html } = ticketCreatedEmail({
     buyerName,
     subject: input.subject.trim(),
-    ticketUrl: `${siteUrl()}/conta/atendimento/${ticket.id}`,
+    ticketUrl: `${await getSiteUrl(tenantId)}/conta/atendimento/${ticket.id}`,
   }, await getEmailBrand(tenantId));
   await sendTicketEmail(tenantId, {
     ticketId: ticket.id,
@@ -185,7 +184,7 @@ export async function replyAsStaff(input: {
     buyerName: ticket.buyer_name,
     subject: ticket.subject,
     replyBody: input.body.trim(),
-    ticketUrl: `${siteUrl()}/conta/atendimento/${ticket.id}`,
+    ticketUrl: `${await getSiteUrl(staff.tenantId)}/conta/atendimento/${ticket.id}`,
   }, await getEmailBrand(staff.tenantId));
   await sendTicketEmail(staff.tenantId, {
     ticketId: ticket.id,

@@ -13,12 +13,11 @@ import { getStoreProfile, getStoreWhatsapp } from "@/modules/settings/store-prof
 import { getTenantId } from "@/lib/tenant/context";
 import { shortHash } from "@/modules/pwa/version";
 import { pickDescription } from "@/modules/seo/meta";
+import { getSiteUrlOrFallback } from "@/lib/tenant/site-url";
+import { descricaoSiteReserva, tituloSiteReserva } from "@/modules/seo/texto-legado";
 import { CartProvider } from "@/modules/cart/cart-context";
 import { ClickTracker } from "@/components/analytics/track-events";
-
-// TODO F7: a URL pública de cada loja vai vir de `tenant_domains`. Enquanto
-// esse mapa não existe, a única fonte é o env da loja legada.
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://juliana-cestas-loja.vercel.app";
+import { TenantAnalytics } from "@/components/analytics/tenant-analytics";
 
 export async function generateMetadata(): Promise<Metadata> {
   const tenantId = await getTenantId();
@@ -33,15 +32,13 @@ export async function generateMetadata(): Promise<Metadata> {
   // título e a descrição NÃO podem sair em branco -- é o que faz o analisador
   // acusar "sem meta description / sem title". Cai num texto real derivado do
   // nome da loja.
-  const siteTitle = seo.siteTitle?.trim() || storeName || "Cestas de café da manhã e presentes";
+  const siteTitle = seo.siteTitle?.trim() || storeName || tituloSiteReserva(tenantId);
   const siteDescription = pickDescription(
     seo.siteDescription,
-    storeName
-      ? `${storeName} — cestas de café da manhã, presentes e kits comemorativos feitos à mão com carinho, com entrega em Brasília.`
-      : "Cestas de café da manhã, presentes e kits comemorativos feitos à mão com carinho, com entrega em Brasília."
+    descricaoSiteReserva(tenantId, storeProfile, storeName)
   );
   return {
-    metadataBase: new URL(SITE_URL),
+    metadataBase: new URL(await getSiteUrlOrFallback(tenantId)),
     title: {
       default: siteTitle,
       template: `%s | ${storeName || siteTitle}`,
@@ -83,6 +80,7 @@ export default async function StoreLayout({ children }: LayoutProps<"/">) {
     const Rodape = RODAPES[instalado.tema.key];
     return (
       <CartProvider>
+        <TenantAnalytics tenantId={tenantId} />
         <LocalBusinessJsonLd />
         <ClickTracker />
         <TemaRoot tema={instalado.tema.key} v={instalado.variacao}>
@@ -97,6 +95,7 @@ export default async function StoreLayout({ children }: LayoutProps<"/">) {
   }
   return (
     <CartProvider>
+      <TenantAnalytics tenantId={tenantId} />
       <LocalBusinessJsonLd />
       <ClickTracker />
       <SiteHeader />

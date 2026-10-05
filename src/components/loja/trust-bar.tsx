@@ -4,6 +4,8 @@ import { getTenantId } from "@/lib/tenant/context";
 import { getReviewsSummary } from "@/modules/reviews/service";
 import { getDeliverySettings } from "@/modules/delivery/settings";
 import { DeliveryToday } from "./delivery-today";
+import { getStoreProfile } from "@/modules/settings/store-profile";
+import { entregaNeutra } from "@/modules/seo/texto-legado";
 
 /**
  * Faixa fina de confiança abaixo do banner: nota real, entrega e cartão.
@@ -12,9 +14,10 @@ import { DeliveryToday } from "./delivery-today";
  */
 export async function TrustBar() {
   const tenantId = await getTenantId();
-  const [summary, delivery] = await Promise.all([
+  const [summary, delivery, perfil] = await Promise.all([
     getReviewsSummary(tenantId).catch(() => ({ average: 0, total: 0 })),
     getDeliverySettings(tenantId).catch(() => null),
+    getStoreProfile(tenantId),
   ]);
 
   return (
@@ -34,6 +37,7 @@ export async function TrustBar() {
         {delivery ? (
           <li className="flex min-h-11 shrink-0 items-center">
             <DeliveryToday
+              neutral={entregaNeutra(tenantId, perfil)}
               settings={{
                 slotMinutes: delivery.slotMinutes,
                 leadTimeHours: delivery.leadTimeHours,

@@ -7,8 +7,22 @@
 // recebimento de todos os pagamentos). Por isso aqui só existe TypeScript puro:
 // nada de import de outros módulos do projeto, nem de pacotes.
 
+/** Cores do e-mail (todas #rrggbb). Sem isto, o e-mail sai com as cores de sempre (loja original). */
+export type EmailColors = { band: string; primary: string; accent: string; page: string; line: string };
+
+/** Cores neutras para lojas que ainda não têm modelo instalado (nunca as da loja original). */
+export const NEUTRAL_EMAIL_COLORS: EmailColors = {
+  band: "#1f2937",
+  primary: "#1f2937",
+  accent: "#d4b26a",
+  page: "#f4f4f5",
+  line: "#e4e4e7",
+};
+
 /** O que a casca precisa saber da loja (subconjunto de `EmailBrand`). */
 export type ShellBrand = {
+  /** Cores da loja. Ausente = cores originais (verde-escuro, oliva, dourado). */
+  colors?: EmailColors;
   storeName: string;
   logoUrl: string | null;
   siteUrl: string;
@@ -109,6 +123,23 @@ export function ctaButton(href: string, label: string): string {
  * corpo e rodapé. Tabelas + estilo inline (Gmail/Outlook/Apple Mail), 560 px.
  */
 export function emailShell(bodyHtml: string, brand: ShellBrand, opts: ShellOptions = {}): string {
+  const html = montarCasca(bodyHtml, brand, opts);
+  return brand.colors ? aplicarCores(html, brand.colors) : html;
+}
+
+/** Troca as 5 cores de sempre pelas da loja, no e-mail inteiro (casca + corpo dos modelos). */
+function aplicarCores(html: string, c: EmailColors): string {
+  const troca: Array<[string, string]> = [
+    ["#556b2f", safeColor(c.primary, "#556b2f")],
+    ["#d9a441", safeColor(c.accent, "#d9a441")],
+    ["#17251f", safeColor(c.band, "#17251f")],
+    ["#f6f1e8", safeColor(c.page, "#f6f1e8")],
+    ["#e6e0d2", safeColor(c.line, "#e6e0d2")],
+  ];
+  return troca.reduce((acc, [de, para]) => acc.split(de).join(para).split(de.toUpperCase()).join(para), html);
+}
+
+function montarCasca(bodyHtml: string, brand: ShellBrand, opts: ShellOptions): string {
   const storeName = escapeHtml(brand.storeName);
   const band = safeColor(opts.bandColor, DEFAULT_BAND_COLOR);
   const logo = safeUrl(brand.logoUrl);

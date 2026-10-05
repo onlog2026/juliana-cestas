@@ -8,6 +8,7 @@ import { getEntitlements } from "@/modules/entitlements/service";
 import { getTema, getVariacao } from "@/storefront/temas/catalogo";
 import { planoPermite } from "@/storefront/temas/instalado";
 import { instalarNoBanco, voltarNoBanco } from "./temas-instalacao";
+import { coresDeEmail } from "@/modules/notifications/cores-email";
 
 type Resultado = { ok: true; mensagem: string } | { ok: false; error: string };
 
@@ -29,7 +30,9 @@ export async function instalarModelo(modelo: string, variante: string): Promise<
     return { ok: false, error: `O modelo ${tema.name} é do plano Pro ou superior. Veja os planos em Sua assinatura.` };
   }
 
-  const r = await instalarNoBanco(createAdminClient(), gate.staff.tenantId, tema.key, v.key, gate.staff.id);
+  const r = await instalarNoBanco(createAdminClient(), gate.staff.tenantId, tema.key, v.key, gate.staff.id, {
+    cores_email: coresDeEmail(v.paleta),
+  });
   if (!r.ok) return r;
 
   revalidatePath("/", "layout");

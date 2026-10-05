@@ -10,9 +10,8 @@ import {
   getReviewsSummary,
 } from "@/modules/reviews/service";
 import { Stars } from "@/components/loja/reviews/stars";
+import { getSiteUrlOrFallback } from "@/lib/tenant/site-url";
 
-// TODO F7: a URL pública de cada loja virá de `tenant_domains`.
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://juliana-cestas-loja.vercel.app";
 
 const POR_PAGINA = 20;
 
@@ -66,6 +65,7 @@ export default async function AvaliacoesPage(props: {
   const storeName = profile.businessName?.trim() || "";
   const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
 
+  const SITE_URL = await getSiteUrlOrFallback(tenantId);
   const jsonLd =
     resumo.total > 0
       ? {

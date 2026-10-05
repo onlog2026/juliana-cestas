@@ -3,6 +3,7 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSiteUrl } from "@/lib/tenant/site-url";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { sendOrderEmail, getEmailBrand } from "@/modules/notifications/send";
 import { outForDeliveryEmail } from "@/modules/notifications/templates/out-for-delivery";
@@ -163,7 +164,7 @@ export async function advanceOrderStatus(
     payload: {},
   });
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  const siteUrl = await getSiteUrl(staff.tenantId);
   if (nextStatus === "saiu_para_entrega") {
     const addressLine =
       order.delivery_type === "pickup"

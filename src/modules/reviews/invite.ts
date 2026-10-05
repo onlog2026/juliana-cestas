@@ -32,8 +32,6 @@ export type InviteResult =
   | { ok: true; alreadyInvited: boolean }
   | { ok: false; error: string };
 
-const siteUrl = () => process.env.NEXT_PUBLIC_SITE_URL ?? "";
-
 /** O status final do fluxo de pedidos deste projeto. */
 export const DELIVERED_STATUS = "entregue";
 
@@ -159,7 +157,7 @@ async function sendInvite(tenantId: string, order: OrderRow, token: string, know
       orderNumber: order.number,
       buyerName: order.buyer_name,
       itemNames,
-      reviewUrl: `${siteUrl()}/avaliar/${token}`,
+      reviewUrl: `${brand.siteUrl}/avaliar/${token}`,
     },
     brand
   );

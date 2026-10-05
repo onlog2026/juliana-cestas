@@ -7,6 +7,7 @@
 // (site_content -> seção "business"), sempre por tenant.
 
 import { getTenantId } from "@/lib/tenant/context";
+import { getSiteUrlOrFallback } from "@/lib/tenant/site-url";
 import { getContent } from "@/modules/content/service";
 import { getSeoSettings } from "@/modules/seo/service";
 import { getSocialLinks } from "@/modules/settings/social-links";
@@ -22,9 +23,10 @@ import {
   websiteSchema,
 } from "@/modules/seo/schema";
 
-// TODO F7: a URL pública de cada loja vai vir de `tenant_domains`. Enquanto
-// esse mapa não existe, a única fonte é o env da loja legada.
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://juliana-cestas-loja.vercel.app";
+/** Endereço público da loja da requisição (cada loja tem o seu; nunca o da outra). */
+async function siteUrlDaLoja(): Promise<string> {
+  return getSiteUrlOrFallback(await getTenantId());
+}
 
 function clean(value: string | null | undefined): string {
   return (value ?? "").trim();
@@ -43,6 +45,7 @@ function streetFromProfile(profile: StoreProfile): string {
 
 export async function LocalBusinessJsonLd() {
   const tenantId = await getTenantId();
+  const SITE_URL = await getSiteUrlOrFallback(tenantId);
   const [profile, business, seo, socialLinks, site] = await Promise.all([
     getStoreProfile(tenantId),
     getContent(tenantId, "business"),
@@ -118,16 +121,16 @@ export function JsonLd({ data }: { data: unknown }) {
   );
 }
 
-export function BreadcrumbJsonLd({ trail }: { trail: Array<{ name: string; path: string }> }) {
-  return <JsonLd data={breadcrumbSchema(SITE_URL, trail)} />;
+export async function BreadcrumbJsonLd({ trail }: { trail: Array<{ name: string; path: string }> }) {
+  return <JsonLd data={breadcrumbSchema(await siteUrlDaLoja(), trail)} />;
 }
 
-export function WebSiteJsonLd({ name }: { name: string }) {
-  return <JsonLd data={websiteSchema({ siteUrl: SITE_URL, name })} />;
+export async function WebSiteJsonLd({ name }: { name: string }) {
+  return <JsonLd data={websiteSchema({ siteUrl: await siteUrlDaLoja(), name })} />;
 }
 
-export function ItemListJsonLd({ items }: { items: Array<{ name: string; slug: string }> }) {
-  return <JsonLd data={itemListSchema(SITE_URL, items)} />;
+export async function ItemListJsonLd({ items }: { items: Array<{ name: string; slug: string }> }) {
+  return <JsonLd data={itemListSchema(await siteUrlDaLoja(), items)} />;
 }
 
 export async function ProductJsonLd({
@@ -152,6 +155,7 @@ export async function ProductJsonLd({
   brandName?: string;
 }) {
   const tenantId = await getTenantId();
+  const SITE_URL = await getSiteUrlOrFallback(tenantId);
   const [resolvedBrand, rating] = await Promise.all([
     Promise.resolve(clean(brandName)).then((b) => b || resolveStoreName(tenantId)),
     // Nota média da LOJA (avaliações aprovadas de verdade); sem nenhuma, o campo nem entra.

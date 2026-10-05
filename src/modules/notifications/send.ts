@@ -3,6 +3,10 @@ import { Resend } from "resend";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStoreProfile, getStoreWhatsapp } from "@/modules/settings/store-profile";
 import { getSiteSettings } from "@/modules/settings/site-settings";
+import { getSiteUrl } from "@/lib/tenant/site-url";
+import { LEGACY_TENANT_ID } from "@/lib/tenant/legacy";
+import { remetenteDaLoja } from "@/modules/notifications/remetente";
+import { NEUTRAL_EMAIL_COLORS, type EmailColors } from "@/modules/notifications/templates/shell";
 import { getWhatsappClient } from "@/modules/notifications/whatsapp-config";
 
 // `review_invite` é o convite de avaliação (pedido ENTREGUE, migração 0030).
@@ -31,7 +35,23 @@ export type EmailBrand = {
   replyTo: string | null;
   /** WhatsApp da loja (só dígitos), para o botão e o rodapé dos e-mails. */
   whatsapp?: string | null;
+  /** Cores do e-mail (paleta do modelo instalado). Ausente = cores de sempre (só a loja original). */
+  colors?: EmailColors;
 };
+
+/** Cores gravadas no modelo instalado; sem modelo, a loja original segue com as de sempre e as demais com as neutras. */
+async function getEmailColors(tenantId: string): Promise<EmailColors | undefined> {
+  try {
+    const { data } = await createAdminClient().from("store_theme").select("layout").eq("tenant_id", tenantId).maybeSingle();
+    const c = (data?.layout as { cores_email?: Partial<EmailColors> } | null)?.cores_email;
+    if (c && typeof c.band === "string" && typeof c.primary === "string" && typeof c.accent === "string" && typeof c.page === "string" && typeof c.line === "string") {
+      return c as EmailColors;
+    }
+  } catch {
+    /* sem cores gravadas */
+  }
+  return tenantId === LEGACY_TENANT_ID ? undefined : NEUTRAL_EMAIL_COLORS;
+}
 
 /**
  * Monta a marca do e-mail a partir do que a lojista cadastrou.
@@ -39,9 +59,12 @@ export type EmailBrand = {
  * templates montam assunto/cabeçalho sem marca.
  */
 export async function getEmailBrand(tenantId: string): Promise<EmailBrand> {
-  const [profile, site] = await Promise.all([getStoreProfile(tenantId), getSiteSettings(tenantId)]);
-  // TODO F7: virá de tenant_domains
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  const [profile, site, siteUrl, colors] = await Promise.all([
+    getStoreProfile(tenantId),
+    getSiteSettings(tenantId),
+    getSiteUrl(tenantId),
+    getEmailColors(tenantId),
+  ]);
   return {
     storeName: profile.businessName?.trim() || "",
     // Logo do e-mail = PNG transparente gerado em /email-logo (a logo do site é WebP,
@@ -50,6 +73,7 @@ export async function getEmailBrand(tenantId: string): Promise<EmailBrand> {
     siteUrl,
     replyTo: profile.email?.trim() || null,
     whatsapp: (profile.phone ?? "").replace(/\D/g, "") || null,
+    colors,
   };
 }
 
@@ -68,7 +92,6 @@ async function send(tenantId: string, params: {
 
   const supabase = createAdminClient();
   const apiKey = process.env.RESEND_API_KEY;
-  // TODO F2: remetente por loja depende de domínio verificado na Resend.
   const emailFrom = process.env.EMAIL_FROM;
   const row = {
     tenant_id: tenantId,
@@ -103,7 +126,7 @@ async function send(tenantId: string, params: {
     const brand = await getEmailBrand(tenantId);
     const resend = new Resend(apiKey);
     const { error } = await resend.emails.send({
-      from: emailFrom,
+      from: remetenteDaLoja(emailFrom, brand.storeName, tenantId === LEGACY_TENANT_ID),
       to: toEmail,
       subject,
       html,

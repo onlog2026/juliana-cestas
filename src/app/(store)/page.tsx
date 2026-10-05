@@ -14,6 +14,7 @@ import { WhatsappCta } from "@/components/loja/whatsapp-cta";
 import { Reveal } from "@/components/loja/reveal";
 import { getTenantId } from "@/lib/tenant/context";
 import { getStoreProfile } from "@/modules/settings/store-profile";
+import { fraseH1Home, nomeLojaReserva } from "@/modules/seo/texto-legado";
 import { ItemListJsonLd, WebSiteJsonLd } from "@/components/loja/json-ld";
 import { TrustBar } from "@/components/loja/trust-bar";
 import { RecentlyViewed } from "@/components/loja/recently-viewed";
@@ -41,7 +42,7 @@ export default async function Home() {
   ]);
   // Vitrines por vendas/cliques: só aparecem com dados suficientes (>= 4 produtos).
   const showcases = await getShowcases(tenantId, products);
-  const storeName = profile.businessName?.trim() || "Cestas de café da manhã";
+  const storeName = profile.businessName?.trim() || nomeLojaReserva(tenantId);
 
   return (
     <>
@@ -51,7 +52,7 @@ export default async function Home() {
       <WebSiteJsonLd name={storeName} />
       <ItemListJsonLd items={products.slice(0, 12).map((p) => ({ name: p.name, slug: p.slug }))} />
       <h1 className="sr-only">
-        {storeName} — cestas de café da manhã, presentes e kits comemorativos feitos à mão
+        {fraseH1Home(tenantId, storeName)}
       </h1>
       <BannerCarousel banners={banners}>
         <Link

@@ -15,7 +15,15 @@ type Banco = { from: (tabela: string) => any };
 
 export type ResultadoNucleo = { ok: true } | { ok: false; error: string };
 
-export async function instalarNoBanco(db: Banco, tenantId: string, modelo: string, variante: string, userId: string | null): Promise<ResultadoNucleo> {
+export async function instalarNoBanco(
+  db: Banco,
+  tenantId: string,
+  modelo: string,
+  variante: string,
+  userId: string | null,
+  /** Dados extras guardados junto do modelo (ex.: `cores_email`, usadas pelo webhook de pagamento). */
+  extra: Record<string, unknown> = {}
+): Promise<ResultadoNucleo> {
   const { data: atual } = (await db
     .from("store_theme")
     .select("template_key, tokens, fonts, layout")
@@ -39,7 +47,7 @@ export async function instalarNoBanco(db: Banco, tenantId: string, modelo: strin
         template_key: modelo,
         tokens: {},
         fonts: {},
-        layout: { motor: "temas", variante, anterior },
+        layout: { motor: "temas", variante, anterior, ...extra },
         updated_at: new Date().toISOString(),
         updated_by: userId,
       },

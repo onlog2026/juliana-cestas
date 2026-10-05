@@ -14,6 +14,7 @@ import { CartButton } from "@/components/loja/cart-button";
 import { InstagramLink } from "@/components/loja/social-icons";
 import { AnnouncementBar } from "@/components/loja/announcement-bar";
 import { HeaderLogo } from "@/components/loja/header-logo-editable";
+import { ehLojaOriginal } from "@/modules/seo/texto-legado";
 
 export async function SiteHeader() {
   // A loja vem do endereço acessado (visitante anônimo, sem login).
@@ -74,6 +75,7 @@ export async function SiteHeader() {
           faviconUrl={siteSettings.faviconUrl}
           logoHeaderHeight={siteSettings.logoHeaderHeight}
           storeName={storeName}
+          fallbackSrc={ehLojaOriginal(tenantId) ? "/logo/juliana-present-icon.svg" : "/logo/loja-padrao.svg"}
         />
 
         <div className="hidden flex-1 justify-center md:flex">

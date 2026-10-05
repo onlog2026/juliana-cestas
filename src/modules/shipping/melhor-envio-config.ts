@@ -4,6 +4,7 @@ import {
   type MelhorEnvioClient,
   type MelhorEnvioEnvironment,
 } from "@/modules/shipping/melhor-envio-client";
+import { LEGACY_TENANT_ID } from "@/lib/tenant/legacy";
 
 /**
  * Conexão com a Melhor Envio -- cotação de frete por transportadora pra fora
@@ -29,8 +30,13 @@ export function getMelhorEnvioConfig(): MelhorEnvioConfig {
   return { token, environment, configured: token.length >= 10 };
 }
 
-/** O cliente da Melhor Envio, ou `null` se o token ainda não foi configurado. */
-export function getMelhorEnvioClient(): MelhorEnvioClient | null {
+/**
+ * O cliente da Melhor Envio, ou `null` se o token ainda não foi configurado.
+ * O token da plataforma é a conta da loja ORIGINAL: nenhuma outra loja usa a conta dela.
+ * Cada loja passará a ter o próprio token (cadastro por loja ainda não existe).
+ */
+export function getMelhorEnvioClient(tenantId: string): MelhorEnvioClient | null {
+  if (tenantId !== LEGACY_TENANT_ID) return null;
   const cfg = getMelhorEnvioConfig();
   if (!cfg.configured) return null;
   return createMelhorEnvioClient({ token: cfg.token, environment: cfg.environment });

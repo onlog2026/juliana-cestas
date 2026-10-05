@@ -2,6 +2,9 @@ import { createHash, timingSafeEqual } from "node:crypto";
 // Único import de projeto permitido aqui: um arquivo PURO (só importa ./shell, que não importa nada).
 // Coberto por teste (tests/unit/webhook-imports.test.ts) para nunca virar um import de "@/".
 import { orderPaidEmail } from "../../../../../modules/notifications/templates/order-paid";
+import { NEUTRAL_EMAIL_COLORS, type EmailColors } from "../../../../../modules/notifications/templates/shell";
+import { remetenteDaLoja } from "../../../../../modules/notifications/remetente";
+import { LEGACY_TENANT_ID } from "../../../../../lib/tenant/legacy";
 
 /**
  * Webhook do Asaas — a porta por onde o dinheiro entra.
@@ -441,6 +444,44 @@ async function processar(
  * como `pending_domain` — exatamente o que `src/modules/notifications/send.ts`
  * já faz hoje.
  */
+/**
+ * Endereço público da loja (para o link e a logo do e-mail). Loja original: a variável do site, como sempre.
+ * Demais lojas: domínio próprio VERIFICADO, depois `{slug}.PLATFORM_DOMAIN`; sem nenhum, vazio (nunca o da outra loja).
+ */
+async function siteUrlDaLoja(env: Ambiente, tenantId: string): Promise<string> {
+  if (tenantId === LEGACY_TENANT_ID) return (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim();
+  const t = encodeURIComponent(tenantId);
+  try {
+    const dRes = await db(env, `tenant_domains?tenant_id=eq.${t}&status=eq.verificado&select=host&order=verified_at.asc&limit=1`, { method: "GET" });
+    const dom = dRes.ok ? ((await lerJson<Array<{ host: string }>>(dRes)) ?? [])[0] : undefined;
+    if (dom?.host) return `https://${dom.host}`;
+    const plataforma = (process.env.PLATFORM_DOMAIN ?? "").trim();
+    if (plataforma) {
+      const lRes = await db(env, `tenants?id=eq.${t}&select=slug&limit=1`, { method: "GET" });
+      const loja = lRes.ok ? ((await lerJson<Array<{ slug: string }>>(lRes)) ?? [])[0] : undefined;
+      if (loja?.slug) return `https://${loja.slug}.${plataforma}`;
+    }
+  } catch {
+    /* sem endereço conhecido */
+  }
+  return "";
+}
+
+/** Cores do e-mail gravadas no modelo instalado; sem modelo: as de sempre na loja original, neutras nas demais. */
+async function coresDoEmail(env: Ambiente, tenantId: string): Promise<EmailColors | undefined> {
+  try {
+    const res = await db(env, `store_theme?tenant_id=eq.${encodeURIComponent(tenantId)}&select=layout&limit=1`, { method: "GET" });
+    const linha = res.ok ? ((await lerJson<Array<{ layout: { cores_email?: Partial<EmailColors> } | null }>>(res)) ?? [])[0] : undefined;
+    const c = linha?.layout?.cores_email;
+    if (c && typeof c.band === "string" && typeof c.primary === "string" && typeof c.accent === "string" && typeof c.page === "string" && typeof c.line === "string") {
+      return c as EmailColors;
+    }
+  } catch {
+    /* sem cores gravadas */
+  }
+  return tenantId === LEGACY_TENANT_ID ? undefined : NEUTRAL_EMAIL_COLORS;
+}
+
 async function avisarPagamento(env: Ambiente, tenantId: string, orderId: string): Promise<void> {
   const t = encodeURIComponent(tenantId);
   const o = encodeURIComponent(orderId);
@@ -474,8 +515,10 @@ async function avisarPagamento(env: Ambiente, tenantId: string, orderId: string)
   const siteRes = await db(env, `site_settings?tenant_id=eq.${t}&select=logo_header_url&limit=1`, { method: "GET" });
   const perfil = perfilRes.ok ? ((await lerJson<Array<{ business_name: string | null; phone: string | null }>>(perfilRes)) ?? [])[0] : undefined;
   const site = siteRes.ok ? ((await lerJson<Array<{ logo_header_url: string | null }>>(siteRes)) ?? [])[0] : undefined;
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim();
+  const siteUrl = await siteUrlDaLoja(env, tenantId);
+  const cores = await coresDoEmail(env, tenantId);
   const marca = {
+    colors: cores,
     storeName: (perfil?.business_name ?? "").trim(),
     // PNG transparente servido pela própria loja (WebP transparente fica com fundo preto no Gmail).
     logoUrl: site?.logo_header_url && siteUrl ? `${siteUrl}/email-logo` : null,
@@ -493,7 +536,7 @@ async function avisarPagamento(env: Ambiente, tenantId: string, orderId: string)
   );
 
   const apiKey = (process.env.RESEND_API_KEY ?? "").trim();
-  const emailFrom = (process.env.EMAIL_FROM ?? "").trim();
+  const emailFrom = remetenteDaLoja((process.env.EMAIL_FROM ?? "").trim(), marca.storeName, tenantId === LEGACY_TENANT_ID);
 
   const linha = {
     tenant_id: tenantId,
